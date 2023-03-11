@@ -4,7 +4,7 @@
 [![NuGet version (ElevenLabs-DotNet)](https://img.shields.io/nuget/v/ElevenLabs-DotNet.svg)](https://www.nuget.org/packages/ElevenLabs-DotNet/)
 [![Nuget Publish](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml/badge.svg)](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml)
 
-A non-official Eleven Labs voice synthesis RESTful client.
+A non-official [Eleven Labs](https://elevenlabs.io/) voice synthesis RESTful client.
 
 I am not affiliated with Eleven Labs and an account with api access is required.
 
