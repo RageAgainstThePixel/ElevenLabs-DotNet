@@ -16,7 +16,11 @@
     <Version>1.0.1</Version>
     <Copyright>2023</Copyright>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <PackageReleaseNotes>Release 1.0.1
+    <PackageReleaseNotes>Release 1.0.2
+- Added VoiceGenerationEndpoint
+- Added unit tests for voice design and instant voice cloning
+- Updated docs
+Release 1.0.1
 - Updated Docs
 Release 1.0.0
 - Initial Release!</PackageReleaseNotes>
