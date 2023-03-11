@@ -14,7 +14,7 @@ I am not affiliated with Eleven Labs and an account with api access is required.
 
 ### Install from NuGet
 
-Install package [`OpenAI` from Nuget](https://www.nuget.org/packages/ElevenLabs-DotNet/).  Here's how via command line:
+Install package [`ElevenLabs` from Nuget](https://www.nuget.org/packages/ElevenLabs-DotNet/).  Here's how via command line:
 
 ```powershell
 Install-Package ElevenLabs-DotNet
