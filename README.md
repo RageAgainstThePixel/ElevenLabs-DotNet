@@ -10,6 +10,20 @@ I am not affiliated with Eleven Labs and an account with api access is required.
 
 ***All copyrights, trademarks, logos, and assets are the property of their respective owners.***
 
+## Getting started
+
+### Install from NuGet
+
+Install package [`OpenAI` from Nuget](https://www.nuget.org/packages/ElevenLabs-DotNet/).  Here's how via command line:
+
+```powershell
+Install-Package ElevenLabs-DotNet
+```
+
+> Looking to [use OpenAI in the Unity Game Engine](https://github.com/RageAgainstThePixel/com.rest.elevenlabs)? Check out our unity package on OpenUPM:
+>
+>[![openupm](https://img.shields.io/npm/v/com.rest.elevenlabs?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.rest.elevenlabs/)
+
 ---
 
 ## Documentation
