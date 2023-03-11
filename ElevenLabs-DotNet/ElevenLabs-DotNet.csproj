@@ -34,18 +34,15 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Assets\ElevenLabsIcon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Assets\ElevenLabsIcon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
