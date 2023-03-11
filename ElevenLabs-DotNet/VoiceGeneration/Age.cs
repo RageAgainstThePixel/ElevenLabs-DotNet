@@ -8,10 +8,10 @@ namespace ElevenLabs.VoiceGeneration
     {
         [JsonInclude]
         [JsonPropertyName("name")]
-        public string Name { get; }
+        public string Name { get; private set; }
 
         [JsonInclude]
         [JsonPropertyName("code")]
-        public string Code { get; }
+        public string Code { get; private set; }
     }
 }
