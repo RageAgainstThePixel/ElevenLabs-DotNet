@@ -4,6 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RootNamespace>ElevenLabs</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
