@@ -1,0 +1,67 @@
+name: Nuget Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ElevenLabs-DotNet/**
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - ElevenLabs-DotNet/**
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release]
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+
+    - uses: microsoft/setup-msbuild@v1
+
+    - name: Test Package ${{ matrix.configuration }}
+      run: dotnet test --configuration ${{ matrix.configuration }}
+      env:
+        ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
+
+    - name: Publish Nuget Package
+      run: |
+        $out = "${{ github.workspace }}\ElevenLabs-DotNet\bin\${{ matrix.configuration }}"
+
+        if (Test-Path -Path $out) {
+          $packagePath = Get-ChildItem -Path $out -File -Include '*.nupkg' -Recurse
+        }
+
+        if (Test-Path -Path $packagePath) {
+          Write-Host Package path: $packagePath
+        } else {
+          Write-Host Failed to find package at $packagePath
+          exit 1
+        }
+
+        $isRelease = "${{ github.ref == 'refs/heads/main' && matrix.configuration == 'Release' }}"
+
+        if ($isRelease -eq 'true') {
+          dotnet nuget push $packagePath --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        }
+      shell: pwsh
+
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: Nuget Package ${{ matrix.configuration }}
+        path: ${{ github.workspace }}\ElevenLabs-DotNet\bin
