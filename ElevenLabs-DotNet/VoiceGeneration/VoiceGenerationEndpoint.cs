@@ -30,20 +30,20 @@ namespace ElevenLabs.VoiceGeneration
         }
 
         /// <summary>
-        /// 
+        /// Generate a <see cref="Voice"/>.
         /// </summary>
         /// <param name="generatedVoiceRequest"><see cref="GeneratedVoiceRequest"/></param>
-        /// <param name="saveDirectory">The save directory for downloaded audio file.</param>
+        /// <param name="saveDirectory">Optional, The save directory for downloaded audio file.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="Tuple{VoiceId,FilePath}"/>.</returns>
-        public async Task<Tuple<string, string>> GenerateVoiceAsync(GeneratedVoiceRequest generatedVoiceRequest, string saveDirectory, CancellationToken cancellationToken = default)
+        public async Task<Tuple<string, string>> GenerateVoiceAsync(GeneratedVoiceRequest generatedVoiceRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
             var payload = JsonSerializer.Serialize(generatedVoiceRequest, Api.JsonSerializationOptions).ToJsonStringContent();
             var response = await Api.Client.PostAsync($"{GetEndpoint()}/generate-voice", payload, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
             var generatedVoiceId = response.Headers.FirstOrDefault(pair => pair.Key == "generated_voice_id").Value.FirstOrDefault();
-            var rootDirectory = saveDirectory.CreateNewDirectory(nameof(ElevenLabs));
+            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
             var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(VoiceGeneration));
             var filePath = Path.Combine(downloadDirectory, $"{generatedVoiceId}.mp3");
 
@@ -78,7 +78,7 @@ namespace ElevenLabs.VoiceGeneration
         }
 
         /// <summary>
-        /// 
+        /// Clone a <see cref="Voice"/>.
         /// </summary>
         /// <param name="createVoiceRequest"><see cref="CreateVoiceRequest"/>.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>

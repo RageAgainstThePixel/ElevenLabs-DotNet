@@ -24,18 +24,18 @@ namespace ElevenLabs.TextToSpeech
         /// </summary>
         /// <param name="text">Text input to synthesize speech for. Maximum 5000 characters.</param>
         /// <param name="voice"><see cref="Voice"/> to use.</param>
-        /// <param name="saveDirectory">The save directory to save the audio clip.</param>
         /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
+        /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>Downloaded clip path.</returns>
-        public async Task<string> TextToSpeechAsync(string text, Voice voice, string saveDirectory, VoiceSettings voiceSettings = null, CancellationToken cancellationToken = default)
+        public async Task<string> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
             if (text.Length > 5000)
             {
                 throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
             }
 
-            var rootDirectory = saveDirectory.CreateNewDirectory(nameof(ElevenLabs));
+            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
             var downloadDirectory = rootDirectory.CreateNewDirectory("TextToSpeech");
             var fileName = $"{text.GenerateGuid()}.mp3";
             var filePath = Path.Combine(downloadDirectory, fileName);

@@ -38,6 +38,7 @@ namespace ElevenLabs
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
+
             UserEndpoint = new UserEndpoint(this);
             VoicesEndpoint = new VoicesEndpoint(this);
             HistoryEndpoint = new HistoryEndpoint(this);

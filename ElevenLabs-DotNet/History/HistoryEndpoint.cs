@@ -49,9 +49,9 @@ namespace ElevenLabs.History
         /// <param name="saveDirectory">Optional, save directory for the downloaded audio file.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>The path to the downloaded audio file..</returns>
-        public async Task<string> GetHistoryAudioAsync(HistoryItem historyItem, string saveDirectory, CancellationToken cancellationToken = default)
+        public async Task<string> GetHistoryAudioAsync(HistoryItem historyItem, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
-            var rootDirectory = saveDirectory.CreateNewDirectory(nameof(ElevenLabs));
+            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
             var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(History));
             var voiceDirectory = downloadDirectory.CreateNewDirectory(historyItem.VoiceName);
             var filePath = Path.Combine(voiceDirectory, $"{historyItem.Id}.mp3");
@@ -107,17 +107,17 @@ namespace ElevenLabs.History
         /// If more than one history item IDs are provided multiple audio files will be downloaded.
         /// </summary>
         /// <param name="historyItemIds">One or more history item ids queued for download.</param>
-        /// <param name="saveDirectory">The directory path to save the history in.</param>
+        /// <param name="saveDirectory">Optional, The directory path to save the history in.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>A path to the downloaded zip file, or audio file.</returns>
-        public async Task<IReadOnlyList<string>> DownloadHistoryItemsAsync(List<string> historyItemIds, string saveDirectory, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<string>> DownloadHistoryItemsAsync(List<string> historyItemIds, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
             if (historyItemIds is not { Count: not 0 })
             {
                 throw new ArgumentOutOfRangeException(nameof(historyItemIds));
             }
 
-            var audioClips = new ConcurrentBag<string>();
+            var audioClips = new List<string>();
 
             if (historyItemIds.Count == 1)
             {
@@ -130,77 +130,45 @@ namespace ElevenLabs.History
                 var jsonContent = $"{{\"history_item_ids\":[\"{string.Join("\",\"", historyItemIds)}\"]}}".ToJsonStringContent();
                 var response = await Api.Client.PostAsync($"{GetEndpoint()}/download", jsonContent, cancellationToken);
                 await response.CheckResponseAsync(cancellationToken);
-                var unZipTasks = new List<Task>();
                 var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+                var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
+                var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(History));
+                var zipFilePath = $"{downloadDirectory}/history.zip";
 
                 try
                 {
-                    var zipFile = new ZipFile(responseStream);
-
-                    var rootDirectory = Path.Combine(saveDirectory, nameof(ElevenLabs));
-
-                    if (!Directory.Exists(rootDirectory))
+                    if (File.Exists(zipFilePath))
                     {
-                        Directory.CreateDirectory(rootDirectory);
+                        File.Delete(zipFilePath);
                     }
 
-                    var downloadDirectory = Path.Combine(rootDirectory, nameof(History));
+                    var fileStream = new FileStream(zipFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
 
-                    Directory.CreateDirectory(downloadDirectory);
-
-                    foreach (ZipEntry entry in zipFile)
+                    try
                     {
-                        unZipTasks.Add(Task.Run(UnZipAudioClipAsync, cancellationToken));
-
-                        async Task UnZipAudioClipAsync()
-                        {
-                            var filePath = Path.Combine(downloadDirectory, entry.Name);
-
-                            if (File.Exists(filePath))
-                            {
-                                return;
-                            }
-
-                            var parentDirectory = Directory.GetParent(filePath)!;
-
-                            if (!parentDirectory.Exists)
-                            {
-                                Directory.CreateDirectory(parentDirectory.FullName);
-                            }
-
-                            var itemStream = zipFile.GetInputStream(entry);
-
-                            try
-                            {
-                                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write,
-                                    FileShare.None);
-
-                                try
-                                {
-                                    await itemStream.CopyToAsync(fileStream, cancellationToken);
-                                    await fileStream.FlushAsync(cancellationToken);
-                                }
-                                finally
-                                {
-                                    fileStream.Close();
-                                    await fileStream.DisposeAsync();
-                                }
-                            }
-                            finally
-                            {
-                                itemStream.Close();
-                                await itemStream.DisposeAsync();
-                            }
-
-                            audioClips.Add(filePath);
-                        }
+                        await responseStream.CopyToAsync(fileStream, cancellationToken);
+                        await fileStream.FlushAsync(cancellationToken);
                     }
-
-                    await Task.WhenAll(unZipTasks);
+                    finally
+                    {
+                        fileStream.Close();
+                        await fileStream.DisposeAsync();
+                    }
                 }
                 finally
                 {
                     await responseStream.DisposeAsync();
+                }
+
+                try
+                {
+                    ZipFile.ExtractToDirectory(zipFilePath, downloadDirectory, true);
+                    audioClips.AddRange(Directory.GetFiles(downloadDirectory, "*.mp3", SearchOption.AllDirectories));
+                }
+                finally
+                {
+                    File.Delete(zipFilePath);
                 }
             }
 

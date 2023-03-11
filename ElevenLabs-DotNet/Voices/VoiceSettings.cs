@@ -6,12 +6,17 @@ namespace ElevenLabs.Voices
 {
     public sealed class VoiceSettings
     {
-        [JsonInclude]
-        [JsonPropertyName("stability")]
-        public float Stability { get; private set; }
+        [JsonConstructor]
+        public VoiceSettings(float stability, float similarityBoost)
+        {
+            Stability = stability;
+            SimilarityBoost = similarityBoost;
+        }
 
-        [JsonInclude]
+        [JsonPropertyName("stability")]
+        public float Stability { get; }
+
         [JsonPropertyName("similarity_boost")]
-        public float SimilarityBoost { get; private set; }
+        public float SimilarityBoost { get; }
     }
 }
