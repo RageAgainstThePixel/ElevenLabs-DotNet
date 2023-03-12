@@ -72,7 +72,13 @@ namespace ElevenLabs.Voice.Tests
             Assert.NotNull(api.HistoryEndpoint);
             var historyItems = await api.HistoryEndpoint.GetHistoryAsync();
             Assert.NotNull(historyItems);
-            Assert.IsNotEmpty(historyItems);
+
+            if (historyItems.Count == 0)
+            {
+                Console.WriteLine("No History to download");
+                return;
+            }
+
             var singleItem = historyItems.FirstOrDefault();
             var singleItemResult = await api.HistoryEndpoint.DownloadHistoryItemsAsync(new List<string> { singleItem });
             Assert.NotNull(singleItemResult);
