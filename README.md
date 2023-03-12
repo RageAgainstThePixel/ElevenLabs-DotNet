@@ -4,11 +4,25 @@
 [![NuGet version (ElevenLabs-DotNet)](https://img.shields.io/nuget/v/ElevenLabs-DotNet.svg)](https://www.nuget.org/packages/ElevenLabs-DotNet/)
 [![Nuget Publish](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml/badge.svg)](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml)
 
-A non-official Eleven Labs voice synthesis RESTful client.
+A non-official [Eleven Labs](https://elevenlabs.io/) voice synthesis RESTful client.
 
 I am not affiliated with Eleven Labs and an account with api access is required.
 
 ***All copyrights, trademarks, logos, and assets are the property of their respective owners.***
+
+## Getting started
+
+### Install from NuGet
+
+Install package [`ElevenLabs` from Nuget](https://www.nuget.org/packages/ElevenLabs-DotNet/).  Here's how via command line:
+
+```powershell
+Install-Package ElevenLabs-DotNet
+```
+
+> Looking to [use ElevenLabs in the Unity Game Engine](https://github.com/RageAgainstThePixel/com.rest.elevenlabs)? Check out our unity package on OpenUPM:
+>
+>[![openupm](https://img.shields.io/npm/v/com.rest.elevenlabs?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.rest.elevenlabs/)
 
 ---
 
