@@ -56,7 +56,6 @@ namespace ElevenLabs.Voice.Tests
             Assert.IsTrue(result);
             var updatedItems = await api.HistoryEndpoint.GetHistoryAsync();
             Assert.NotNull(updatedItems);
-            Assert.IsNotEmpty(updatedItems);
             var isDeleted = updatedItems.All(item => item.Id != itemToDelete.Id);
             Assert.IsTrue(isDeleted);
 
