@@ -41,33 +41,7 @@ namespace ElevenLabs.Voice.Tests
         }
 
         [Test]
-        public async Task Test_03_DeleteHistoryItem()
-        {
-            var api = new ElevenLabsClient();
-            Assert.NotNull(api.HistoryEndpoint);
-            var historyItems = await api.HistoryEndpoint.GetHistoryAsync();
-            Assert.NotNull(historyItems);
-            Assert.IsNotEmpty(historyItems);
-            var itemToDelete = historyItems.MinBy(item => item.Date);
-            Assert.NotNull(itemToDelete);
-            Console.WriteLine($"Deleting {itemToDelete!.Id}...");
-            var result = await api.HistoryEndpoint.DeleteHistoryItemAsync(itemToDelete);
-            Assert.NotNull(result);
-            Assert.IsTrue(result);
-            var updatedItems = await api.HistoryEndpoint.GetHistoryAsync();
-            Assert.NotNull(updatedItems);
-            Assert.IsNotEmpty(updatedItems);
-            var isDeleted = updatedItems.All(item => item.Id != itemToDelete.Id);
-            Assert.IsTrue(isDeleted);
-
-            foreach (var item in updatedItems.OrderBy(item => item.Date))
-            {
-                Console.WriteLine($"{item.State} {item.Date} | {item.Id} | {item.Text}");
-            }
-        }
-
-        [Test]
-        public async Task Test_04_DownloadAllHistoryItems()
+        public async Task Test_03_DownloadAllHistoryItems()
         {
             var api = new ElevenLabsClient();
             Assert.NotNull(api.HistoryEndpoint);
@@ -82,6 +56,31 @@ namespace ElevenLabs.Voice.Tests
             var results = await api.HistoryEndpoint.DownloadHistoryItemsAsync(downloadItems);
             Assert.NotNull(results);
             Assert.IsNotEmpty(results);
+        }
+
+        [Test]
+        public async Task Test_04_DeleteHistoryItem()
+        {
+            var api = new ElevenLabsClient();
+            Assert.NotNull(api.HistoryEndpoint);
+            var historyItems = await api.HistoryEndpoint.GetHistoryAsync();
+            Assert.NotNull(historyItems);
+            Assert.IsNotEmpty(historyItems);
+            var itemToDelete = historyItems.MinBy(item => item.Date);
+            Assert.NotNull(itemToDelete);
+            Console.WriteLine($"Deleting {itemToDelete!.Id}...");
+            var result = await api.HistoryEndpoint.DeleteHistoryItemAsync(itemToDelete);
+            Assert.NotNull(result);
+            Assert.IsTrue(result);
+            var updatedItems = await api.HistoryEndpoint.GetHistoryAsync();
+            Assert.NotNull(updatedItems);
+            var isDeleted = updatedItems.All(item => item.Id != itemToDelete.Id);
+            Assert.IsTrue(isDeleted);
+
+            foreach (var item in updatedItems.OrderBy(item => item.Date))
+            {
+                Console.WriteLine($"{item.State} {item.Date} | {item.Id} | {item.Text}");
+            }
         }
     }
 }

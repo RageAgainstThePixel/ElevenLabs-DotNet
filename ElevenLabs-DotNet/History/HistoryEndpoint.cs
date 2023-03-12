@@ -98,7 +98,7 @@ namespace ElevenLabs.History
         public async Task<bool> DeleteHistoryItemAsync(string historyId, CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.DeleteAsync($"{GetEndpoint()}/{historyId}", cancellationToken);
-            await response.ReadAsStringAsync(true);
+            await response.ReadAsStringAsync();
             return response.IsSuccessStatusCode;
         }
 

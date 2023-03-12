@@ -163,7 +163,7 @@ namespace ElevenLabs.Voices
             }
 
             var response = await Api.Client.PostAsync($"{GetEndpoint()}/add", form, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(true);
+            var responseAsString = await response.ReadAsStringAsync();
             var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, Api.JsonSerializationOptions);
             var voice = await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
             return voice;
