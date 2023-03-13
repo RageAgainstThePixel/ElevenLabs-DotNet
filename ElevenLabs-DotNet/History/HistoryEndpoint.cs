@@ -103,19 +103,18 @@ namespace ElevenLabs.History
         }
 
         /// <summary>
-        /// Download one or more history items. If one history item ID is provided, we will return a single audio file.
-        /// If more than one history item IDs are provided multiple audio files will be downloaded.
+        /// Download one or more history items.<br/>
+        /// If no ids are specified, then all history items are downloaded.<br/>
+        /// If one history item id is provided, we will return a single audio file.<br/>
+        /// If more than one history item ids are provided multiple audio files will be downloaded.
         /// </summary>
         /// <param name="historyItemIds">One or more history item ids queued for download.</param>
         /// <param name="saveDirectory">Optional, The directory path to save the history in.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>A path to the downloaded zip file, or audio file.</returns>
-        public async Task<IReadOnlyList<string>> DownloadHistoryItemsAsync(List<string> historyItemIds, string saveDirectory = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<string>> DownloadHistoryItemsAsync(List<string> historyItemIds = null, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
-            if (historyItemIds is not { Count: not 0 })
-            {
-                throw new ArgumentOutOfRangeException(nameof(historyItemIds));
-            }
+            historyItemIds ??= (await GetHistoryAsync(cancellationToken)).Select(item => item.Id).ToList();
 
             var audioClips = new List<string>();
 
