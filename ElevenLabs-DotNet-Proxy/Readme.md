@@ -27,7 +27,7 @@ Follow these steps:
 
 1. Setup a new project using either the [ElevenLabs-DotNet](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet) or [com.rest.elevenlabs](https://github.com/RageAgainstThePixel/com.rest.elevenlabs) packages.
 2. Authenticate users with your OAuth provider.
-3. After successful authentication, create a new `ElevenLabsAuthentication` object and pass in the custom token with the prefix `sess-`.
+3. After successful authentication, create a new `ElevenLabsAuthentication` object and pass in the custom token.
 4. Create a new `ElevenLabsClientSettings` object and specify the domain where your intermediate API is located.
 5. Pass your new `auth` and `settings` objects to the `ElevenLabsClient` constructor when you create the client instance.
 
@@ -63,7 +63,7 @@ public partial class Program
         {
             // You will need to implement your own class to properly test
             // custom issued tokens you've setup for your end users.
-            if (!request.Authorization.ToString().Contains(userToken))
+            if (!request["xi-api-key"].ToString().Contains(userToken))
             {
                 throw new AuthenticationException("User is not authorized");
             }

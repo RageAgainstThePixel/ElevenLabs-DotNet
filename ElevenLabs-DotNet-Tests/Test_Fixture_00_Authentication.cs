@@ -6,7 +6,7 @@ using System.IO;
 using System.Security.Authentication;
 using System.Text.Json;
 
-namespace ElevenLabs.Voice.Tests
+namespace ElevenLabs.Tests
 {
     internal class Test_Fixture_00_Authentication
     {
