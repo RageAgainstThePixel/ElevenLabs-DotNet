@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -35,16 +34,8 @@ Release 1.0.0
 I am not affiliated with Eleven Labs and an account with api access is required.
 All copyrights, trademarks, logos, and assets are the property of their respective owners.</Description>
     <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="Assets\ElevenLabsIcon.png">
       <Pack>True</Pack>
@@ -59,5 +50,4 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
 </Project>
