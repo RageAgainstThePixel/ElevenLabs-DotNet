@@ -15,7 +15,9 @@
     <Version>1.0.4</Version>
     <Copyright>2023</Copyright>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <PackageReleaseNotes>Release 1.0.4
+    <PackageReleaseNotes>Release 1.1.0
+- Added support for ElevenLabs-DotNet-Proxy
+Release 1.0.4
 - Updated docs
 - Removed exception when sample item path is null or whitespace
 Release 1.0.3
@@ -28,7 +30,8 @@ Release 1.0.2
 Release 1.0.1
 - Updated docs
 Release 1.0.0
-- Initial Release!</PackageReleaseNotes>
+- Initial Release!
+    </PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>A non-official Eleven Labs voice synthesis RESTful client.
 I am not affiliated with Eleven Labs and an account with api access is required.

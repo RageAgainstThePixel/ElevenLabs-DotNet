@@ -66,16 +66,21 @@ namespace ElevenLabs.Voice.Tests
             var historyItems = await api.HistoryEndpoint.GetHistoryAsync();
             Assert.NotNull(historyItems);
             Assert.IsNotEmpty(historyItems);
-            var itemToDelete = historyItems.FirstOrDefault(item => item.Text.Contains("The quick brown fox jumps over the lazy dog."));
-            Assert.NotNull(itemToDelete);
-            Console.WriteLine($"Deleting {itemToDelete!.Id}...");
-            var result = await api.HistoryEndpoint.DeleteHistoryItemAsync(itemToDelete);
-            Assert.NotNull(result);
-            Assert.IsTrue(result);
+            var itemsToDelete = historyItems.Where(item => item.Text.Contains("The quick brown fox jumps over the lazy dog.")).ToList();
+            Assert.NotNull(itemsToDelete);
+            Assert.IsNotEmpty(itemsToDelete);
+
+            foreach (var historyItem in itemsToDelete)
+            {
+                Console.WriteLine($"Deleting {historyItem.Id}...");
+                var result = await api.HistoryEndpoint.DeleteHistoryItemAsync(historyItem);
+                Assert.NotNull(result);
+                Assert.IsTrue(result);
+            }
+
             var updatedItems = await api.HistoryEndpoint.GetHistoryAsync();
             Assert.NotNull(updatedItems);
-            var isDeleted = updatedItems.All(item => item.Id != itemToDelete.Id);
-            Assert.IsTrue(isDeleted);
+            Assert.That(updatedItems, Has.None.EqualTo(itemsToDelete));
 
             foreach (var item in updatedItems.OrderBy(item => item.Date))
             {
