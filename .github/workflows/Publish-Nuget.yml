@@ -11,57 +11,90 @@ on:
       - '*'
     paths:
       - ElevenLabs-DotNet/**
+    types:
+      - opened
+      - synchronize
 
   workflow_dispatch:
+    inputs:
+      dotnet-version:
+        description: ".NET version to use"
+        required: false
+        default: "6.0.x"
+
+env:
+  DOTNET_VERSION: ${{ github.event.inputs.dotnet-version || '6.0.x' }}
 
 jobs:
   build:
-    strategy:
-      matrix:
-        configuration: [Release]
-
+    if: ${{ !github.event_name == 'pull_request' || !github.event.pull_request.draft }}
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-
     - uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.0.x'
-
+        dotnet-version: ${{ env.DOTNET_VERSION }}
     - uses: microsoft/setup-msbuild@v1
 
-    - name: Test Package ${{ matrix.configuration }}
-      run: dotnet test --configuration ${{ matrix.configuration }}
+    - name: Test Packages
+      run: dotnet test --configuration Release
+      if: ${{ github.ref != 'refs/heads/main' && github.event_name != 'push' }}
       env:
         ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
 
-    - name: Publish Nuget Package
+    - name: Build Pack and Publish NuGet Package
       run: |
-        $out = "${{ github.workspace }}\ElevenLabs-DotNet\bin\${{ matrix.configuration }}"
+        $projectPath = "${{ github.workspace }}\ElevenLabs-DotNet"
+        #$proxyProjectPath = "${{ github.workspace }}\ElevenLabs-DotNet-Proxy"
 
-        if (Test-Path -Path $out) {
-          $packagePath = Get-ChildItem -Path $out -File -Include '*.nupkg' -Recurse
-        }
+        # build all
+        dotnet build --configuration Release
 
-        if (Test-Path -Path $packagePath) {
+        # pack ElevenLabs-DotNet
+        dotnet pack $projectPath --configuration Release --include-symbols
+        $out = "$projectPath\bin\Release"
+        $packagePath = Get-ChildItem -Path $out -File -Include '*.nupkg' -Exclude '*symbols*' -Recurse -ErrorAction SilentlyContinue
+
+        if ($packagePath) {
           Write-Host Package path: $packagePath
         } else {
-          Write-Host Failed to find package at $packagePath
+          Write-Host Failed to find package at $out
           exit 1
         }
 
-        $isRelease = "${{ github.ref == 'refs/heads/main' && matrix.configuration == 'Release' }}"
+        # pack ElevenLabs-DotNet-Proxy
+        #dotnet pack $proxyProjectPath --configuration Release --include-symbols
+        #$proxyOut = "$proxyProjectPath\bin\Release"
+        #$proxyPackagePath = Get-ChildItem -Path $proxyOut -File -Include '*.nupkg' -Exclude '*symbols*' -Recurse -ErrorAction SilentlyContinue
+
+        #if ($proxyPackagePath) {
+        #  Write-Host Package path: $proxyPackagePath
+        #} else {
+        #  Write-Host Failed to find package at $proxyOut
+        #  exit 1
+        #}
+
+        $isRelease = "${{ github.ref == 'refs/heads/main' }}"
 
         if ($isRelease -eq 'true') {
-          dotnet nuget push $packagePath --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+          dotnet nuget push $packagePath.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          #dotnet nuget push $proxyPackagePath.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         }
+
+        $version = $packagePath.Name -replace "^ElevenLabs-DotNet.(.*).nupkg$",'$1'
+        echo "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: pwsh
 
     - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: Nuget Package ${{ matrix.configuration }}
-        path: ${{ github.workspace }}\ElevenLabs-DotNet\bin
+        name: ElevenLabs-DotNet.${{ env.PACKAGE_VERSION }}
+        path: |
+          ${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet.${{ env.PACKAGE_VERSION }}.nupkg
+          ${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet.${{ env.PACKAGE_VERSION }}.symbols.nupkg
+          #${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet-Proxy.${{ env.PACKAGE_VERSION }}.nupkg
+          #${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet-Proxy.${{ env.PACKAGE_VERSION }}.symbols.nupkg
+        if-no-files-found: ignore

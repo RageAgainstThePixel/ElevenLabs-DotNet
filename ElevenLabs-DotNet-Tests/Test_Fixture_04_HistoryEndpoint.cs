@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Voice.Tests
 {
-    internal class Test_Fixture_03_HistoryEndpoint
+    internal class Test_Fixture_04_HistoryEndpoint
     {
         [Test]
         public async Task Test_01_GetHistory()
@@ -66,7 +66,7 @@ namespace ElevenLabs.Voice.Tests
             var historyItems = await api.HistoryEndpoint.GetHistoryAsync();
             Assert.NotNull(historyItems);
             Assert.IsNotEmpty(historyItems);
-            var itemToDelete = historyItems.MinBy(item => item.Date);
+            var itemToDelete = historyItems.FirstOrDefault(item => item.Text.Contains("The quick brown fox jumps over the lazy dog."));
             Assert.NotNull(itemToDelete);
             Console.WriteLine($"Deleting {itemToDelete!.Id}...");
             var result = await api.HistoryEndpoint.DeleteHistoryItemAsync(itemToDelete);

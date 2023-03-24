@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
@@ -13,10 +12,13 @@
     <Authors>Stephen Hodgson</Authors>
     <Title>ElevenLabs-DotNet</Title>
     <Company>RageAgainstThePixel</Company>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Copyright>2023</Copyright>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <PackageReleaseNotes>Release 1.0.3
+    <PackageReleaseNotes>Release 1.0.4
+- Updated docs
+- Removed exception when sample item path is null or whitespace
+Release 1.0.3
 - Updated DownloadHistoryItemsAsync to download all items if no ids are specified
 - Updated docs
 Release 1.0.2
@@ -32,16 +34,8 @@ Release 1.0.0
 I am not affiliated with Eleven Labs and an account with api access is required.
 All copyrights, trademarks, logos, and assets are the property of their respective owners.</Description>
     <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Include="Assets\ElevenLabsIcon.png">
       <Pack>True</Pack>
@@ -56,5 +50,4 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
 </Project>
