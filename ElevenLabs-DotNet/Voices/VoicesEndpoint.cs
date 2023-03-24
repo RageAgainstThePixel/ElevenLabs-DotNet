@@ -144,7 +144,7 @@ namespace ElevenLabs.Voices
                     {
                         if (string.IsNullOrWhiteSpace(sample))
                         {
-                            throw new ArgumentNullException(nameof(sample));
+                            continue;
                         }
 
                         var fileStream = File.OpenRead(sample);
@@ -198,7 +198,7 @@ namespace ElevenLabs.Voices
                     {
                         if (string.IsNullOrWhiteSpace(sample))
                         {
-                            throw new ArgumentNullException(nameof(sample));
+                            continue;
                         }
 
                         var fileStream = File.OpenRead(sample);

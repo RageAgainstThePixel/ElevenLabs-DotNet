@@ -30,6 +30,7 @@ Install-Package ElevenLabs-DotNet
 
 ### Table of Contents
 
+- [Authentication](#authentication)
 - [Text to Speech](#text-to-speech)
 - [Voices](#voices)
   - [Get All Voices](#get-all-voices)
@@ -50,6 +51,56 @@ Install-Package ElevenLabs-DotNet
 - [User](#user)
   - [Get User Info](#get-user-info)
   - [Get Subscription Info](#get-subscription-info)
+
+### Authentication
+
+There are 3 ways to provide your API keys, in order of precedence:
+
+1. [Pass keys directly with constructor](#pass-keys-directly-with-constructor)
+2. [Load key from configuration file](#load-key-from-configuration-file)
+3. [Use System Environment Variables](#use-system-environment-variables)
+
+#### Pass keys directly with constructor
+
+```csharp
+var api = new ElevenLabsClient("yourApiKey");
+```
+
+Or create a `ElevenLabsAuthentication` object manually
+
+```csharp
+var api = new ElevenLabsClient(new ElevenLabsAuthentication("yourApiKey"));
+```
+
+#### Load key from configuration file
+
+Attempts to load api keys from a configuration file, by default `.elevenlabs` in the current directory, optionally traversing up the directory tree or in the user's home directory.
+
+To create a configuration file, create a new text file named `.elevenlabs` and containing the line:
+
+##### Json format
+
+```json
+{
+  "apiKey": "yourApiKey",
+}
+```
+
+You can also load the file directly with known path by calling a static method in Authentication:
+
+```csharp
+var api = new ElevenLabsClient(ElevenLabsAuthentication.LoadFromDirectory("your/path/to/.elevenlabs"));;
+```
+
+#### Use System Environment Variables
+
+Use your system's environment variables specify an api key to use.
+
+- Use `ELEVEN_LABS_API_KEY` for your api key.
+
+```csharp
+var api = new ElevenLabsClient(ElevenLabsAuthentication.LoadFromEnv());
+```
 
 ### [Text to Speech](https://api.elevenlabs.io/docs#/text-to-speech)
 
