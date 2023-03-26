@@ -97,6 +97,6 @@ jobs:
         path: |
           ${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet.${{ env.PACKAGE_VERSION }}.nupkg
           ${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet.${{ env.PACKAGE_VERSION }}.symbols.nupkg
-          #${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet-Proxy.${{ env.PACKAGE_VERSION }}.nupkg
-          #${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet-Proxy.${{ env.PACKAGE_VERSION }}.symbols.nupkg
+          ${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet-Proxy.${{ env.PACKAGE_VERSION }}.nupkg
+          ${{ github.workspace }}/ElevenLabs-DotNet/bin/Release/ElevenLabs-DotNet-Proxy.${{ env.PACKAGE_VERSION }}.symbols.nupkg
         if-no-files-found: ignore
