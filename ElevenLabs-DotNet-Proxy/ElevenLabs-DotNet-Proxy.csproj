@@ -15,7 +15,7 @@
         <PackageTags>ElevenLabs, AI, ML, API, api-proxy, proxy, gateway</PackageTags>
         <Title>ElevenLabs API Proxy</Title>
         <PackageId>ElevenLabs-DotNet-Proxy</PackageId>
-        <Version>1.0.0</Version>
+        <Version>1.0.1</Version>
         <RootNamespace>ElevenLabs.Proxy</RootNamespace>
         <PackageReleaseNotes>Initial Release!</PackageReleaseNotes>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
