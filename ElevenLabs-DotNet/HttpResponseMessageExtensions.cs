@@ -16,7 +16,7 @@ namespace ElevenLabs
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"{methodName} Failed!\n{response.RequestMessage}\n[{response.StatusCode}] {responseAsString}");
+                throw new HttpRequestException($"{methodName} Failed!\n{response.RequestMessage}\n[{response.StatusCode}] {responseAsString}", null, response.StatusCode);
             }
 
             if (debugResponse)
@@ -32,7 +32,7 @@ namespace ElevenLabs
             if (!response.IsSuccessStatusCode)
             {
                 var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
-                throw new HttpRequestException($"{methodName} Failed! HTTP status code: {response.StatusCode} | Response body: {responseAsString}");
+                throw new HttpRequestException($"{methodName} Failed! HTTP status code: {response.StatusCode} | Response body: {responseAsString}", null, response.StatusCode);
             }
         }
     }

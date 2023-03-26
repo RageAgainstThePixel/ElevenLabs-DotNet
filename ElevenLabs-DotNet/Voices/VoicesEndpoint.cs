@@ -33,8 +33,7 @@ namespace ElevenLabs.Voices
 
         public VoicesEndpoint(ElevenLabsClient api) : base(api) { }
 
-        protected override string GetEndpoint()
-            => $"{Api.BaseUrl}voices";
+        protected override string Root => "voices";
 
         /// <summary>
         /// Gets a list of all available voices for a user.
@@ -43,7 +42,7 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
         public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync(GetEndpoint(), cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl(), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, Api.JsonSerializationOptions).Voices;
             var voiceSettingsTasks = new List<Task>();
@@ -69,7 +68,7 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="VoiceSettings"/>.</returns>
         public async Task<VoiceSettings> GetDefaultVoiceSettingsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync($"{GetEndpoint()}/settings/default", cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl("/settings/default"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, Api.JsonSerializationOptions);
         }
@@ -82,7 +81,7 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="VoiceSettings"/>.</returns>
         public async Task<VoiceSettings> GetVoiceSettingsAsync(string voiceId, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync($"{GetEndpoint()}/{voiceId}/settings", cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, Api.JsonSerializationOptions);
         }
@@ -96,7 +95,7 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="Voice"/>.</returns>
         public async Task<Voice> GetVoiceAsync(string voiceId, bool withSettings = true, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync($"{GetEndpoint()}/{voiceId}?with_settings={withSettings}", cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings}"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Voice>(responseAsString, Api.JsonSerializationOptions);
         }
@@ -111,7 +110,7 @@ namespace ElevenLabs.Voices
         public async Task<bool> EditVoiceSettingsAsync(string voiceId, VoiceSettings voiceSettings, CancellationToken cancellationToken = default)
         {
             var payload = JsonSerializer.Serialize(voiceSettings).ToJsonStringContent();
-            var response = await Api.Client.PostAsync($"{GetEndpoint()}/{voiceId}/settings/edit", payload, cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken);
             await response.ReadAsStringAsync();
             return response.IsSuccessStatusCode;
         }
@@ -162,7 +161,7 @@ namespace ElevenLabs.Voices
                 form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
             }
 
-            var response = await Api.Client.PostAsync($"{GetEndpoint()}/add", form, cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl("/add"), form, cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, Api.JsonSerializationOptions);
             var voice = await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
@@ -216,7 +215,7 @@ namespace ElevenLabs.Voices
                 form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
             }
 
-            var response = await Api.Client.PostAsync($"{GetEndpoint()}/{voice.Id}/edit", form, cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}/edit"), form, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
             return response.IsSuccessStatusCode;
         }
@@ -229,7 +228,7 @@ namespace ElevenLabs.Voices
         /// <returns>True, if voice was successfully deleted.</returns>
         public async Task<bool> DeleteVoiceAsync(string voiceId, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.DeleteAsync($"{GetEndpoint()}/{voiceId}", cancellationToken);
+            var response = await Api.Client.DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
             return response.IsSuccessStatusCode;
         }
@@ -245,7 +244,7 @@ namespace ElevenLabs.Voices
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         public async Task<string> GetVoiceSampleAsync(string voiceId, string sampleId, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync($"{GetEndpoint()}/{voiceId}/samples/{sampleId}/audio", cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/samples/{sampleId}/audio"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
             var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
@@ -291,7 +290,7 @@ namespace ElevenLabs.Voices
         /// <returns>True, if <see cref="Voice"/> <see cref="Sample"/> was successfully deleted.</returns>
         public async Task<bool> DeleteVoiceSampleAsync(string voiceId, string sampleId, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.DeleteAsync($"{GetEndpoint()}/{voiceId}/samples/{sampleId}", cancellationToken);
+            var response = await Api.Client.DeleteAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
             return response.IsSuccessStatusCode;
         }

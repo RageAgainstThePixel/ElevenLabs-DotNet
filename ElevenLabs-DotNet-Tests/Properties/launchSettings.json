@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ElevenLabs-DotNet-Tests": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61238;http://localhost:61239"
+    }
+  }
+}

@@ -14,8 +14,7 @@ namespace ElevenLabs.VoiceGeneration
     {
         public VoiceGenerationEndpoint(ElevenLabsClient api) : base(api) { }
 
-        protected override string GetEndpoint()
-            => $"{Api.BaseUrl}voice-generation";
+        protected override string Root => "voice-generation";
 
         /// <summary>
         /// Gets the available voice generation options.
@@ -24,7 +23,7 @@ namespace ElevenLabs.VoiceGeneration
         /// <returns><see cref="GeneratedVoiceOptions"/>.</returns>
         public async Task<GeneratedVoiceOptions> GetVoiceGenerationOptionsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync($"{GetEndpoint()}/generate-voice/parameters", cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, Api.JsonSerializationOptions);
         }
@@ -39,7 +38,7 @@ namespace ElevenLabs.VoiceGeneration
         public async Task<Tuple<string, string>> GenerateVoiceAsync(GeneratedVoiceRequest generatedVoiceRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
             var payload = JsonSerializer.Serialize(generatedVoiceRequest, Api.JsonSerializationOptions).ToJsonStringContent();
-            var response = await Api.Client.PostAsync($"{GetEndpoint()}/generate-voice", payload, cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
             var generatedVoiceId = response.Headers.FirstOrDefault(pair => pair.Key == "generated_voice_id").Value.FirstOrDefault();
@@ -86,7 +85,7 @@ namespace ElevenLabs.VoiceGeneration
         public async Task<Voice> CreateVoiceAsync(CreateVoiceRequest createVoiceRequest, CancellationToken cancellationToken = default)
         {
             var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
-            var response = await Api.Client.PostAsync($"{GetEndpoint()}/create-voice", payload, cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Voice>(responseAsString, Api.JsonSerializationOptions);
         }
