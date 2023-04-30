@@ -185,6 +185,8 @@ var clipPath = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice, def
 Console.WriteLine(clipPath);
 ```
 
+> Note, only a single audio clip is created per text string. If you'd like to get different variations of the audio, you'll need to pass in `deleteCachedFile: true`.
+
 ### [Voices](https://api.elevenlabs.io/docs#/voices)
 
 Access to voices created either by the user or ElevenLabs.
