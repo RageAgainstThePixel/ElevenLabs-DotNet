@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using ElevenLabs.Extensions;
 using ElevenLabs.Voices;
 using System;
 using System.IO;
@@ -25,9 +26,10 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="voice"><see cref="Voice"/> to use.</param>
         /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
         /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
+        /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>Downloaded clip path.</returns>
-        public async Task<string> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, string saveDirectory = null, CancellationToken cancellationToken = default)
+        public async Task<string> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
         {
             if (text.Length > 5000)
             {
@@ -38,6 +40,11 @@ namespace ElevenLabs.TextToSpeech
             var downloadDirectory = rootDirectory.CreateNewDirectory("TextToSpeech");
             var fileName = $"{text.GenerateGuid()}.mp3";
             var filePath = Path.Combine(downloadDirectory, fileName);
+
+            if (File.Exists(filePath) && deleteCachedFile)
+            {
+                File.Delete(filePath);
+            }
 
             if (!File.Exists(filePath))
             {
@@ -69,18 +76,6 @@ namespace ElevenLabs.TextToSpeech
             }
 
             return filePath;
-        }
-
-        /// <summary>
-        /// Converts text into speech using a voice of your choice and returns audio as an audio stream.
-        /// </summary>
-        /// <param name="text">Text input to synthesize speech for.</param>
-        /// <param name="voice"><see cref="Voice"/> to use.</param>
-        /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="voice"/>.</param>
-        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        public Task StreamTextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
         }
     }
 }
