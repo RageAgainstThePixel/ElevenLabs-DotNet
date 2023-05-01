@@ -22,7 +22,6 @@ namespace ElevenLabs.Models
         {
             var response = await Api.Client.GetAsync(GetUrl());
             var responseAsString = await response.ReadAsStringAsync();
-            Console.WriteLine(responseAsString);
             return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, Api.JsonSerializationOptions);
         }
     }
