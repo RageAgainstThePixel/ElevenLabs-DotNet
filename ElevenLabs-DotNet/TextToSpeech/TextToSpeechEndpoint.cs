@@ -1,6 +1,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using ElevenLabs.Extensions;
+using ElevenLabs.Models;
 using ElevenLabs.Voices;
 using System;
 using System.IO;
@@ -25,17 +26,17 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="text">Text input to synthesize speech for. Maximum 5000 characters.</param>
         /// <param name="voice"><see cref="Voice"/> to use.</param>
         /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
+        /// <param name="model">Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.</param>
         /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
         /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>Downloaded clip path.</returns>
-        public async Task<string> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
+        public async Task<string> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
         {
             if (text.Length > 5000)
             {
                 throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
             }
-
             var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
             var downloadDirectory = rootDirectory.CreateNewDirectory("TextToSpeech");
             var fileName = $"{text.GenerateGuid()}.mp3";
@@ -49,7 +50,7 @@ namespace ElevenLabs.TextToSpeech
             if (!File.Exists(filePath))
             {
                 var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await Api.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
-                var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, defaultVoiceSettings)).ToJsonStringContent();
+                var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model ?? Model.MonoLingualV1, defaultVoiceSettings)).ToJsonStringContent();
                 var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}"), payload, cancellationToken);
                 await response.CheckResponseAsync(cancellationToken);
                 var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
