@@ -37,6 +37,12 @@ namespace ElevenLabs.TextToSpeech
             {
                 throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
             }
+
+            if (voice == null)
+            {
+                throw new ArgumentNullException(nameof(voice));
+            }
+
             var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
             var downloadDirectory = rootDirectory.CreateNewDirectory("TextToSpeech");
             var fileName = $"{text.GenerateGuid()}.mp3";
