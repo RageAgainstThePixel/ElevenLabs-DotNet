@@ -82,6 +82,11 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="VoiceSettings"/>.</returns>
         public async Task<VoiceSettings> GetVoiceSettingsAsync(string voiceId, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(voiceId))
+            {
+                throw new ArgumentNullException(nameof(voiceId));
+            }
+
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, Api.JsonSerializationOptions);
@@ -96,6 +101,11 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="Voice"/>.</returns>
         public async Task<Voice> GetVoiceAsync(string voiceId, bool withSettings = true, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(voiceId))
+            {
+                throw new ArgumentNullException(nameof(voiceId));
+            }
+
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings}"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Voice>(responseAsString, Api.JsonSerializationOptions);
@@ -110,6 +120,11 @@ namespace ElevenLabs.Voices
         /// <returns>True, if voice settings was successfully edited.</returns>
         public async Task<bool> EditVoiceSettingsAsync(string voiceId, VoiceSettings voiceSettings, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(voiceId))
+            {
+                throw new ArgumentNullException(nameof(voiceId));
+            }
+
             var payload = JsonSerializer.Serialize(voiceSettings).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken);
             await response.ReadAsStringAsync();
@@ -229,6 +244,11 @@ namespace ElevenLabs.Voices
         /// <returns>True, if voice was successfully deleted.</returns>
         public async Task<bool> DeleteVoiceAsync(string voiceId, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(voiceId))
+            {
+                throw new ArgumentNullException(nameof(voiceId));
+            }
+
             var response = await Api.Client.DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
             return response.IsSuccessStatusCode;
@@ -245,6 +265,16 @@ namespace ElevenLabs.Voices
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         public async Task<string> GetVoiceSampleAsync(string voiceId, string sampleId, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(voiceId))
+            {
+                throw new ArgumentNullException(nameof(voiceId));
+            }
+
+            if (string.IsNullOrWhiteSpace(sampleId))
+            {
+                throw new ArgumentNullException(nameof(sampleId));
+            }
+
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/samples/{sampleId}/audio"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
@@ -291,6 +321,16 @@ namespace ElevenLabs.Voices
         /// <returns>True, if <see cref="Voice"/> <see cref="Sample"/> was successfully deleted.</returns>
         public async Task<bool> DeleteVoiceSampleAsync(string voiceId, string sampleId, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(voiceId))
+            {
+                throw new ArgumentNullException(nameof(voiceId));
+            }
+
+            if (string.IsNullOrWhiteSpace(sampleId))
+            {
+                throw new ArgumentNullException(nameof(sampleId));
+            }
+
             var response = await Api.Client.DeleteAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
             return response.IsSuccessStatusCode;

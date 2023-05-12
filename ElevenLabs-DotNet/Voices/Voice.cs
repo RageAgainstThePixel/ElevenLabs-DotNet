@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -78,5 +79,55 @@ namespace ElevenLabs.Voices
         public static Voice Sam { get; } = new Voice("yoZ06aMxZJJ28mfd3POQ");
 
         #endregion Premade Voices
+
+        public bool Equals(Voice other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return string.IsNullOrWhiteSpace(Id);
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Name == other.Name &&
+                   Id == other.Id &&
+                   Equals(Samples, other.Samples) &&
+                   Category == other.Category &&
+                   Equals(Labels, other.Labels) &&
+                   PreviewUrl == other.PreviewUrl &&
+                   Equals(AvailableForTiers, other.AvailableForTiers) &&
+                   Equals(Settings, other.Settings);
+        }
+
+        public override bool Equals(object voice)
+            => ReferenceEquals(this, voice) || voice is Voice other && Equals(other);
+
+        public override int GetHashCode()
+            => HashCode.Combine(Name, Id, Samples, Category, Labels, PreviewUrl, AvailableForTiers, Settings);
+
+        public static bool operator !=(Voice left, Voice right) => !(left == right);
+
+        public static bool operator ==(Voice left, Voice right)
+        {
+            if (left is null && right is null)
+            {
+                return true;
+            }
+
+            if (left is null)
+            {
+                return string.IsNullOrWhiteSpace(right.Id);
+            }
+
+            if (right is null)
+            {
+                return string.IsNullOrWhiteSpace(left.Id);
+            }
+
+            return left.Equals(right);
+        }
     }
 }
