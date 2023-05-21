@@ -4,6 +4,7 @@ using ElevenLabs.Extensions;
 using ElevenLabs.Models;
 using ElevenLabs.Voices;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -43,9 +44,17 @@ namespace ElevenLabs.TextToSpeech
                 throw new ArgumentNullException(nameof(voice));
             }
 
+            if (string.IsNullOrWhiteSpace(voice.Name))
+            {
+                Console.WriteLine("Voice details not found! To speed up this call, cache the voice details before making this request.");
+                voice = await Api.VoicesEndpoint.GetVoiceAsync(voice, cancellationToken: cancellationToken);
+            }
+
             var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
-            var downloadDirectory = rootDirectory.CreateNewDirectory("TextToSpeech");
-            var fileName = $"{text.GenerateGuid()}.mp3";
+            var speechToTextDirectory = rootDirectory.CreateNewDirectory(nameof(TextToSpeech));
+            var downloadDirectory = speechToTextDirectory.CreateNewDirectory(voice.Name);
+            var clipGuid = $"{voice.Id}{text}".GenerateGuid().ToString();
+            var fileName = $"{clipGuid}.mp3";
             var filePath = Path.Combine(downloadDirectory, fileName);
 
             if (File.Exists(filePath) && deleteCachedFile)
