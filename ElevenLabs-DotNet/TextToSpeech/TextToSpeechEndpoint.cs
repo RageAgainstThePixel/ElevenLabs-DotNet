@@ -39,7 +39,8 @@ namespace ElevenLabs.TextToSpeech
                 throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
             }
 
-            if (voice == null)
+            if (voice == null ||
+                string.IsNullOrWhiteSpace(voice.Id))
             {
                 throw new ArgumentNullException(nameof(voice));
             }

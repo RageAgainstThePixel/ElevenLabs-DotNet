@@ -14,9 +14,9 @@ namespace ElevenLabs.Voices
         }
 
         [JsonPropertyName("stability")]
-        public float Stability { get; }
+        public float Stability { get; set; }
 
         [JsonPropertyName("similarity_boost")]
-        public float SimilarityBoost { get; }
+        public float SimilarityBoost { get; set; }
     }
 }
