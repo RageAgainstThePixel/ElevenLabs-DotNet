@@ -21,8 +21,10 @@ namespace ElevenLabs.Voices
 
         [JsonPropertyName("similarity_boost")]
         public float SimilarityBoost { get; set; }
+
         [JsonPropertyName("style")]
         public float Style { get; set; }
+
         [JsonPropertyName("use_speaker_boost")]
         public Boolean SpeakerBoost { get; set; }
     }
