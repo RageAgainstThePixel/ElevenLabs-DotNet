@@ -1,6 +1,5 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace ElevenLabs.Voices
@@ -26,6 +25,6 @@ namespace ElevenLabs.Voices
         public float Style { get; set; }
 
         [JsonPropertyName("use_speaker_boost")]
-        public Boolean SpeakerBoost { get; set; }
+        public bool SpeakerBoost { get; set; }
     }
 }
