@@ -8,12 +8,12 @@ namespace ElevenLabs.Voices
     public sealed class VoiceSettings
     {
         [JsonConstructor]
-        public VoiceSettings(float stability, float similarityBoost, Boolean speakerboost=true, float style=0.45f)
+        public VoiceSettings(float stability, float similarityBoost, bool speakerBoost = true, float style = 0.45f)
         {
             Stability = stability;
             SimilarityBoost = similarityBoost;
             Style = style;
-            SpeakerBoost = speakerboost;
+            SpeakerBoost = speakerBoost;
         }
 
         [JsonPropertyName("stability")]
