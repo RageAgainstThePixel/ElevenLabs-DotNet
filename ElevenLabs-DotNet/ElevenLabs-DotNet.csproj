@@ -1,78 +1,86 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RootNamespace>ElevenLabs</RootNamespace>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
-    <Authors>Stephen Hodgson</Authors>
-    <Title>ElevenLabs-DotNet</Title>
-    <Company>RageAgainstThePixel</Company>
-    <Copyright>2023</Copyright>
-    <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <Version>1.3.5</Version>
-    <PackageReleaseNotes>Version 1.3.5
-- Updated voice settings
-Version 1.3.4
-- Added VoiceSettings setters for convience
-- Added voice validation in tts endpoint
-Version 1.3.3
-- Assign default voice names
-- Get voice details if missing in tts
-Version 1.3.2
-- Added voice equality operators
-- Added better parameter validation checks in Endpoints
-Version 1.3.0
-- Added ModelsEndpoint
-- Updated TextToSpeech.TextToSpeechAsync with optional Model parameter. Defaults to eleven_monolingual_v1
-Version 1.2.1
-- Updated docs
-Version 1.2.0
-- Added ability to create voice from Id
-- Refactored internal extension classes
-- Fixed auth parsing
-- Added ability to load configuration file from specific path
-- Added optional parameter deleteCachedFile to TextToSpeechEndpoint.TextToSpeechAsync. Default is false
-Version 1.1.0
-- Added support for ElevenLabs-DotNet-Proxy
-Version 1.0.4
-- Updated docs
-- Removed exception when sample item path is null or whitespace
-Version 1.0.3
-- Updated DownloadHistoryItemsAsync to download all items if no ids are specified
-- Updated docs
-Version 1.0.2
-- Added VoiceGenerationEndpoint
-- Added unit tests for voice design and instant voice cloning
-- Updated docs
-Version 1.0.1
-- Updated docs
-Version 1.0.0
-- Initial Release!
-    </PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Description>A non-official Eleven Labs voice synthesis RESTful client.
-I am not affiliated with Eleven Labs and an account with api access is required.
-All copyrights, trademarks, logos, and assets are the property of their respective owners.</Description>
-    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="Assets\ElevenLabsIcon.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net48;net6.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<RootNamespace>ElevenLabs</RootNamespace>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
+		<Authors>Stephen Hodgson</Authors>
+		<Title>ElevenLabs-DotNet</Title>
+		<Company>RageAgainstThePixel</Company>
+		<Copyright>2023</Copyright>
+		<PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
+		<Version>1.3.5</Version>
+		<PackageReleaseNotes>
+			Version 1.3.5
+			- Updated voice settings
+			Version 1.3.4
+			- Added VoiceSettings setters for convience
+			- Added voice validation in tts endpoint
+			Version 1.3.3
+			- Assign default voice names
+			- Get voice details if missing in tts
+			Version 1.3.2
+			- Added voice equality operators
+			- Added better parameter validation checks in Endpoints
+			Version 1.3.0
+			- Added ModelsEndpoint
+			- Updated TextToSpeech.TextToSpeechAsync with optional Model parameter. Defaults to eleven_monolingual_v1
+			Version 1.2.1
+			- Updated docs
+			Version 1.2.0
+			- Added ability to create voice from Id
+			- Refactored internal extension classes
+			- Fixed auth parsing
+			- Added ability to load configuration file from specific path
+			- Added optional parameter deleteCachedFile to TextToSpeechEndpoint.TextToSpeechAsync. Default is false
+			Version 1.1.0
+			- Added support for ElevenLabs-DotNet-Proxy
+			Version 1.0.4
+			- Updated docs
+			- Removed exception when sample item path is null or whitespace
+			Version 1.0.3
+			- Updated DownloadHistoryItemsAsync to download all items if no ids are specified
+			- Updated docs
+			Version 1.0.2
+			- Added VoiceGenerationEndpoint
+			- Added unit tests for voice design and instant voice cloning
+			- Updated docs
+			Version 1.0.1
+			- Updated docs
+			Version 1.0.0
+			- Initial Release!
+		</PackageReleaseNotes>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<Description>
+			A non-official Eleven Labs voice synthesis RESTful client.
+			I am not affiliated with Eleven Labs and an account with api access is required.
+			All copyrights, trademarks, logos, and assets are the property of their respective owners.
+		</Description>
+		<PackageIcon>ElevenLabsIcon.png</PackageIcon>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="Assets\ElevenLabsIcon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Condition="'$(TargetFramework)' == 'net48'" Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+		<PackageReference Condition="'$(TargetFramework)' == 'net48'" Include="System.Net.Http" Version="4.3.4" />
+		<PackageReference Condition="'$(TargetFramework)' == 'net48'" Include="System.Text.Json" Version="7.0.3" />
+	</ItemGroup>
 </Project>

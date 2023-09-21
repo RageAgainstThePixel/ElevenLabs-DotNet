@@ -62,7 +62,12 @@ namespace ElevenLabs.History
             var response = await Api.Client.GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
+#if NET48
+            var responseStream = await response.Content.ReadAsStreamAsync();
+#else
             var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#endif
+
 
             try
             {
@@ -70,18 +75,27 @@ namespace ElevenLabs.History
 
                 try
                 {
-                    await responseStream.CopyToAsync(fileStream, cancellationToken);
+                    await responseStream.CopyToAsync(fileStream, 81920, cancellationToken);
+
                     await fileStream.FlushAsync(cancellationToken);
                 }
                 finally
                 {
                     fileStream.Close();
+
+#if !NET48
                     await fileStream.DisposeAsync();
+#endif
+
+
                 }
             }
             finally
             {
+#if !NET48
                 await responseStream.DisposeAsync();
+#endif
+
             }
 
             return filePath;
@@ -127,7 +141,13 @@ namespace ElevenLabs.History
                 var jsonContent = $"{{\"history_item_ids\":[\"{string.Join("\",\"", historyItemIds)}\"]}}".ToJsonStringContent();
                 var response = await Api.Client.PostAsync(GetUrl("/download"), jsonContent, cancellationToken);
                 await response.CheckResponseAsync(cancellationToken);
+
+#if NET48
+                var responseStream = await response.Content.ReadAsStreamAsync();
+#else
                 var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#endif
+
 
                 var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
                 var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(History));
@@ -144,23 +164,34 @@ namespace ElevenLabs.History
 
                     try
                     {
-                        await responseStream.CopyToAsync(fileStream, cancellationToken);
+                        await responseStream.CopyToAsync(fileStream, 81920, cancellationToken);
                         await fileStream.FlushAsync(cancellationToken);
                     }
                     finally
                     {
                         fileStream.Close();
+
+#if !NET48
                         await fileStream.DisposeAsync();
+#endif
+
                     }
                 }
                 finally
                 {
+#if !NET48
                     await responseStream.DisposeAsync();
+#endif
                 }
 
                 try
                 {
+#if NET48
+                    ZipFile.ExtractToDirectory(zipFilePath, downloadDirectory);
+#else
                     ZipFile.ExtractToDirectory(zipFilePath, downloadDirectory, true);
+#endif
+
                     audioClips.AddRange(Directory.GetFiles(downloadDirectory, "*.mp3", SearchOption.AllDirectories));
                 }
                 finally

@@ -16,7 +16,12 @@ namespace ElevenLabs.Extensions
 
             if (!response.IsSuccessStatusCode)
             {
+#if NET48
+                throw new HttpRequestException($"{methodName} Failed!\n{response.RequestMessage}\n[{response.StatusCode}] {responseAsString}");
+#else
                 throw new HttpRequestException($"{methodName} Failed!\n{response.RequestMessage}\n[{response.StatusCode}] {responseAsString}", null, response.StatusCode);
+#endif
+
             }
 
             if (debugResponse)
@@ -31,8 +36,15 @@ namespace ElevenLabs.Extensions
         {
             if (!response.IsSuccessStatusCode)
             {
+
+#if NET48
+                var responseAsString = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"{methodName} Failed! HTTP status code: {response.StatusCode} | Response body: {responseAsString}");
+#else
                 var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
                 throw new HttpRequestException($"{methodName} Failed! HTTP status code: {response.StatusCode} | Response body: {responseAsString}", null, response.StatusCode);
+#endif
+
             }
         }
     }

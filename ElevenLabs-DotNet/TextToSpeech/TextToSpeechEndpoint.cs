@@ -69,7 +69,13 @@ namespace ElevenLabs.TextToSpeech
                 var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model ?? Model.MonoLingualV1, defaultVoiceSettings)).ToJsonStringContent();
                 var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}"), payload, cancellationToken);
                 await response.CheckResponseAsync(cancellationToken);
+
+#if NET48
+                var responseStream = await response.Content.ReadAsStreamAsync();
+#else
                 var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#endif
+
 
                 try
                 {
@@ -77,18 +83,24 @@ namespace ElevenLabs.TextToSpeech
 
                     try
                     {
-                        await responseStream.CopyToAsync(fileStream, cancellationToken);
+
+                        await responseStream.CopyToAsync(fileStream, 81920, cancellationToken);
                         await fileStream.FlushAsync(cancellationToken);
                     }
                     finally
                     {
                         fileStream.Close();
+#if !NET48
                         await fileStream.DisposeAsync();
+#endif
+
                     }
                 }
                 finally
                 {
+#if !NET48
                     await responseStream.DisposeAsync();
+#endif
                 }
             }
 

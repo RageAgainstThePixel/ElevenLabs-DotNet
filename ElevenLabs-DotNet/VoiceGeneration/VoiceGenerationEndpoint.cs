@@ -52,7 +52,11 @@ namespace ElevenLabs.VoiceGeneration
                 File.Delete(filePath);
             }
 
+#if NET48
+            var responseStream = await response.Content.ReadAsStreamAsync();
+#else
             var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+#endif
 
             try
             {
@@ -60,18 +64,23 @@ namespace ElevenLabs.VoiceGeneration
 
                 try
                 {
-                    await responseStream.CopyToAsync(fileStream, cancellationToken);
+                    await responseStream.CopyToAsync(fileStream, 81920, cancellationToken);
                     await fileStream.FlushAsync(cancellationToken);
                 }
                 finally
                 {
                     fileStream.Close();
+#if !NET48
                     await fileStream.DisposeAsync();
+#endif
+
                 }
             }
             finally
             {
+#if !NET48
                 await responseStream.DisposeAsync();
+#endif
             }
 
             return new Tuple<string, string>(generatedVoiceId, filePath);
