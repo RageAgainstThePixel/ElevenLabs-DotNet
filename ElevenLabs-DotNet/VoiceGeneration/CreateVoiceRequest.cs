@@ -6,15 +6,19 @@ namespace ElevenLabs.VoiceGeneration
 {
     public sealed class CreateVoiceRequest
     {
-        public CreateVoiceRequest(string voiceName, string generatedVoiceId = null)
+        public CreateVoiceRequest(string voiceName, string description, string generatedVoiceId = null)
         {
             VoiceName = voiceName;
+            Description = description;
             GeneratedVoiceId = generatedVoiceId;
         }
 
         [JsonInclude]
         [JsonPropertyName("voice_name")]
         public string VoiceName { get; }
+
+        [JsonPropertyName("voice_description")]
+        public string Description { get; }
 
         [JsonInclude]
         [JsonPropertyName("generated_voice_id")]
