@@ -42,6 +42,10 @@ namespace ElevenLabs.Voices
         public IReadOnlyList<string> AvailableForTiers { get; private set; }
 
         [JsonInclude]
+        [JsonPropertyName("high_quality_base_model_ids")]
+        public IReadOnlyList<string> HighQualityBaseModelIds { get; private set; }
+
+        [JsonInclude]
         [JsonPropertyName("settings")]
         public VoiceSettings Settings { get; internal set; }
 
@@ -99,6 +103,7 @@ namespace ElevenLabs.Voices
                    Equals(Labels, other.Labels) &&
                    PreviewUrl == other.PreviewUrl &&
                    Equals(AvailableForTiers, other.AvailableForTiers) &&
+                   Equals(HighQualityBaseModelIds, other.HighQualityBaseModelIds) &&
                    Equals(Settings, other.Settings);
         }
 

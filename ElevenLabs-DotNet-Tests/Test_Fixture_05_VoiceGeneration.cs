@@ -30,7 +30,7 @@ namespace ElevenLabs.Tests
             var (generatedVoiceId, audioFilePath) = await ElevenLabsClient.VoiceGenerationEndpoint.GenerateVoiceAsync(generateRequest);
             Console.WriteLine(generatedVoiceId);
             Console.WriteLine(audioFilePath);
-            var createVoiceRequest = new CreateVoiceRequest("Test Voice Lab Create Voice", generatedVoiceId);
+            var createVoiceRequest = new CreateVoiceRequest("Test Voice Lab Create Voice", "This is a test voice", generatedVoiceId);
             File.Delete(audioFilePath);
             Assert.NotNull(createVoiceRequest);
             var result = await ElevenLabsClient.VoiceGenerationEndpoint.CreateVoiceAsync(createVoiceRequest);
