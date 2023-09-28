@@ -45,7 +45,6 @@ namespace ElevenLabs.Voices
         [JsonPropertyName("high_quality_base_model_ids")]
         public IReadOnlyList<string> HighQualityBaseModelIds { get; private set; }
 
-
         [JsonInclude]
         [JsonPropertyName("settings")]
         public VoiceSettings Settings { get; internal set; }
