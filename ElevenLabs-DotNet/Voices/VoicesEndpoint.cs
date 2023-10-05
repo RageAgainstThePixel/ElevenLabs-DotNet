@@ -135,6 +135,15 @@ namespace ElevenLabs.Voices
         /// Add a new voice to your collection of voices in VoiceLab.
         /// </summary>
         /// <param name="name">Name of the voice you want to add.</param>
+        /// <param name="labels">Optional, labels for the new voice.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        public Task<Voice> AddVoiceAsync(string name, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+            => AddVoiceAsync(name, Enumerable.Empty<string>(), labels, cancellationToken);
+
+        /// <summary>
+        /// Add a new voice to your collection of voices in VoiceLab.
+        /// </summary>
+        /// <param name="name">Name of the voice you want to add.</param>
         /// <param name="samplePaths">Collection of file paths to use as samples for the new voice.</param>
         /// <param name="labels">Optional, labels for the new voice.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
@@ -225,6 +234,16 @@ namespace ElevenLabs.Voices
             var voice = await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
             return voice;
         }
+
+        /// <summary>
+        /// Edit a voice created by you.
+        /// </summary>
+        /// <param name="voice">The <see cref="Voice"/> to edit.</param>
+        /// <param name="labels">The labels to set on the <see cref="Voice"/> description.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>True, if voice was successfully edited.</returns>
+        public Task<bool> EditVoiceAsync(Voice voice, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+            => EditVoiceAsync(voice, Enumerable.Empty<string>(), labels, cancellationToken);
 
         /// <summary>
         /// Edit a voice created by you.
