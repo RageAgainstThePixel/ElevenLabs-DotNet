@@ -34,23 +34,6 @@ namespace ElevenLabs.TextToSpeech
         /// <returns>Downloaded clip path.</returns>
         public async Task<string> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
         {
-            if (text.Length > 5000)
-            {
-                throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
-            }
-
-            if (voice == null ||
-                string.IsNullOrWhiteSpace(voice.Id))
-            {
-                throw new ArgumentNullException(nameof(voice));
-            }
-
-            if (string.IsNullOrWhiteSpace(voice.Name))
-            {
-                Console.WriteLine("Voice details not found! To speed up this call, cache the voice details before making this request.");
-                voice = await Api.VoicesEndpoint.GetVoiceAsync(voice, cancellationToken: cancellationToken);
-            }
-
             var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
             var speechToTextDirectory = rootDirectory.CreateNewDirectory(nameof(TextToSpeech));
             var downloadDirectory = speechToTextDirectory.CreateNewDirectory(voice.Name);
@@ -65,12 +48,7 @@ namespace ElevenLabs.TextToSpeech
 
             if (!File.Exists(filePath))
             {
-                var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await Api.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
-                var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model ?? Model.MonoLingualV1, defaultVoiceSettings)).ToJsonStringContent();
-                var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}"), payload, cancellationToken);
-                await response.CheckResponseAsync(cancellationToken);
-                var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-
+                var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, saveDirectory, deleteCachedFile, cancellationToken);
                 try
                 {
                     var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
@@ -93,6 +71,64 @@ namespace ElevenLabs.TextToSpeech
             }
 
             return filePath;
+        }
+
+        /// <summary>
+        /// Converts text into speech using a voice of your choice and returns audio.
+        /// </summary>
+        /// <param name="text">Text input to synthesize speech for. Maximum 5000 characters.</param>
+        /// <param name="voice"><see cref="Voice"/> to use.</param>
+        /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
+        /// <param name="model">Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.</param>
+        /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
+        /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>Downloaded clip path.</returns>
+        public async Task<byte[]> TextToSpeechAsyncRaw(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
+        {
+            var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, saveDirectory, deleteCachedFile, cancellationToken);
+            using var memoryStream = new MemoryStream();
+            responseStream.CopyTo(memoryStream);
+            return memoryStream.ToArray();
+        }
+
+
+
+        /// <summary>
+        /// Converts text into speech using a voice of your choice and returns audio.
+        /// </summary>
+        /// <param name="text">Text input to synthesize speech for. Maximum 5000 characters.</param>
+        /// <param name="voice"><see cref="Voice"/> to use.</param>
+        /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
+        /// <param name="model">Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.</param>
+        /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
+        /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>Downloaded clip path.</returns>
+        private async Task<Stream> TextToSpeechStreamAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
+        {
+            if (text.Length > 5000)
+            {
+                throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
+            }
+
+            if (voice == null ||
+                string.IsNullOrWhiteSpace(voice.Id))
+            {
+                throw new ArgumentNullException(nameof(voice));
+            }
+
+            if (string.IsNullOrWhiteSpace(voice.Name))
+            {
+                Console.WriteLine("Voice details not found! To speed up this call, cache the voice details before making this request.");
+                voice = await Api.VoicesEndpoint.GetVoiceAsync(voice, cancellationToken: cancellationToken);
+            }
+
+            var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await Api.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
+            var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model ?? Model.MonoLingualV1, defaultVoiceSettings)).ToJsonStringContent();
+            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}"), payload, cancellationToken);
+            await response.CheckResponseAsync(cancellationToken);
+            return await response.Content.ReadAsStreamAsync(cancellationToken);
         }
     }
 }
