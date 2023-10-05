@@ -84,7 +84,7 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>Downloaded clip path.</returns>
-        public async Task<byte[]> TextToSpeechAsyncRaw(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
+        public async Task<byte[]> TextToSpeechRawAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
         {
             var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, saveDirectory, deleteCachedFile, cancellationToken);
             using var memoryStream = new MemoryStream();
