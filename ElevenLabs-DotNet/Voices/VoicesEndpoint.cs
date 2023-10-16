@@ -138,51 +138,8 @@ namespace ElevenLabs.Voices
         /// <param name="samplePaths">Collection of file paths to use as samples for the new voice.</param>
         /// <param name="labels">Optional, labels for the new voice.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        public async Task<Voice> AddVoiceAsync(string name, IEnumerable<string> samplePaths = null, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
-        {
-            var form = new MultipartFormDataContent();
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            form.Add(new StringContent(name), "name");
-
-            if (samplePaths != null)
-            {
-                samplePaths = samplePaths.ToList();
-
-                if (samplePaths.Any())
-                {
-                    foreach (var sample in samplePaths)
-                    {
-                        if (string.IsNullOrWhiteSpace(sample))
-                        {
-                            continue;
-                        }
-
-                        var fileStream = File.OpenRead(sample);
-                        var stream = new MemoryStream();
-                        await fileStream.CopyToAsync(stream, cancellationToken);
-                        form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
-                        await fileStream.DisposeAsync();
-                        await stream.DisposeAsync();
-                    }
-                }
-            }
-
-            if (labels != null)
-            {
-                form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
-            }
-
-            var response = await Api.Client.PostAsync(GetUrl("/add"), form, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
-            var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, Api.JsonSerializationOptions);
-            var voice = await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
-            return voice;
-        }
+        public Task<Voice> AddVoiceAsync(string name, IEnumerable<string> samplePaths = null, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+            => AddVoiceAsync(name, c => c.AddSamples(samplePaths, cancellationToken), labels, cancellationToken);
 
         /// <summary>
         /// Add a new voice to your collection of voices in VoiceLab.
@@ -191,7 +148,17 @@ namespace ElevenLabs.Voices
         /// <param name="samples">Collection of samples for the new voice.</param>
         /// <param name="labels">Optional, labels for the new voice.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        public async Task<Voice> AddVoiceAsync(string name, IEnumerable<byte[]> samples, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+        public Task<Voice> AddVoiceRawAsync(string name, IEnumerable<byte[]> samples, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+            => AddVoiceAsync(name, c => c.AddSamples(samples), labels, cancellationToken);
+
+        /// <summary>
+        /// Add a new voice to your collection of voices in VoiceLab.
+        /// </summary>
+        /// <param name="name">Name of the voice you want to add.</param>
+        /// <param name="fAddSamples">A function that will add the samples to the provided MultipartFormDataContent.</param>
+        /// <param name="labels">Optional, labels for the new voice.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        private async Task<Voice> AddVoiceAsync(string name, Func<MultipartFormDataContent, Task> fAddSamples, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
         {
             var form = new MultipartFormDataContent();
 
@@ -202,17 +169,7 @@ namespace ElevenLabs.Voices
 
             form.Add(new StringContent(name), "name");
 
-            if (samples != null)
-            {
-                foreach (var sample in samples)
-                {
-                    if (sample.Length == 0)
-                    {
-                        throw new ArgumentException("Empty samples are not supported.");
-                    }
-                    form.Add(new ByteArrayContent(sample), "files");
-                }
-            }
+            await fAddSamples.Invoke(form);
 
             if (labels != null)
             {
@@ -234,49 +191,8 @@ namespace ElevenLabs.Voices
         /// <param name="labels">The labels to set on the <see cref="Voice"/> description.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>True, if voice was successfully edited.</returns>
-        public async Task<bool> EditVoiceAsync(Voice voice, IEnumerable<string> samplePaths = null, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
-        {
-            var form = new MultipartFormDataContent();
-
-            if (voice == null)
-            {
-                throw new ArgumentNullException(nameof(voice));
-            }
-
-            form.Add(new StringContent(voice.Name), "name");
-
-            if (samplePaths != null)
-            {
-                samplePaths = samplePaths.ToList();
-
-                if (samplePaths.Any())
-                {
-                    foreach (var sample in samplePaths)
-                    {
-                        if (string.IsNullOrWhiteSpace(sample))
-                        {
-                            continue;
-                        }
-
-                        var fileStream = File.OpenRead(sample);
-                        var stream = new MemoryStream();
-                        await fileStream.CopyToAsync(stream, cancellationToken);
-                        form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
-                        await fileStream.DisposeAsync();
-                        await stream.DisposeAsync();
-                    }
-                }
-            }
-
-            if (labels != null)
-            {
-                form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
-            }
-
-            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}/edit"), form, cancellationToken);
-            await response.CheckResponseAsync(cancellationToken);
-            return response.IsSuccessStatusCode;
-        }
+        public Task<bool> EditVoiceAsync(Voice voice, IEnumerable<string> samplePaths = null, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+            => EditVoiceAsync(voice, c => c.AddSamples(samplePaths, cancellationToken), labels, cancellationToken);
 
         /// <summary>
         /// Edit a voice created by you.
@@ -286,7 +202,18 @@ namespace ElevenLabs.Voices
         /// <param name="labels">The labels to set on the <see cref="Voice"/> description.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>True, if voice was successfully edited.</returns>
-        public async Task<bool> EditVoiceAsync(Voice voice, IEnumerable<byte[]> samples, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+        public Task<bool> EditVoiceRawAsync(Voice voice, IEnumerable<byte[]> samples, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+            => EditVoiceAsync(voice, c => c.AddSamples(samples), labels, cancellationToken);
+
+        /// <summary>
+        /// Edit a voice created by you.
+        /// </summary>
+        /// <param name="voice">The <see cref="Voice"/> to edit.</param>
+        /// <param name="samples">The samples to upload.</param>
+        /// <param name="labels">The labels to set on the <see cref="Voice"/> description.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>True, if voice was successfully edited.</returns>
+        public async Task<bool> EditVoiceAsync(Voice voice, Func<MultipartFormDataContent, Task> fAddVoices, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
         {
             var form = new MultipartFormDataContent();
 
@@ -297,17 +224,7 @@ namespace ElevenLabs.Voices
 
             form.Add(new StringContent(voice.Name), "name");
 
-            if (samples != null)
-            {
-                foreach (var sample in samples)
-                {
-                    if (sample.Length == 0)
-                    {
-                        throw new ArgumentException("Empty samples are not supported.");
-                    }
-                    form.Add(new ByteArrayContent(sample), "files");
-                }
-            }
+            await fAddVoices.Invoke(form);
 
             if (labels != null)
             {
@@ -420,5 +337,41 @@ namespace ElevenLabs.Voices
         }
 
         #endregion Samples
+    }
+
+    file static class Extensions
+    {
+        public static Task AddSamples(this MultipartFormDataContent form, IEnumerable<byte[]> samples)
+        {
+            if (samples == null) return Task.CompletedTask;
+            foreach (var sample in samples)
+            {
+                if (sample.Length == 0)
+                {
+                    throw new ArgumentException("Empty samples are not supported.");
+                }
+                form.Add(new ByteArrayContent(sample), "files");
+            }
+            return Task.CompletedTask;
+        }
+
+        public static async Task AddSamples(this MultipartFormDataContent form, IEnumerable<string> samplePaths = null, CancellationToken cancellationToken = default)
+        {
+            if (samplePaths == null) return;
+            foreach (var sample in samplePaths)
+            {
+                if (string.IsNullOrWhiteSpace(sample))
+                {
+                    continue;
+                }
+
+                var fileStream = File.OpenRead(sample);
+                var stream = new MemoryStream();
+                await fileStream.CopyToAsync(stream, cancellationToken);
+                form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
+                await fileStream.DisposeAsync();
+                await stream.DisposeAsync();
+            }
+        }
     }
 }

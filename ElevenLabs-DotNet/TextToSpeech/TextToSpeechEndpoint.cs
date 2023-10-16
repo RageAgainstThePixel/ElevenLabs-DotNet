@@ -48,7 +48,7 @@ namespace ElevenLabs.TextToSpeech
 
             if (!File.Exists(filePath))
             {
-                var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, saveDirectory, deleteCachedFile, cancellationToken);
+                var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, cancellationToken);
                 try
                 {
                     var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
@@ -80,16 +80,23 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="voice"><see cref="Voice"/> to use.</param>
         /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
         /// <param name="model">Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.</param>
-        /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
-        /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>Downloaded clip path.</returns>
-        public async Task<byte[]> TextToSpeechRawAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
+        /// <returns>The synthesized file as MemoryStream.</returns>
+        public async Task<byte[]> TextToSpeechRawAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, CancellationToken cancellationToken = default)
         {
-            var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, saveDirectory, deleteCachedFile, cancellationToken);
-            using var memoryStream = new MemoryStream();
-            responseStream.CopyTo(memoryStream);
-            return memoryStream.ToArray();
+            using var responseStream = await TextToSpeechStreamAsync(text, voice, voiceSettings, model, cancellationToken);
+            if (responseStream is MemoryStream memStream)
+            {
+                memStream.Seek(0, SeekOrigin.Begin);
+                return memStream.ToArray();
+            }
+            else
+            {
+                using var copyStream = new MemoryStream();
+                responseStream.CopyTo(copyStream);
+                copyStream.Seek(0, SeekOrigin.Begin);
+                return copyStream.ToArray();
+            }
         }
 
 
@@ -101,11 +108,9 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="voice"><see cref="Voice"/> to use.</param>
         /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
         /// <param name="model">Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.</param>
-        /// <param name="saveDirectory">Optional, The save directory to save the audio clip.</param>
-        /// <param name="deleteCachedFile">Optional, deletes the cached file for this text string. Default is false.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>Downloaded clip path.</returns>
-        private async Task<Stream> TextToSpeechStreamAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, string saveDirectory = null, bool deleteCachedFile = false, CancellationToken cancellationToken = default)
+        /// <returns>The synthesized file as Stream.</returns>
+        private async Task<Stream> TextToSpeechStreamAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, CancellationToken cancellationToken = default)
         {
             if (text.Length > 5000)
             {
