@@ -4,7 +4,6 @@ using ElevenLabs.Extensions;
 using ElevenLabs.Models;
 using ElevenLabs.Voices;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading;

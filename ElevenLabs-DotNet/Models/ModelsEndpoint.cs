@@ -1,7 +1,6 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using ElevenLabs.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
