@@ -33,49 +33,27 @@ namespace ElevenLabs.VoiceGeneration
         /// Generate a <see cref="Voice"/>.
         /// </summary>
         /// <param name="generatedVoicePreviewRequest"><see cref="GeneratedVoicePreviewRequest"/></param>
-        /// <param name="saveDirectory">Optional, The save directory for downloaded audio file.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns><see cref="Tuple{VoiceId,FilePath}"/>.</returns>
-        public async Task<Tuple<string, string>> GenerateVoicePreviewAsync(GeneratedVoicePreviewRequest generatedVoicePreviewRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
+        /// <returns>Tuple with generated voice id and audio data.</returns>
+        public async Task<Tuple<string, ReadOnlyMemory<byte>>> GenerateVoicePreviewAsync(GeneratedVoicePreviewRequest generatedVoicePreviewRequest, CancellationToken cancellationToken = default)
         {
             var payload = JsonSerializer.Serialize(generatedVoicePreviewRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
-
             var generatedVoiceId = response.Headers.FirstOrDefault(pair => pair.Key == "generated_voice_id").Value.FirstOrDefault();
-            var downloadDirectory = (saveDirectory ?? Directory.GetCurrentDirectory())
-                .CreateNewDirectory(nameof(ElevenLabs))
-                .CreateNewDirectory(nameof(VoiceGeneration));
-            var filePath = Path.Combine(downloadDirectory, $"{generatedVoiceId}.mp3");
+            await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var memoryStream = new MemoryStream();
+            int bytesRead;
+            var totalBytesRead = 0;
+            var buffer = new byte[8192];
 
-            if (File.Exists(filePath))
+            while ((bytesRead = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
             {
-                File.Delete(filePath);
+                await memoryStream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+                totalBytesRead += bytesRead;
             }
 
-            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-
-            try
-            {
-                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-
-                try
-                {
-                    await responseStream.CopyToAsync(fileStream, cancellationToken);
-                    await fileStream.FlushAsync(cancellationToken);
-                }
-                finally
-                {
-                    fileStream.Close();
-                    await fileStream.DisposeAsync();
-                }
-            }
-            finally
-            {
-                await responseStream.DisposeAsync();
-            }
-
-            return new Tuple<string, string>(generatedVoiceId, filePath);
+            return new Tuple<string, ReadOnlyMemory<byte>>(generatedVoiceId, new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, totalBytesRead));
         }
 
         /// <summary>

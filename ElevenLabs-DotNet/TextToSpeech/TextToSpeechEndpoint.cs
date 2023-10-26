@@ -102,7 +102,7 @@ namespace ElevenLabs.TextToSpeech
                 {
                     try
                     {
-                        await partialClipCallback(new VoiceClip(clipId, text, voice, new ArraySegment<byte>(memoryStream.GetBuffer(), totalBytesRead, bytesRead))).ConfigureAwait(false);
+                        await partialClipCallback(new VoiceClip(clipId, text, voice, new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), totalBytesRead, bytesRead))).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
@@ -113,7 +113,7 @@ namespace ElevenLabs.TextToSpeech
                 totalBytesRead += bytesRead;
             }
 
-            return new VoiceClip(clipId, text, voice, new ArraySegment<byte>(memoryStream.GetBuffer(), 0, totalBytesRead));
+            return new VoiceClip(clipId, text, voice, new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, totalBytesRead));
         }
     }
 }
