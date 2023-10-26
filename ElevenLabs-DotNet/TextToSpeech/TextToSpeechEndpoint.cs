@@ -79,7 +79,7 @@ namespace ElevenLabs.TextToSpeech
                 parameters.Add(OptimizeStreamingLatencyParameter, optimizeStreamingLatency.ToString());
             }
 
-            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}", parameters), payload, cancellationToken).ConfigureAwait(false);
+            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}{(partialClipCallback == null ? string.Empty : "/stream")}", parameters), payload, cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
@@ -88,38 +88,32 @@ namespace ElevenLabs.TextToSpeech
                 throw new ArgumentException("Failed to find parse clip id!");
             }
 
-            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var memoryStream = new MemoryStream();
-            byte[] clipData;
+            await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var memoryStream = new MemoryStream();
+            int bytesRead;
+            var totalBytesRead = 0;
+            var buffer = new byte[8192];
 
-            try
+            while ((bytesRead = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
             {
-                if (partialClipCallback == null)
-                {
-                    await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    int bytesRead;
-                    var buffer = new byte[8192];
+                await memoryStream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
 
-                    while ((bytesRead = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                if (partialClipCallback != null)
+                {
+                    try
                     {
-                        var segment = new ReadOnlyMemory<byte>(buffer, 0, bytesRead);
-                        await partialClipCallback(new VoiceClip(clipId, text, voice, segment)).ConfigureAwait(false);
-                        await memoryStream.WriteAsync(segment, cancellationToken).ConfigureAwait(false);
+                        await partialClipCallback(new VoiceClip(clipId, text, voice, new ArraySegment<byte>(memoryStream.GetBuffer(), totalBytesRead, bytesRead))).ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
                     }
                 }
 
-                clipData = memoryStream.ToArray();
-            }
-            finally
-            {
-                await memoryStream.DisposeAsync().ConfigureAwait(false);
-                await responseStream.DisposeAsync().ConfigureAwait(false);
+                totalBytesRead += bytesRead;
             }
 
-            return new VoiceClip(clipId, text, voice, clipData);
+            return new VoiceClip(clipId, text, voice, new ArraySegment<byte>(memoryStream.GetBuffer(), 0, totalBytesRead));
         }
     }
 }
