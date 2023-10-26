@@ -119,7 +119,7 @@ namespace ElevenLabs.Tests
             Assert.IsNotEmpty(updatedVoice.Samples);
             var sample = updatedVoice.Samples.FirstOrDefault();
             Assert.NotNull(sample);
-            var result = await ElevenLabsClient.VoicesEndpoint.GetVoiceSampleAsync(updatedVoice, updatedVoice.Samples.FirstOrDefault());
+            var result = await ElevenLabsClient.VoicesEndpoint.DownloadVoiceSampleAudioAsync(updatedVoice, updatedVoice.Samples.FirstOrDefault());
             Assert.NotNull(result);
         }
 

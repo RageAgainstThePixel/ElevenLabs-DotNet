@@ -34,7 +34,7 @@ namespace ElevenLabs.Tests
             var downloadItem = historyItems.MaxBy(item => item.Date);
             Assert.NotNull(downloadItem);
             Console.WriteLine($"Downloading {downloadItem!.Id}...");
-            var result = await ElevenLabsClient.HistoryEndpoint.GetHistoryAudioAsync(downloadItem);
+            var result = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryAudioAsync(downloadItem);
             Assert.NotNull(result);
         }
 

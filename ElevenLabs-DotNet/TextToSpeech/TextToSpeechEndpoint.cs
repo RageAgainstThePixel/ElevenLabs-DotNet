@@ -75,28 +75,28 @@ namespace ElevenLabs.TextToSpeech
                 parameters.Add(OptimizeStreamingLatencyParameter, optimizeStreamingLatency.ToString());
             }
 
-            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}", parameters), payload, cancellationToken);
-            await response.CheckResponseAsync(cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}", parameters), payload, cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(clipId))
             {
-                throw new ArgumentException("Failed to find history item id!");
+                throw new ArgumentException("Failed to find parse clip id!");
             }
 
-            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var memoryStream = new MemoryStream();
             byte[] clipData;
 
             try
             {
-                await responseStream.CopyToAsync(memoryStream, cancellationToken);
+                await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 clipData = memoryStream.ToArray();
             }
             finally
             {
-                await responseStream.DisposeAsync();
-                await memoryStream.DisposeAsync();
+                await memoryStream.DisposeAsync().ConfigureAwait(false);
+                await responseStream.DisposeAsync().ConfigureAwait(false);
             }
 
             return new VoiceClip(clipId, text, voice, clipData);

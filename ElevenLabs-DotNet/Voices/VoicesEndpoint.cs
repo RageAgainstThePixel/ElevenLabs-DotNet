@@ -43,8 +43,8 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
         public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync(GetUrl(), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await Api.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug).ConfigureAwait(false);
             var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions).Voices;
             var voiceSettingsTasks = new List<Task>();
 
@@ -54,11 +54,11 @@ namespace ElevenLabs.Voices
 
                 async Task LocalGetVoiceSettings()
                 {
-                    voice.Settings = await GetVoiceSettingsAsync(voice, cancellationToken);
+                    voice.Settings = await GetVoiceSettingsAsync(voice, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            await Task.WhenAll(voiceSettingsTasks);
+            await Task.WhenAll(voiceSettingsTasks).ConfigureAwait(false);
             return voices.ToList();
         }
 
@@ -69,8 +69,8 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="VoiceSettings"/>.</returns>
         public async Task<VoiceSettings> GetDefaultVoiceSettingsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync(GetUrl("/settings/default"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await Api.Client.GetAsync(GetUrl("/settings/default"), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug).ConfigureAwait(false);
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -87,8 +87,8 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(voiceId));
             }
 
-            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug).ConfigureAwait(false);
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -99,15 +99,15 @@ namespace ElevenLabs.Voices
         /// <param name="withSettings">Should the response include the <see cref="VoiceSettings"/>?</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="Voice"/>.</returns>
-        public async Task<Voice> GetVoiceAsync(string voiceId, bool withSettings = true, CancellationToken cancellationToken = default)
+        public async Task<Voice> GetVoiceAsync(string voiceId, bool withSettings = false, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(voiceId))
             {
                 throw new ArgumentNullException(nameof(voiceId));
             }
 
-            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings}"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings}"), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug).ConfigureAwait(false);
             return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -126,8 +126,8 @@ namespace ElevenLabs.Voices
             }
 
             var payload = JsonSerializer.Serialize(voiceSettings).ToJsonStringContent();
-            var response = await Api.Client.PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken);
-            await response.ReadAsStringAsync(EnableDebug);
+            var response = await Api.Client.PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken).ConfigureAwait(false);
+            await response.ReadAsStringAsync(EnableDebug).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 
@@ -164,10 +164,10 @@ namespace ElevenLabs.Voices
 
                         var fileStream = File.OpenRead(sample);
                         var stream = new MemoryStream();
-                        await fileStream.CopyToAsync(stream, cancellationToken);
+                        await fileStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
                         form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
-                        await fileStream.DisposeAsync();
-                        await stream.DisposeAsync();
+                        await fileStream.DisposeAsync().ConfigureAwait(false);
+                        await stream.DisposeAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -177,10 +177,10 @@ namespace ElevenLabs.Voices
                 form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
             }
 
-            var response = await Api.Client.PostAsync(GetUrl("/add"), form, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await Api.Client.PostAsync(GetUrl("/add"), form, cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug).ConfigureAwait(false);
             var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
-            return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
+            return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -217,10 +217,10 @@ namespace ElevenLabs.Voices
 
                         var fileStream = File.OpenRead(sample);
                         var stream = new MemoryStream();
-                        await fileStream.CopyToAsync(stream, cancellationToken);
+                        await fileStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
                         form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
-                        await fileStream.DisposeAsync();
-                        await stream.DisposeAsync();
+                        await fileStream.DisposeAsync().ConfigureAwait(false);
+                        await stream.DisposeAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -230,8 +230,8 @@ namespace ElevenLabs.Voices
                 form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
             }
 
-            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}/edit"), form, cancellationToken);
-            await response.CheckResponseAsync(cancellationToken);
+            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}/edit"), form, cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 
@@ -248,67 +248,65 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(voiceId));
             }
 
-            var response = await Api.Client.DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken);
-            await response.CheckResponseAsync(cancellationToken);
+            var response = await Api.Client.DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 
         #region Samples
 
         /// <summary>
-        /// Get the audio corresponding to a sample attached to a voice.
+        /// Gets the <see cref="Sample"/> associated to a <see cref="Voice"/> by its Id.
         /// </summary>
-        /// <param name="voiceId">The <see cref="Voice"/> id this <see cref="Sample"/> belongs to.</param>
-        /// <param name="sampleId">The <see cref="Sample"/> id to download.</param>
-        /// <param name="saveDirectory">Optional, directory to save the <see cref="Sample"/>.</param>
+        /// <param name="voiceId">The <see cref="Voice.Id"/> this <see cref="Sample"/> belongs to.</param>
+        /// <param name="sampleId"></param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        public async Task<string> GetVoiceSampleAsync(string voiceId, string sampleId, string saveDirectory = null, CancellationToken cancellationToken = default)
+        /// <returns><see cref="Sample"/></returns>
+        public async Task<Sample> GetVoiceSampleAsync(string voiceId, string sampleId, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(voiceId))
+            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonSerializer.Deserialize<Sample>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+        }
+
+        /// <summary>
+        /// Downloads the audio corresponding to a &lt;see cref="Sample"/&gt; attached to a &lt;see cref="Voice"/&gt;.
+        /// </summary>
+        /// <param name="voice">The <see cref="Voice"/> this <see cref="Sample"/> belongs to.</param>
+        /// <param name="sample">The <see cref="Sample"/> to download audio for.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        public async Task<VoiceClip> DownloadVoiceSampleAudioAsync(Voice voice, Sample sample, CancellationToken cancellationToken = default)
+        {
+            if (voice == null ||
+                string.IsNullOrWhiteSpace(voice.Id))
             {
-                throw new ArgumentNullException(nameof(voiceId));
+                throw new ArgumentNullException(nameof(voice));
             }
 
-            if (string.IsNullOrWhiteSpace(sampleId))
+            if (sample == null ||
+                string.IsNullOrWhiteSpace(sample.Id))
             {
-                throw new ArgumentNullException(nameof(sampleId));
+                throw new ArgumentNullException(nameof(sample));
             }
 
-            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/samples/{sampleId}/audio"), cancellationToken);
-            await response.CheckResponseAsync(cancellationToken);
-
-            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
-            var downloadDirectory = rootDirectory.CreateNewDirectory(voiceId);
-            var filePath = Path.Combine(downloadDirectory, $"{sampleId}.mp3");
-
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-
-            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var response = await Api.Client.GetAsync(GetUrl($"/{voice.Id}/samples/{sample.Id}/audio"), cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
+            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var memoryStream = new MemoryStream();
+            byte[] clipData;
 
             try
             {
-                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-
-                try
-                {
-                    await responseStream.CopyToAsync(fileStream, cancellationToken);
-                    await fileStream.FlushAsync(cancellationToken);
-                }
-                finally
-                {
-                    fileStream.Close();
-                    await fileStream.DisposeAsync();
-                }
+                await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                clipData = memoryStream.ToArray();
             }
             finally
             {
-                await responseStream.DisposeAsync();
+                await memoryStream.DisposeAsync().ConfigureAwait(false);
+                await responseStream.DisposeAsync().ConfigureAwait(false);
             }
 
-            return filePath;
+            return new VoiceClip(sample.Id, string.Empty, voice, clipData);
         }
 
         /// <summary>
