@@ -256,20 +256,6 @@ namespace ElevenLabs.Voices
         #region Samples
 
         /// <summary>
-        /// Gets the <see cref="Sample"/> associated to a <see cref="Voice"/> by its Id.
-        /// </summary>
-        /// <param name="voiceId">The <see cref="Voice.Id"/> this <see cref="Sample"/> belongs to.</param>
-        /// <param name="sampleId"></param>
-        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns><see cref="Sample"/></returns>
-        public async Task<Sample> GetVoiceSampleAsync(string voiceId, string sampleId, CancellationToken cancellationToken = default)
-        {
-            var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync().ConfigureAwait(false);
-            return JsonSerializer.Deserialize<Sample>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
-        }
-
-        /// <summary>
         /// Downloads the audio corresponding to a &lt;see cref="Sample"/&gt; attached to a &lt;see cref="Voice"/&gt;.
         /// </summary>
         /// <param name="voice">The <see cref="Voice"/> this <see cref="Sample"/> belongs to.</param>
