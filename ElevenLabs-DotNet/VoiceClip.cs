@@ -8,13 +8,13 @@ namespace ElevenLabs
 {
     public sealed class VoiceClip
     {
-        internal VoiceClip(string id, string text, Voice voice, byte[] clipData)
+        internal VoiceClip(string id, string text, Voice voice, ReadOnlyMemory<byte> clipData)
         {
             Id = id;
             Text = text;
             Voice = voice;
             TextHash = $"{id}{text}".GenerateGuid().ToString();
-            ClipData = new ReadOnlyMemory<byte>(clipData);
+            ClipData = clipData;
         }
 
         public string Id { get; }

@@ -48,9 +48,13 @@ namespace ElevenLabs.TextToSpeech
         /// 4 - max latency optimizations, but also with text normalizer turned off for even more latency savings
         /// (best latency, but can mispronounce eg numbers and dates).
         /// </param>
+        /// <param name="partialClipCallback">
+        /// Optional, Callback to enable streaming audio as it comes in.<br/>
+        /// Returns partial <see cref="VoiceClip"/>s who's <see cref="VoiceClip.ClipData"/> overwritten with the next chunk of data.
+        /// </param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="VoiceClip"/>.</returns>
-        public async Task<VoiceClip> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, OutputFormat outputFormat = OutputFormat.MP3_44100_128, int? optimizeStreamingLatency = null, CancellationToken cancellationToken = default)
+        public async Task<VoiceClip> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, OutputFormat outputFormat = OutputFormat.MP3_44100_128, int? optimizeStreamingLatency = null, Func<VoiceClip, Task> partialClipCallback = null, CancellationToken cancellationToken = default)
         {
             if (text.Length > 5000)
             {
@@ -90,7 +94,23 @@ namespace ElevenLabs.TextToSpeech
 
             try
             {
-                await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                if (partialClipCallback == null)
+                {
+                    await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    int bytesRead;
+                    var buffer = new byte[8192];
+
+                    while ((bytesRead = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                    {
+                        var segment = new ReadOnlyMemory<byte>(buffer, 0, bytesRead);
+                        await partialClipCallback(new VoiceClip(clipId, text, voice, segment)).ConfigureAwait(false);
+                        await memoryStream.WriteAsync(segment, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
                 clipData = memoryStream.ToArray();
             }
             finally
