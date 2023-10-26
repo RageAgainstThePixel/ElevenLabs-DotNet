@@ -35,9 +35,9 @@ namespace ElevenLabs.History
         /// <returns>A list of history items containing metadata about generated audio.</returns>
         public async Task<IReadOnlyList<HistoryItem>> GetHistoryAsync(CancellationToken cancellationToken = default)
         {
-            var result = await Api.Client.GetAsync(GetUrl(), cancellationToken);
-            var resultAsString = await result.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<HistoryInfo>(resultAsString, ElevenLabsClient.JsonSerializationOptions)?.History;
+            var response = await Api.Client.GetAsync(GetUrl(), cancellationToken);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            return JsonSerializer.Deserialize<HistoryInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions)?.History;
         }
 
         /// <summary>
@@ -49,9 +49,12 @@ namespace ElevenLabs.History
         /// <returns>The path to the downloaded audio file..</returns>
         public async Task<string> GetHistoryAudioAsync(HistoryItem historyItem, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
-            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
-            var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(History));
-            var voiceDirectory = downloadDirectory.CreateNewDirectory(historyItem.VoiceName);
+            var voiceDirectory = (saveDirectory ?? Directory.GetCurrentDirectory())
+                .CreateNewDirectory(nameof(ElevenLabs))
+                .CreateNewDirectory(nameof(History))
+                .CreateNewDirectory(historyItem.VoiceId);
+
+            // TODO Check historyItem.MimeType and set extension
             var filePath = Path.Combine(voiceDirectory, $"{historyItem.Id}.mp3");
 
             if (File.Exists(filePath))
@@ -66,7 +69,7 @@ namespace ElevenLabs.History
 
             try
             {
-                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
 
                 try
                 {
@@ -96,7 +99,7 @@ namespace ElevenLabs.History
         public async Task<bool> DeleteHistoryItemAsync(string historyId, CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.DeleteAsync(GetUrl($"/{historyId}"), cancellationToken);
-            await response.ReadAsStringAsync();
+            await response.ReadAsStringAsync(EnableDebug);
             return response.IsSuccessStatusCode;
         }
 
@@ -140,7 +143,7 @@ namespace ElevenLabs.History
                         File.Delete(zipFilePath);
                     }
 
-                    var fileStream = new FileStream(zipFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                    var fileStream = new FileStream(zipFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
 
                     try
                     {

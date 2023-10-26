@@ -44,7 +44,7 @@ namespace ElevenLabs.Voices
         public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.GetAsync(GetUrl(), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions).Voices;
             var voiceSettingsTasks = new List<Task>();
 
@@ -70,7 +70,7 @@ namespace ElevenLabs.Voices
         public async Task<VoiceSettings> GetDefaultVoiceSettingsAsync(CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.GetAsync(GetUrl("/settings/default"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -88,7 +88,7 @@ namespace ElevenLabs.Voices
             }
 
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -107,7 +107,7 @@ namespace ElevenLabs.Voices
             }
 
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings}"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -127,7 +127,7 @@ namespace ElevenLabs.Voices
 
             var payload = JsonSerializer.Serialize(voiceSettings).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken);
-            await response.ReadAsStringAsync();
+            await response.ReadAsStringAsync(EnableDebug);
             return response.IsSuccessStatusCode;
         }
 
@@ -178,10 +178,9 @@ namespace ElevenLabs.Voices
             }
 
             var response = await Api.Client.PostAsync(GetUrl("/add"), form, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
-            var voice = await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
-            return voice;
+            return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -291,7 +290,7 @@ namespace ElevenLabs.Voices
 
             try
             {
-                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
 
                 try
                 {

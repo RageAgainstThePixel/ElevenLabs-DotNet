@@ -22,7 +22,7 @@ namespace ElevenLabs.User
         public async Task<UserInfo> GetUserInfoAsync()
         {
             var response = await Api.Client.GetAsync(GetUrl());
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<UserInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -32,7 +32,7 @@ namespace ElevenLabs.User
         public async Task<SubscriptionInfo> GetSubscriptionInfoAsync()
         {
             var response = await Api.Client.GetAsync(GetUrl("/subscription"));
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<SubscriptionInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }

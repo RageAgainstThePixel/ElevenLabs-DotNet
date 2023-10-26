@@ -25,26 +25,27 @@ namespace ElevenLabs.VoiceGeneration
         public async Task<GeneratedVoiceOptions> GetVoiceGenerationOptionsAsync(CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
         /// Generate a <see cref="Voice"/>.
         /// </summary>
-        /// <param name="generatedVoiceRequest"><see cref="GeneratedVoiceRequest"/></param>
+        /// <param name="generatedVoicePreviewRequest"><see cref="GeneratedVoicePreviewRequest"/></param>
         /// <param name="saveDirectory">Optional, The save directory for downloaded audio file.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="Tuple{VoiceId,FilePath}"/>.</returns>
-        public async Task<Tuple<string, string>> GenerateVoiceAsync(GeneratedVoiceRequest generatedVoiceRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
+        public async Task<Tuple<string, string>> GenerateVoicePreviewAsync(GeneratedVoicePreviewRequest generatedVoicePreviewRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
-            var payload = JsonSerializer.Serialize(generatedVoiceRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
+            var payload = JsonSerializer.Serialize(generatedVoicePreviewRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
             var generatedVoiceId = response.Headers.FirstOrDefault(pair => pair.Key == "generated_voice_id").Value.FirstOrDefault();
-            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
-            var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(VoiceGeneration));
+            var downloadDirectory = (saveDirectory ?? Directory.GetCurrentDirectory())
+                .CreateNewDirectory(nameof(ElevenLabs))
+                .CreateNewDirectory(nameof(VoiceGeneration));
             var filePath = Path.Combine(downloadDirectory, $"{generatedVoiceId}.mp3");
 
             if (File.Exists(filePath))
@@ -56,7 +57,7 @@ namespace ElevenLabs.VoiceGeneration
 
             try
             {
-                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
 
                 try
                 {
@@ -87,7 +88,7 @@ namespace ElevenLabs.VoiceGeneration
         {
             var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }

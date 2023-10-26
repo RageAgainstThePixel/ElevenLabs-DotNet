@@ -20,7 +20,7 @@ namespace ElevenLabs.Models
         public async Task<IReadOnlyList<Model>> GetModelsAsync()
         {
             var response = await Api.Client.GetAsync(GetUrl());
-            var responseAsString = await response.ReadAsStringAsync();
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }
