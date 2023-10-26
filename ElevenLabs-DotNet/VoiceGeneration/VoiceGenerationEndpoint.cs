@@ -26,7 +26,7 @@ namespace ElevenLabs.VoiceGeneration
         {
             var response = await Api.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, Api.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace ElevenLabs.VoiceGeneration
         /// <returns><see cref="Tuple{VoiceId,FilePath}"/>.</returns>
         public async Task<Tuple<string, string>> GenerateVoiceAsync(GeneratedVoiceRequest generatedVoiceRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
         {
-            var payload = JsonSerializer.Serialize(generatedVoiceRequest, Api.JsonSerializationOptions).ToJsonStringContent();
+            var payload = JsonSerializer.Serialize(generatedVoiceRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
 
@@ -88,7 +88,7 @@ namespace ElevenLabs.VoiceGeneration
             var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Voice>(responseAsString, Api.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }
 }

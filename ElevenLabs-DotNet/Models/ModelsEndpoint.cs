@@ -22,7 +22,7 @@ namespace ElevenLabs.Models
         {
             var response = await Api.Client.GetAsync(GetUrl());
             var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, Api.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }
 }

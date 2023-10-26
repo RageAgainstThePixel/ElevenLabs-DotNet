@@ -45,7 +45,7 @@ namespace ElevenLabs.Voices
         {
             var response = await Api.Client.GetAsync(GetUrl(), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, Api.JsonSerializationOptions).Voices;
+            var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions).Voices;
             var voiceSettingsTasks = new List<Task>();
 
             foreach (var voice in voices)
@@ -71,7 +71,7 @@ namespace ElevenLabs.Voices
         {
             var response = await Api.Client.GetAsync(GetUrl("/settings/default"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, Api.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace ElevenLabs.Voices
 
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, Api.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace ElevenLabs.Voices
 
             var response = await Api.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings}"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Voice>(responseAsString, Api.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace ElevenLabs.Voices
 
             var response = await Api.Client.PostAsync(GetUrl("/add"), form, cancellationToken);
             var responseAsString = await response.ReadAsStringAsync();
-            var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, Api.JsonSerializationOptions);
+            var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
             var voice = await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken);
             return voice;
         }

@@ -37,7 +37,7 @@ namespace ElevenLabs.History
         {
             var result = await Api.Client.GetAsync(GetUrl(), cancellationToken);
             var resultAsString = await result.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<HistoryInfo>(resultAsString, Api.JsonSerializationOptions)?.History;
+            return JsonSerializer.Deserialize<HistoryInfo>(resultAsString, ElevenLabsClient.JsonSerializationOptions)?.History;
         }
 
         /// <summary>
