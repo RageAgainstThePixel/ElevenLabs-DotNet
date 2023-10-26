@@ -151,11 +151,11 @@ namespace ElevenLabs.Voices
 
             if (samplePaths != null)
             {
-                samplePaths = samplePaths.ToList();
+                var path = samplePaths.ToList();
 
-                if (samplePaths.Any())
+                if (path.Any())
                 {
-                    foreach (var sample in samplePaths)
+                    foreach (var sample in path)
                     {
                         if (string.IsNullOrWhiteSpace(sample))
                         {
@@ -204,11 +204,11 @@ namespace ElevenLabs.Voices
 
             if (samplePaths != null)
             {
-                samplePaths = samplePaths.ToList();
+                var path = samplePaths.ToList();
 
-                if (samplePaths.Any())
+                if (path.Any())
                 {
-                    foreach (var sample in samplePaths)
+                    foreach (var sample in path)
                     {
                         if (string.IsNullOrWhiteSpace(sample))
                         {
