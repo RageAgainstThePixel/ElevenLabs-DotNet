@@ -151,11 +151,11 @@ namespace ElevenLabs.Voices
 
             if (samplePaths != null)
             {
-                var path = samplePaths.Where(path => !string.IsNullOrWhiteSpace(path)).ToList();
+                var paths = samplePaths.Where(path => !string.IsNullOrWhiteSpace(path)).ToList();
 
-                if (path.Any())
+                if (paths.Any())
                 {
-                    foreach (var sample in path)
+                    foreach (var sample in paths)
                     {
                         if (!File.Exists(sample))
                         {
@@ -208,11 +208,11 @@ namespace ElevenLabs.Voices
 
             if (samplePaths != null)
             {
-                var path = samplePaths.Where(path => !string.IsNullOrWhiteSpace(path)).ToList();
+                var paths = samplePaths.Where(path => !string.IsNullOrWhiteSpace(path)).ToList();
 
-                if (path.Any())
+                if (paths.Any())
                 {
-                    foreach (var sample in path)
+                    foreach (var sample in paths)
                     {
                         if (!File.Exists(sample))
                         {
