@@ -108,10 +108,10 @@ namespace ElevenLabs.History
         /// <summary>
         /// Delete a history item by its id.
         /// </summary>
-        /// <param name="historyId"><see cref="HistoryItem.Id"/></param>
+        /// <param name="id"><see cref="HistoryItem.Id"/> or <see cref="VoiceClip.Id"/></param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>True, if history item was successfully deleted.</returns>
-        public async Task<bool> DeleteHistoryItemAsync(string historyId, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.DeleteAsync(GetUrl($"/{historyId}"), cancellationToken);
             await response.ReadAsStringAsync(EnableDebug);
@@ -124,10 +124,10 @@ namespace ElevenLabs.History
         /// If one history item id is provided, we will return a single audio file.<br/>
         /// If more than one history item ids are provided multiple audio files will be downloaded.
         /// </summary>
-        /// <param name="historyItemIds">One or more history item ids queued for download.</param>
+        /// <param name="historyItemIds">Optional, One or more history item ids queued for download.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A path to the downloaded zip file, or audio file.</returns>
-        public async Task<List<VoiceClip>> DownloadHistoryItemsAsync(List<string> historyItemIds = null, CancellationToken cancellationToken = default)
+        /// <returns>A list of Audio Clips downloaded by the request.</returns>
+        public async Task<IReadOnlyList<VoiceClip>> DownloadHistoryItemsAsync(List<string> historyItemIds = null, CancellationToken cancellationToken = default)
         {
             historyItemIds ??= (await GetHistoryAsync(cancellationToken: cancellationToken)).Select(item => item.Id).ToList();
             var voiceClips = new ConcurrentBag<VoiceClip>();

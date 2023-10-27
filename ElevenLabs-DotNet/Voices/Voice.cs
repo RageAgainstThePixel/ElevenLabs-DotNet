@@ -8,9 +8,10 @@ namespace ElevenLabs.Voices
 {
     public sealed class Voice
     {
-        public Voice(string id)
+        public Voice(string id, string name)
         {
             Id = id;
+            Name = name;
         }
 
         [JsonInclude]
@@ -56,31 +57,31 @@ namespace ElevenLabs.Voices
         #region Premade Voices
 
         [JsonIgnore]
-        public static Voice Adam { get; } = new Voice("pNInz6obpgDQGcFmaJgB") { Name = nameof(Adam) };
+        public static Voice Adam { get; } = new Voice("pNInz6obpgDQGcFmaJgB", nameof(Adam));
 
         [JsonIgnore]
-        public static Voice Antoni { get; } = new Voice("ErXwobaYiN019PkySvjV") { Name = nameof(Antoni) };
+        public static Voice Antoni { get; } = new Voice("ErXwobaYiN019PkySvjV", nameof(Antoni));
 
         [JsonIgnore]
-        public static Voice Arnold { get; } = new Voice("VR6AewLTigWG4xSOukaG") { Name = nameof(Arnold) };
+        public static Voice Arnold { get; } = new Voice("VR6AewLTigWG4xSOukaG", nameof(Arnold));
 
         [JsonIgnore]
-        public static Voice Bella { get; } = new Voice("EXAVITQu4vr4xnSDxMaL") { Name = nameof(Bella) };
+        public static Voice Bella { get; } = new Voice("EXAVITQu4vr4xnSDxMaL", nameof(Bella));
 
         [JsonIgnore]
-        public static Voice Domi { get; } = new Voice("AZnzlk1XvdvUeBnXmlld") { Name = nameof(Domi) };
+        public static Voice Domi { get; } = new Voice("AZnzlk1XvdvUeBnXmlld", nameof(Domi));
 
         [JsonIgnore]
-        public static Voice Elli { get; } = new Voice("MF3mGyEYCl7XYWbV9V6O") { Name = nameof(Elli) };
+        public static Voice Elli { get; } = new Voice("MF3mGyEYCl7XYWbV9V6O", nameof(Elli));
 
         [JsonIgnore]
-        public static Voice Josh { get; } = new Voice("TxGEqnHWrfWFTfGW9XjX") { Name = nameof(Josh) };
+        public static Voice Josh { get; } = new Voice("TxGEqnHWrfWFTfGW9XjX", nameof(Josh));
 
         [JsonIgnore]
-        public static Voice Rachel { get; } = new Voice("21m00Tcm4TlvDq8ikWAM") { Name = nameof(Rachel) };
+        public static Voice Rachel { get; } = new Voice("21m00Tcm4TlvDq8ikWAM", nameof(Rachel));
 
         [JsonIgnore]
-        public static Voice Sam { get; } = new Voice("yoZ06aMxZJJ28mfd3POQ") { Name = nameof(Sam) };
+        public static Voice Sam { get; } = new Voice("yoZ06aMxZJJ28mfd3POQ", nameof(Sam));
 
         #endregion Premade Voices
 

@@ -11,8 +11,13 @@ namespace ElevenLabs.TextToSpeech
     {
         public TextToSpeechRequest(string text, Model model, VoiceSettings voiceSettings)
         {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             Text = text;
-            Model = model ?? Models.Model.MultiLingualV2;
+            Model = model ?? Models.Model.MonoLingualV1;
             VoiceSettings = voiceSettings ?? throw new ArgumentNullException(nameof(voiceSettings));
         }
 

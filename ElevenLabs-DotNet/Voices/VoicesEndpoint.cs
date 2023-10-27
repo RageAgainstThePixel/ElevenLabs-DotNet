@@ -269,6 +269,7 @@ namespace ElevenLabs.Voices
         /// <param name="voice">The <see cref="Voice"/> this <see cref="Sample"/> belongs to.</param>
         /// <param name="sample">The <see cref="Sample"/> to download audio for.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns><see cref="VoiceClip"/>.</returns>
         public async Task<VoiceClip> DownloadVoiceSampleAudioAsync(Voice voice, Sample sample, CancellationToken cancellationToken = default)
         {
             if (voice == null ||

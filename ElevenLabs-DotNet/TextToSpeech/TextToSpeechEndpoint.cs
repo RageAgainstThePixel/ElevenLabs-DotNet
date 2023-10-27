@@ -29,10 +29,18 @@ namespace ElevenLabs.TextToSpeech
         /// <summary>
         /// Converts text into speech using a voice of your choice and returns audio.
         /// </summary>
-        /// <param name="text">Text input to synthesize speech for. Maximum 5000 characters.</param>
-        /// <param name="voice"><see cref="Voice"/> to use.</param>
-        /// <param name="voiceSettings">Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.</param>
-        /// <param name="model">Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MultiLingualV2"/>.</param>
+        /// <param name="text">
+        /// Text input to synthesize speech for. Maximum 5000 characters.
+        /// </param>
+        /// <param name="voice">
+        /// <see cref="Voice"/> to use.
+        /// </param>
+        /// <param name="voiceSettings">
+        /// Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.
+        /// </param>
+        /// <param name="model">
+        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.
+        /// </param>
         /// <param name="outputFormat">
         /// Output format of the generated audio.<br/>
         /// Defaults to <see cref="OutputFormat.MP3_44100_128"/>
@@ -50,7 +58,7 @@ namespace ElevenLabs.TextToSpeech
         /// </param>
         /// <param name="partialClipCallback">
         /// Optional, Callback to enable streaming audio as it comes in.<br/>
-        /// Returns partial <see cref="VoiceClip"/>s who's <see cref="VoiceClip.ClipData"/> overwritten with the next chunk of data.
+        /// Returns partial <see cref="VoiceClip"/>.
         /// </param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="VoiceClip"/>.</returns>
@@ -85,7 +93,7 @@ namespace ElevenLabs.TextToSpeech
 
             if (string.IsNullOrWhiteSpace(clipId))
             {
-                throw new ArgumentException("Failed to find parse clip id!");
+                throw new ArgumentException("Failed to parse clip id!");
             }
 
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
