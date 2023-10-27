@@ -79,7 +79,7 @@ namespace ElevenLabs.History
         /// <summary>
         /// Download audio of a history item.
         /// </summary>
-        /// <param name="historyItem"><see cref="HistoryItem"/></param>
+        /// <param name="historyItem"><see cref="HistoryItem"/>.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="VoiceClip"/>.</returns>
         public async Task<VoiceClip> DownloadHistoryAudioAsync(HistoryItem historyItem, CancellationToken cancellationToken = default)
@@ -108,12 +108,12 @@ namespace ElevenLabs.History
         /// <summary>
         /// Delete a history item by its id.
         /// </summary>
-        /// <param name="id"><see cref="HistoryItem.Id"/> or <see cref="VoiceClip.Id"/></param>
+        /// <param name="id"><see cref="HistoryItem.Id"/> or <see cref="VoiceClip.Id"/>.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>True, if history item was successfully deleted.</returns>
         public async Task<bool> DeleteHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.DeleteAsync(GetUrl($"/{historyId}"), cancellationToken);
+            var response = await Api.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
             await response.ReadAsStringAsync(EnableDebug);
             return response.IsSuccessStatusCode;
         }
@@ -126,7 +126,7 @@ namespace ElevenLabs.History
         /// </summary>
         /// <param name="historyItemIds">Optional, One or more history item ids queued for download.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A list of Audio Clips downloaded by the request.</returns>
+        /// <returns>A list of voice clips downloaded by the request.</returns>
         public async Task<IReadOnlyList<VoiceClip>> DownloadHistoryItemsAsync(List<string> historyItemIds = null, CancellationToken cancellationToken = default)
         {
             historyItemIds ??= (await GetHistoryAsync(cancellationToken: cancellationToken)).Select(item => item.Id).ToList();
