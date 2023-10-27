@@ -151,23 +151,27 @@ namespace ElevenLabs.Voices
 
             if (samplePaths != null)
             {
-                var path = samplePaths.ToList();
+                var path = samplePaths.Where(path => !string.IsNullOrWhiteSpace(path)).ToList();
 
                 if (path.Any())
                 {
                     foreach (var sample in path)
                     {
-                        if (string.IsNullOrWhiteSpace(sample))
+                        if (!File.Exists(sample))
                         {
+                            Console.WriteLine($"No sample clip found at {sample}!");
                             continue;
                         }
 
-                        var fileStream = File.OpenRead(sample);
-                        var stream = new MemoryStream();
-                        await fileStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-                        form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-                        await stream.DisposeAsync().ConfigureAwait(false);
+                        try
+                        {
+                            var fileBytes = await File.ReadAllBytesAsync(sample, cancellationToken);
+                            form.Add(new ByteArrayContent(fileBytes), "files", Path.GetFileName(sample));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
                     }
                 }
             }
@@ -204,23 +208,27 @@ namespace ElevenLabs.Voices
 
             if (samplePaths != null)
             {
-                var path = samplePaths.ToList();
+                var path = samplePaths.Where(path => !string.IsNullOrWhiteSpace(path)).ToList();
 
                 if (path.Any())
                 {
                     foreach (var sample in path)
                     {
-                        if (string.IsNullOrWhiteSpace(sample))
+                        if (!File.Exists(sample))
                         {
+                            Console.WriteLine($"No sample clip found at {sample}!");
                             continue;
                         }
 
-                        var fileStream = File.OpenRead(sample);
-                        var stream = new MemoryStream();
-                        await fileStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-                        form.Add(new ByteArrayContent(stream.ToArray()), "files", Path.GetFileName(sample));
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-                        await stream.DisposeAsync().ConfigureAwait(false);
+                        try
+                        {
+                            var fileBytes = await File.ReadAllBytesAsync(sample, cancellationToken);
+                            form.Add(new ByteArrayContent(fileBytes), "files", Path.GetFileName(sample));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
                     }
                 }
             }
@@ -277,22 +285,10 @@ namespace ElevenLabs.Voices
 
             var response = await Api.Client.GetAsync(GetUrl($"/{voice.Id}/samples/{sample.Id}/audio"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
-            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var memoryStream = new MemoryStream();
-            byte[] clipData;
-
-            try
-            {
-                await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-                clipData = memoryStream.ToArray();
-            }
-            finally
-            {
-                await memoryStream.DisposeAsync().ConfigureAwait(false);
-                await responseStream.DisposeAsync().ConfigureAwait(false);
-            }
-
-            return new VoiceClip(sample.Id, string.Empty, voice, clipData);
+            await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var memoryStream = new MemoryStream();
+            await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            return new VoiceClip(sample.Id, string.Empty, voice, memoryStream.ToArray());
         }
 
         /// <summary>
