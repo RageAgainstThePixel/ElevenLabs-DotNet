@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,21 +17,6 @@ namespace ElevenLabs.History
     /// </summary>
     public sealed class HistoryEndpoint : BaseEndPoint
     {
-        private class HistoryInfo
-        {
-            [JsonInclude]
-            [JsonPropertyName("history")]
-            public IReadOnlyList<HistoryItem> History { get; private set; }
-
-            [JsonInclude]
-            [JsonPropertyName("last_history_item_id")]
-            public string LastHistoryItemId { get; }
-
-            [JsonInclude]
-            [JsonPropertyName("has_more")]
-            public bool HasMore { get; }
-        }
-
         public HistoryEndpoint(ElevenLabsClient api) : base(api) { }
 
         protected override string Root => "history";
@@ -43,8 +27,8 @@ namespace ElevenLabs.History
         /// <param name="pageSize">Optional, number of items to return. Cannot exceed 1000.</param>
         /// <param name="startAfterId">Optional, the id of the item to start after.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A list of history items containing metadata about generated audio.</returns>
-        public async Task<IReadOnlyList<HistoryItem>> GetHistoryAsync(int? pageSize = null, string startAfterId = null, CancellationToken cancellationToken = default)
+        /// <returns><see cref="HistoryInfo"/>.</returns>
+        public async Task<HistoryInfo> GetHistoryAsync(int? pageSize = null, string startAfterId = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>();
 
@@ -60,7 +44,7 @@ namespace ElevenLabs.History
 
             var response = await Api.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug);
-            return JsonSerializer.Deserialize<HistoryInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions)?.History;
+            return JsonSerializer.Deserialize<HistoryInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
@@ -129,7 +113,7 @@ namespace ElevenLabs.History
         /// <returns>A list of voice clips downloaded by the request.</returns>
         public async Task<IReadOnlyList<VoiceClip>> DownloadHistoryItemsAsync(List<string> historyItemIds = null, CancellationToken cancellationToken = default)
         {
-            historyItemIds ??= (await GetHistoryAsync(cancellationToken: cancellationToken)).Select(item => item.Id).ToList();
+            historyItemIds ??= (await GetHistoryAsync(cancellationToken: cancellationToken)).HistoryItems.Select(item => item.Id).ToList();
             var voiceClips = new ConcurrentBag<VoiceClip>();
 
             async Task DownloadItem(string historyItemId)
