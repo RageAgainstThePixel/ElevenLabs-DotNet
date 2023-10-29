@@ -2,6 +2,7 @@
 
 using ElevenLabs.Models;
 using ElevenLabs.Voices;
+using System;
 using System.Text.Json.Serialization;
 
 namespace ElevenLabs.TextToSpeech
@@ -10,9 +11,14 @@ namespace ElevenLabs.TextToSpeech
     {
         public TextToSpeechRequest(string text, Model model, VoiceSettings voiceSettings)
         {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             Text = text;
-            Model = model;
-            VoiceSettings = voiceSettings;
+            Model = model ?? Models.Model.MonoLingualV1;
+            VoiceSettings = voiceSettings ?? throw new ArgumentNullException(nameof(voiceSettings));
         }
 
         [JsonPropertyName("text")]

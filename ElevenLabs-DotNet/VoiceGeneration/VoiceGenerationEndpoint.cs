@@ -25,56 +25,35 @@ namespace ElevenLabs.VoiceGeneration
         public async Task<GeneratedVoiceOptions> GetVoiceGenerationOptionsAsync(CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, Api.JsonSerializationOptions);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
         /// Generate a <see cref="Voice"/>.
         /// </summary>
-        /// <param name="generatedVoiceRequest"><see cref="GeneratedVoiceRequest"/></param>
-        /// <param name="saveDirectory">Optional, The save directory for downloaded audio file.</param>
+        /// <param name="generatedVoicePreviewRequest"><see cref="GeneratedVoicePreviewRequest"/></param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns><see cref="Tuple{VoiceId,FilePath}"/>.</returns>
-        public async Task<Tuple<string, string>> GenerateVoiceAsync(GeneratedVoiceRequest generatedVoiceRequest, string saveDirectory = null, CancellationToken cancellationToken = default)
+        /// <returns>Tuple with generated voice id and audio data.</returns>
+        public async Task<Tuple<string, ReadOnlyMemory<byte>>> GenerateVoicePreviewAsync(GeneratedVoicePreviewRequest generatedVoicePreviewRequest, CancellationToken cancellationToken = default)
         {
-            var payload = JsonSerializer.Serialize(generatedVoiceRequest, Api.JsonSerializationOptions).ToJsonStringContent();
+            var payload = JsonSerializer.Serialize(generatedVoicePreviewRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken);
             await response.CheckResponseAsync(cancellationToken);
-
             var generatedVoiceId = response.Headers.FirstOrDefault(pair => pair.Key == "generated_voice_id").Value.FirstOrDefault();
-            var rootDirectory = (saveDirectory ?? Directory.GetCurrentDirectory()).CreateNewDirectory(nameof(ElevenLabs));
-            var downloadDirectory = rootDirectory.CreateNewDirectory(nameof(VoiceGeneration));
-            var filePath = Path.Combine(downloadDirectory, $"{generatedVoiceId}.mp3");
+            await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var memoryStream = new MemoryStream();
+            int bytesRead;
+            var totalBytesRead = 0;
+            var buffer = new byte[8192];
 
-            if (File.Exists(filePath))
+            while ((bytesRead = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
             {
-                File.Delete(filePath);
+                await memoryStream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+                totalBytesRead += bytesRead;
             }
 
-            var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-
-            try
-            {
-                var fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-
-                try
-                {
-                    await responseStream.CopyToAsync(fileStream, cancellationToken);
-                    await fileStream.FlushAsync(cancellationToken);
-                }
-                finally
-                {
-                    fileStream.Close();
-                    await fileStream.DisposeAsync();
-                }
-            }
-            finally
-            {
-                await responseStream.DisposeAsync();
-            }
-
-            return new Tuple<string, string>(generatedVoiceId, filePath);
+            return new Tuple<string, ReadOnlyMemory<byte>>(generatedVoiceId, new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, totalBytesRead));
         }
 
         /// <summary>
@@ -87,8 +66,8 @@ namespace ElevenLabs.VoiceGeneration
         {
             var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<Voice>(responseAsString, Api.JsonSerializationOptions);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }
 }

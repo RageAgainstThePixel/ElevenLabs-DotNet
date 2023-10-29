@@ -12,7 +12,7 @@ namespace ElevenLabs.Extensions
     {
         public static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse = false, [CallerMemberName] string methodName = null)
         {
-            var responseAsString = await response.Content.ReadAsStringAsync();
+            var responseAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {

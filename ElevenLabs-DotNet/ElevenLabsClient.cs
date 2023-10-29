@@ -38,11 +38,6 @@ namespace ElevenLabs
             Client.DefaultRequestHeaders.Add("User-Agent", "ElevenLabs-DotNet");
             Client.DefaultRequestHeaders.Add("xi-api-key", ElevenLabsAuthentication.ApiKey);
 
-            JsonSerializationOptions = new JsonSerializerOptions
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-
             UserEndpoint = new UserEndpoint(this);
             VoicesEndpoint = new VoicesEndpoint(this);
             ModelsEndpoint = new ModelsEndpoint(this);
@@ -59,7 +54,10 @@ namespace ElevenLabs
         /// <summary>
         /// The <see cref="JsonSerializationOptions"/> to use when making calls to the API.
         /// </summary>
-        internal JsonSerializerOptions JsonSerializationOptions { get; }
+        internal static JsonSerializerOptions JsonSerializationOptions { get; } = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// The API authentication information to use for API calls

@@ -32,8 +32,9 @@ Install-Package ElevenLabs-DotNet
 ### Table of Contents
 
 - [Authentication](#authentication)
-- [API Proxy](#api-proxy) :new:
+- [API Proxy](#api-proxy)
 - [Text to Speech](#text-to-speech)
+  - [Stream Text To Speech](#stream-text-to-speech) :new:
 - [Voices](#voices)
   - [Get All Voices](#get-all-voices)
   - [Get Default Voice Settings](#get-default-voice-settings)
@@ -43,12 +44,13 @@ Install-Package ElevenLabs-DotNet
   - [Edit Voice](#edit-voice)
   - [Delete Voice](#delete-voice)
   - [Samples](#samples)
-    - [Get Voice Sample](#get-voice-sample)
+    - [Download Voice Sample](#download-voice-sample) :new:
     - [Delete Voice Sample](#delete-voice-sample)
 - [History](#history)
   - [Get History](#get-history)
-  - [Get History Audio](#get-history-audio)
-  - [Download All History](#download-all-history)
+  - [Get History Item](#get-history-item)
+  - [Download History Audio](#download-history-audio) :new:
+  - [Download History Items](#download-history-items) :new:
   - [Delete History Item](#delete-history-item)
 - [User](#user)
   - [Get User Info](#get-user-info)
@@ -172,7 +174,7 @@ public partial class Program
 
 Once you have set up your proxy server, your end users can now make authenticated requests to your proxy api instead of directly to the ElevenLabs API. The proxy server will handle authentication and forward requests to the ElevenLabs API, ensuring that your API keys and other sensitive information remain secure.
 
-### [Text to Speech](https://api.elevenlabs.io/docs#/text-to-speech)
+### [Text to Speech](https://docs.elevenlabs.io/api-reference/text-to-speech)
 
 Convert text to speech.
 
@@ -180,14 +182,30 @@ Convert text to speech.
 var api = new ElevenLabsClient();
 var text = "The quick brown fox jumps over the lazy dog.";
 var voice = (await api.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
-var defaultVoiceSettings = await api.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
-var clipPath = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice, defaultVoiceSettings);
-Console.WriteLine(clipPath);
+var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice);
+await File.WriteAllBytesAsync($"{voiceClip.Id}.mp3", voiceClip.ClipData.ToArray());
 ```
 
-> Note, only a single audio clip is created per text string. If you'd like to get different variations of the audio, you'll need to pass in `deleteCachedFile: true`.
+#### [Stream Text To Speech](https://docs.elevenlabs.io/api-reference/text-to-speech-stream)
 
-### [Voices](https://api.elevenlabs.io/docs#/voices)
+Stream text to speech.
+
+```csharp
+var api = new ElevenLabsClient();
+var text = "The quick brown fox jumps over the lazy dog.";
+var voice = (await api.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
+string fileName = "myfile.mp3";
+using var outputFileStream = File.OpenWrite(fileName);
+var voiceClip = await TextToSpeechAsync(text, voice,
+partialClipCallback: async (partialClip) =>
+{
+    // Write the incoming data to the output file stream.
+    // Alternatively you can play this clip data directly.
+    await outputFileStream.WriteAsync(partialClip.ClipData);
+});
+```
+
+### [Voices](https://docs.elevenlabs.io/api-reference/voices)
 
 Access to voices created either by the user or ElevenLabs.
 
@@ -266,16 +284,16 @@ var success = await api.VoicesEndpoint.DeleteVoiceAsync(voiceId);
 Console.WriteLine($"Was successful? {success}");
 ```
 
-#### [Samples](https://api.elevenlabs.io/docs#/samples)
+#### [Samples](https://docs.elevenlabs.io/api-reference/samples)
 
 Access to your samples, created by you when cloning voices.
 
-##### Get Voice Sample
+##### Download Voice Sample
 
 ```csharp
 var api = new ElevenLabsClient();
-var clipPath = await api.VoicesEndpoint.GetVoiceSampleAsync(voiceId, sampleId);
-Console.WriteLine(clipPath);
+var voiceClip = await api.VoicesEndpoint.DownloadVoiceSampleAsync(voice, sample);
+await File.WriteAllBytesAsync($"{voiceClip.Id}.mp3", voiceClip.ClipData.ToArray());
 ```
 
 ##### Delete Voice Sample
@@ -286,7 +304,7 @@ var success = await api.VoicesEndpoint.DeleteVoiceSampleAsync(voiceId, sampleId)
 Console.WriteLine($"Was successful? {success}");
 ```
 
-### [History](https://api.elevenlabs.io/docs#/history)
+### [History](https://docs.elevenlabs.io/api-reference/history)
 
 Access to your previously synthesized audio clips including its metadata.
 
@@ -302,30 +320,37 @@ foreach (var historyItem in historyItems.OrderBy(historyItem => historyItem.Date
 }
 ```
 
-#### Get History Audio
+#### Get History Item
 
 ```csharp
 var api = new ElevenLabsClient();
-var clipPath = await api.HistoryEndpoint.GetHistoryAudioAsync(historyItem);
-Console.WriteLine(clipPath);
+var historyItem = await api.HistoryEndpoint.GetHistoryItemAsync(voiceClip.Id);
 ```
 
-#### Download All History
+#### Download History Audio
 
 ```csharp
 var api = new ElevenLabsClient();
-var success = await api.HistoryEndpoint.DownloadHistoryItemsAsync();
+var voiceClip = await api.HistoryEndpoint.DownloadHistoryAudioAsync(historyItem);
+await File.WriteAllBytesAsync($"{voiceClip.Id}.mp3", voiceClip.ClipData.ToArray());
+```
+
+#### Download History Items
+
+```csharp
+var api = new ElevenLabsClient();
+var historyInfo = await api.HistoryEndpoint.DownloadHistoryItemsAsync();
 ```
 
 #### Delete History Item
 
 ```csharp
 var api = new ElevenLabsClient();
-var result = await api.HistoryEndpoint.DeleteHistoryItemAsync(historyItem);
+var success = await api.HistoryEndpoint.DeleteHistoryItemAsync(historyItem);
 Console.WriteLine($"Was successful? {success}");
 ```
 
-### [User](https://api.elevenlabs.io/docs#/user)
+### [User](https://docs.elevenlabs.io/api-reference/user)
 
 Access to your user Information and subscription status.
 
