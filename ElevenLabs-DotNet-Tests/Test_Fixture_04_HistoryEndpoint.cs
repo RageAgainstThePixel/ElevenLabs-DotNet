@@ -74,11 +74,11 @@ namespace ElevenLabs.Tests
                 Assert.IsTrue(result);
             }
 
-            var updateHistoryInfo = await ElevenLabsClient.HistoryEndpoint.GetHistoryAsync();
-            Assert.NotNull(updateHistoryInfo);
-            Assert.That(updateHistoryInfo, Has.None.EqualTo(itemsToDelete));
+            var updatedHistoryInfo = await ElevenLabsClient.HistoryEndpoint.GetHistoryAsync();
+            Assert.NotNull(updatedHistoryInfo);
+            Assert.That(updatedHistoryInfo.HistoryItems, Has.None.EqualTo(itemsToDelete));
 
-            foreach (var item in updateHistoryInfo.HistoryItems.OrderBy(item => item.Date))
+            foreach (var item in updatedHistoryInfo.HistoryItems.OrderBy(item => item.Date))
             {
                 Console.WriteLine($"{item.State} {item.Date} | {item.Id} | {item.Text}");
             }
