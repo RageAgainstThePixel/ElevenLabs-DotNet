@@ -34,8 +34,8 @@ namespace ElevenLabs.Tests
             var downloadItem = historyInfo.HistoryItems.MaxBy(item => item.Date);
             Assert.NotNull(downloadItem);
             Console.WriteLine($"Downloading {downloadItem!.Id}...");
-            var result = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryAudioAsync(downloadItem);
-            Assert.NotNull(result);
+            var voiceClip = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryAudioAsync(downloadItem);
+            Assert.NotNull(voiceClip);
         }
 
         [Test]
@@ -50,9 +50,9 @@ namespace ElevenLabs.Tests
             Assert.NotNull(singleItemResult);
             Assert.IsNotEmpty(singleItemResult);
             var downloadItems = historyInfo.HistoryItems.Select(item => item.Id).ToList();
-            var results = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryItemsAsync(downloadItems);
-            Assert.NotNull(results);
-            Assert.IsNotEmpty(results);
+            var voiceClips = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryItemsAsync(downloadItems);
+            Assert.NotNull(voiceClips);
+            Assert.IsNotEmpty(voiceClips);
         }
 
         [Test]

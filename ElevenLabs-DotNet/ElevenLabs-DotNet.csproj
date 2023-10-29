@@ -17,15 +17,38 @@
     <Version>2.0.0</Version>
     <PackageReleaseNotes>Version 2.0.0
 Refactoring to support latest API changes
-- Added VoiceClip type that is now returned on History and TextToSpeech Endpoints
+- Biggest Change is the new VoiceClip signature for all endpoints which contains all the information about the generated clip.
 - Refactored HistoryEndpoint
+  - Made HistoryInfo public
+- GetHistoryAsync now returns HistoryInfo and contains additional pageSize and startAfter properties
+  - Added GetHistoryItemAsync
+  - Renamed GetHistoryAudioAsync -&gt; DownloadHistoryAudioAsync
+- DownloadHistoryItemsAsync now returns a list of VoiceClips, and no longer asks for saveDirectory
+- HistoryItem.TextHash was modified to generate hash based on item id, instead of voiceId
+- Refactored ModelsEndpoint
+  - Added Model.MultiLingualV2
 - Refactored TextToSpeechEndpoint
-  - Removed saveDirectory parameter, clients can choose to save cached file to specified location using new VoiceClip class
-- Renamed GeneratedVoiceRequest -&gt; GeneratedVoicePreviewRequest
+  - Refactored TextToSpeechAsync
+    - Removed saveDirectory parameter
+    - Removed deleteCachedFile parameter
+    - Added outputFormat parameter
+    - Changed return type to VoiceClip
+  - Refactored StreamTextToSpeechAsync
+    - Removed saveDirectory parameter
+    - Removed deleteCachedFile parameter
+    -  Added  outputFormat
+- Added partialClipCallback for queuing and playing partial clips as they are received
 - Refactored VoiceGenerationEndpoint
   - Renamed GenerateVoiceAsync -&gt; GenerateVoicePreviewAsync
+    - Removed saveDirectory parameter
+  - Renamed GeneratedVoiceRequest -&gt; GeneratedVoicePreviewRequest
 - Refactored VoicesEndpoint
+  - Preserve default values in VoiceSettings
+  - Refactored GetVoiceAsync
+    - withSettings parameter is now false by default per API
   - Renamed GetVoiceSampleAsync -&gt; DownloadVoiceSampleAsync
+    - Changed return type to VoiceClip
+    - Removed saveDirectory parameter
 Version 1.3.6
 - Added Voice.HighQualityBaseModelIds
 - Added CreateVoiceRequest.Description
