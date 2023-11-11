@@ -43,7 +43,7 @@ namespace ElevenLabs.History
             }
 
             var response = await Api.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<HistoryInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -56,7 +56,7 @@ namespace ElevenLabs.History
         public async Task<HistoryItem> GetHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.GetAsync(GetUrl($"/{id}"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<HistoryItem>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -98,7 +98,7 @@ namespace ElevenLabs.History
         public async Task<bool> DeleteHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
-            await response.ReadAsStringAsync(EnableDebug);
+            await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return response.IsSuccessStatusCode;
         }
 

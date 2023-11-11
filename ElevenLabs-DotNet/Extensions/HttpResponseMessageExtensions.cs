@@ -10,9 +10,9 @@ namespace ElevenLabs.Extensions
 {
     internal static class HttpResponseMessageExtensions
     {
-        public static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse = false, [CallerMemberName] string methodName = null)
+        public static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse = false, CancellationToken cancellationToken = default, [CallerMemberName] string methodName = null)
         {
-            var responseAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {

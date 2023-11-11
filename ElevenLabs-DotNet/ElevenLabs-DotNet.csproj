@@ -14,8 +14,10 @@
     <Company>RageAgainstThePixel</Company>
     <Copyright>2023</Copyright>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <Version>2.0.0</Version>
-    <PackageReleaseNotes>Version 2.0.0
+    <Version>2.0.1</Version>
+    <PackageReleaseNotes>Version 2.0.1
+- Pass some cancellation tokens to internals
+Version 2.0.0
 Refactoring to support latest API changes
 - Biggest Change is the new VoiceClip signature for all endpoints which contains all the information about the generated clip.
 - Refactored HistoryEndpoint
