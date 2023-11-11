@@ -25,7 +25,7 @@ namespace ElevenLabs.VoiceGeneration
         public async Task<GeneratedVoiceOptions> GetVoiceGenerationOptionsAsync(CancellationToken cancellationToken = default)
         {
             var response = await Api.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
@@ -66,7 +66,7 @@ namespace ElevenLabs.VoiceGeneration
         {
             var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
             var response = await Api.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }
