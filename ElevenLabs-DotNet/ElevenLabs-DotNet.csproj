@@ -14,8 +14,10 @@
     <Company>RageAgainstThePixel</Company>
     <Copyright>2023</Copyright>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <Version>2.0.2</Version>
-    <PackageReleaseNotes>Version 2.0.2
+    <Version>2.0.3</Version>
+    <PackageReleaseNotes>Version 2.0.3
+- Fixed text to speech streaming
+Version 2.0.2
 - Added the u-law format
 Version 2.0.1
 - Pass some cancellation tokens to internals

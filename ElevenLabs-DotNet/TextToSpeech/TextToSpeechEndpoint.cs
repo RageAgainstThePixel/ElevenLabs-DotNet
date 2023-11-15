@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,7 +88,12 @@ namespace ElevenLabs.TextToSpeech
                 parameters.Add(OptimizeStreamingLatencyParameter, optimizeStreamingLatency.ToString());
             }
 
-            var response = await Api.Client.PostAsync(GetUrl($"/{voice.Id}{(partialClipCallback == null ? string.Empty : "/stream")}", parameters), payload, cancellationToken).ConfigureAwait(false);
+            using var postRequest = new HttpRequestMessage(HttpMethod.Post, GetUrl($"/{voice.Id}{(partialClipCallback == null ? string.Empty : "/stream")}", parameters));
+            postRequest.Content = payload;
+            var requestOption = partialClipCallback == null
+                ? HttpCompletionOption.ResponseContentRead
+                : HttpCompletionOption.ResponseHeadersRead;
+            var response = await Api.Client.SendAsync(postRequest, requestOption, cancellationToken);
             await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
