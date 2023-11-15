@@ -19,7 +19,7 @@ namespace ElevenLabs.Tests
             var defaultVoiceSettings = await ElevenLabsClient.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
             var voiceClip = await ElevenLabsClient.TextToSpeechEndpoint.TextToSpeechAsync("The quick brown fox jumps over the lazy dog.", voice, defaultVoiceSettings);
             Assert.NotNull(voiceClip);
-            Console.WriteLine(voiceClip);
+            Console.WriteLine(voiceClip.Id);
         }
 
         [Test]
