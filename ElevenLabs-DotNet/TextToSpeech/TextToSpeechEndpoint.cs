@@ -87,11 +87,13 @@ namespace ElevenLabs.TextToSpeech
             {
                 parameters.Add(OptimizeStreamingLatencyParameter, optimizeStreamingLatency.ToString());
             }
-            var postRequest = new HttpRequestMessage(HttpMethod.Post, GetUrl($"/{voice.Id}{(partialClipCallback == null ? string.Empty : "/stream")}", parameters))
-            {
-                Content = payload,
-            };
-            var response = await Api.Client.SendAsync(postRequest, partialClipCallback == null ? HttpCompletionOption.ResponseContentRead :  HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+            using var postRequest = new HttpRequestMessage(HttpMethod.Post, GetUrl($"/{voice.Id}{(partialClipCallback == null ? string.Empty : "/stream")}", parameters));
+            postRequest.Content = payload;
+            var requestOption = partialClipCallback == null
+                ? HttpCompletionOption.ResponseContentRead
+                : HttpCompletionOption.ResponseHeadersRead;
+            var response = await Api.Client.SendAsync(postRequest, requestOption, cancellationToken);
             await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
