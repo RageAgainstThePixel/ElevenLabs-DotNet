@@ -17,13 +17,13 @@ namespace ElevenLabs.TextToSpeech
     /// <summary>
     /// Access to convert text to synthesized speech.
     /// </summary>
-    public sealed class TextToSpeechEndpoint : BaseEndPoint
+    public sealed class TextToSpeechEndpoint : ElevenLabsBaseEndPoint
     {
         private const string HistoryItemId = "history-item-id";
         private const string OutputFormatParameter = "output_format";
         private const string OptimizeStreamingLatencyParameter = "optimize_streaming_latency";
 
-        public TextToSpeechEndpoint(ElevenLabsClient api) : base(api) { }
+        public TextToSpeechEndpoint(ElevenLabsClient client) : base(client) { }
 
         protected override string Root => "text-to-speech";
 
@@ -76,7 +76,7 @@ namespace ElevenLabs.TextToSpeech
                 throw new ArgumentNullException(nameof(voice));
             }
 
-            var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await Api.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
+            var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await client.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
             var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model, defaultVoiceSettings)).ToJsonStringContent();
             var parameters = new Dictionary<string, string>
             {
@@ -93,7 +93,7 @@ namespace ElevenLabs.TextToSpeech
             var requestOption = partialClipCallback == null
                 ? HttpCompletionOption.ResponseContentRead
                 : HttpCompletionOption.ResponseHeadersRead;
-            var response = await Api.Client.SendAsync(postRequest, requestOption, cancellationToken);
+            var response = await client.Client.SendAsync(postRequest, requestOption, cancellationToken);
             await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 

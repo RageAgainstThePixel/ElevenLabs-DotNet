@@ -19,9 +19,12 @@ namespace ElevenLabs
         /// Creates a new client for the Eleven Labs API, handling auth and allowing for access to various API endpoints.
         /// </summary>
         /// <param name="elevenLabsAuthentication">The API authentication information to use for API calls,
-        /// or <see langword="null"/> to attempt to use the <see cref="ElevenLabs.ElevenLabsAuthentication.Default"/>,
-        /// potentially loading from environment vars or from a config file.</param>
-        /// <param name="clientSettings">Optional, <see cref="ElevenLabsClientSettings"/> for specifying a proxy domain.</param>
+        /// or <see langword="null"/> to attempt to use the <see cref="ElevenLabsAuthentication.Default"/>,
+        /// potentially loading from environment vars or from a config file.
+        /// </param>
+        /// <param name="clientSettings">
+        /// Optional, <see cref="ElevenLabsClientSettings"/> for specifying a proxy domain.
+        /// </param>
         /// <param name="httpClient">Optional, <see cref="HttpClient"/>.</param>
         /// <exception cref="AuthenticationException">Raised when authentication details are missing or invalid.</exception>
         public ElevenLabsClient(ElevenLabsAuthentication elevenLabsAuthentication = null, ElevenLabsClientSettings clientSettings = null, HttpClient httpClient = null)
@@ -58,6 +61,11 @@ namespace ElevenLabs
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
+
+        /// <summary>
+        /// Enables or disables debugging for all endpoints.
+        /// </summary>
+        public bool EnableDebug { get; set; }
 
         /// <summary>
         /// The API authentication information to use for API calls

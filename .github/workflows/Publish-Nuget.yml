@@ -34,27 +34,50 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - uses: microsoft/setup-msbuild@v1
+
+    - run: dotnet restore
+
+    - run: dotnet build --configuration Release --no-restore
 
     - name: Test Packages
-      run: dotnet test --configuration Release
       if: ${{ github.ref != 'refs/heads/main' && github.event_name != 'push' }}
+      run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --logger:trx --no-build --no-restore --results-directory ./test-results
       env:
         ELEVEN_LABS_API_KEY: ${{ secrets.ELEVEN_LABS_API_KEY }}
 
-    - name: Build Pack and Publish NuGet Package
+    - name: Publish Test Results
+      if: ${{ github.ref != 'refs/heads/main' && github.event_name != 'push' && always() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: test-results/**/*.trx
+        comment_mode: off
+        report_individual_runs: true
+        compare_to_earlier_commit: false
+
+    - name: Code Coverage Summary Report
+      if: ${{ github.ref != 'refs/heads/main' && github.event_name != 'push' && always() }}
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: test-results/**/coverage.cobertura.xml
+        badge: true
+        format: 'markdown'
+        output: 'both'
+
+    - name: Write Coverage Job Summary
+      if: ${{ github.ref != 'refs/heads/main' && github.event_name != 'push' && always() }}
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+    - name: Pack and Publish NuGet Package
       run: |
         $projectPath = "${{ github.workspace }}\ElevenLabs-DotNet"
         $proxyProjectPath = "${{ github.workspace }}\ElevenLabs-DotNet-Proxy"
-
-        # build all
-        dotnet build --configuration Release
 
         # pack ElevenLabs-DotNet
         dotnet pack $projectPath --configuration Release --include-symbols

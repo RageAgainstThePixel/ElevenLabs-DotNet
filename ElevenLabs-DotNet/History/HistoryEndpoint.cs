@@ -15,16 +15,19 @@ namespace ElevenLabs.History
     /// <summary>
     /// Access to your history. Your history is a list of all your created audio including its metadata.
     /// </summary>
-    public sealed class HistoryEndpoint : BaseEndPoint
+    public sealed class HistoryEndpoint : ElevenLabsBaseEndPoint
     {
-        public HistoryEndpoint(ElevenLabsClient api) : base(api) { }
+        public HistoryEndpoint(ElevenLabsClient client) : base(client) { }
 
         protected override string Root => "history";
 
         /// <summary>
         /// Get metadata about all your generated audio.
         /// </summary>
-        /// <param name="pageSize">Optional, number of items to return. Cannot exceed 1000.</param>
+        /// <param name="pageSize">
+        /// Optional, number of items to return. Cannot exceed 1000.<br/>
+        /// Default: 100
+        /// </param>
         /// <param name="startAfterId">Optional, the id of the item to start after.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="HistoryInfo"/>.</returns>
@@ -42,7 +45,7 @@ namespace ElevenLabs.History
                 parameters.Add("start_after_history_item_id", startAfterId);
             }
 
-            var response = await Api.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
+            var response = await client.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<HistoryInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
@@ -55,7 +58,7 @@ namespace ElevenLabs.History
         /// <returns><see cref="HistoryItem"/></returns>
         public async Task<HistoryItem> GetHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.GetAsync(GetUrl($"/{id}"), cancellationToken);
+            var response = await client.Client.GetAsync(GetUrl($"/{id}"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<HistoryItem>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
@@ -68,8 +71,8 @@ namespace ElevenLabs.History
         /// <returns><see cref="VoiceClip"/>.</returns>
         public async Task<VoiceClip> DownloadHistoryAudioAsync(HistoryItem historyItem, CancellationToken cancellationToken = default)
         {
-            var voice = await Api.VoicesEndpoint.GetVoiceAsync(historyItem.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var response = await Api.Client.GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken).ConfigureAwait(false);
+            var voice = await client.VoicesEndpoint.GetVoiceAsync(historyItem.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await client.Client.GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(cancellationToken);
             var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var memoryStream = new MemoryStream();
@@ -97,14 +100,14 @@ namespace ElevenLabs.History
         /// <returns>True, if history item was successfully deleted.</returns>
         public async Task<bool> DeleteHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            var response = await Api.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
+            var response = await client.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
             await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return response.IsSuccessStatusCode;
         }
 
         /// <summary>
         /// Download one or more history items.<br/>
-        /// If no ids are specified, then all history items are downloaded.<br/>
+        /// If no ids are specified, then the last 100 history items are downloaded.<br/>
         /// If one history item id is provided, we will return a single audio file.<br/>
         /// If more than one history item ids are provided multiple audio files will be downloaded.
         /// </summary>

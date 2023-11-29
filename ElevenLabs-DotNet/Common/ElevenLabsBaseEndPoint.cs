@@ -5,11 +5,12 @@ using System.Linq;
 
 namespace ElevenLabs
 {
-    public abstract class BaseEndPoint
+    public abstract class ElevenLabsBaseEndPoint
     {
-        internal BaseEndPoint(ElevenLabsClient api) => Api = api;
+        internal ElevenLabsBaseEndPoint(ElevenLabsClient client) => this.client = client;
 
-        protected readonly ElevenLabsClient Api;
+        // ReSharper disable once InconsistentNaming
+        protected readonly ElevenLabsClient client;
 
         /// <summary>
         /// The root endpoint address.
@@ -23,7 +24,7 @@ namespace ElevenLabs
         /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
         protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
         {
-            var result = string.Format(Api.ElevenLabsClientSettings.BaseRequestUrlFormat, $"{Root}{endpoint}");
+            var result = string.Format(client.ElevenLabsClientSettings.BaseRequestUrlFormat, $"{Root}{endpoint}");
 
             if (queryParameters is { Count: not 0 })
             {
@@ -33,10 +34,16 @@ namespace ElevenLabs
             return result;
         }
 
+        private bool enableDebug;
+
         /// <summary>
         /// Enables or disables the logging of all http responses of header and body information for this endpoint.<br/>
         /// WARNING! Enabling this in your production build, could potentially leak sensitive information!
         /// </summary>
-        public bool EnableDebug { get; set; }
+        public bool EnableDebug
+        {
+            get => enableDebug || client.EnableDebug;
+            set => enableDebug = value;
+        }
     }
 }

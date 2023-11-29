@@ -6,9 +6,13 @@ using System.Text.Json;
 
 namespace ElevenLabs
 {
+    /// <summary>
+    /// Represents authentication for ElevenLabs
+    /// </summary>
     public sealed class ElevenLabsAuthentication
     {
-        private const string ELEVEN_LABS_API_KEY = "ELEVEN_LABS_API_KEY";
+        internal const string CONFIG_FILE = ".elevenlabs";
+        private const string ELEVEN_LABS_API_KEY = nameof(ELEVEN_LABS_API_KEY);
 
         private readonly AuthInfo authInfo;
 
@@ -100,11 +104,16 @@ namespace ElevenLabs
         /// or <see langword="null"/> if it was not successful in finding a config
         /// (or if the config file didn't contain correctly formatted API keys)
         /// </returns>
-        public static ElevenLabsAuthentication LoadFromDirectory(string directory = null, string filename = ".elevenlabs", bool searchUp = true)
+        public static ElevenLabsAuthentication LoadFromDirectory(string directory = null, string filename = CONFIG_FILE, bool searchUp = true)
         {
             if (string.IsNullOrWhiteSpace(directory))
             {
                 directory = Environment.CurrentDirectory;
+            }
+
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                filename = CONFIG_FILE;
             }
 
             AuthInfo authInfo = null;
@@ -161,13 +170,7 @@ namespace ElevenLabs
                 }
             }
 
-            if (authInfo == null ||
-                string.IsNullOrEmpty(authInfo.ApiKey))
-            {
-                return null;
-            }
-
-            return new ElevenLabsAuthentication(authInfo);
+            return string.IsNullOrEmpty(authInfo?.ApiKey) ? null : new ElevenLabsAuthentication(authInfo);
         }
     }
 }

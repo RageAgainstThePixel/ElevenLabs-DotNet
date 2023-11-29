@@ -14,7 +14,7 @@ namespace ElevenLabs.Tests
         public async Task Test_01_TextToSpeech()
         {
             Assert.NotNull(ElevenLabsClient.TextToSpeechEndpoint);
-            var voice = (await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
+            var voice = Voices.Voice.Adam;
             Assert.NotNull(voice);
             var defaultVoiceSettings = await ElevenLabsClient.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
             var voiceClip = await ElevenLabsClient.TextToSpeechEndpoint.TextToSpeechAsync("The quick brown fox jumps over the lazy dog.", voice, defaultVoiceSettings);
@@ -28,10 +28,9 @@ namespace ElevenLabs.Tests
             Assert.NotNull(ElevenLabsClient.TextToSpeechEndpoint);
             var voice = (await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
             Assert.NotNull(voice);
-            var partialClips = new Queue<VoiceClip>();
             var defaultVoiceSettings = await ElevenLabsClient.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
+            var partialClips = new Queue<VoiceClip>();
             var voiceClip = await ElevenLabsClient.TextToSpeechEndpoint.TextToSpeechAsync("The quick brown fox jumps over the lazy dog.", voice, defaultVoiceSettings,
-
             partialClipCallback: async partialClip =>
             {
                 Assert.IsNotNull(partialClip);

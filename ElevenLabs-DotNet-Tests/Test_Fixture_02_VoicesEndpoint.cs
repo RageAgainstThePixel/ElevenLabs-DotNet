@@ -43,7 +43,7 @@ namespace ElevenLabs.Tests
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();
             Assert.NotNull(results);
             Assert.IsNotEmpty(results);
-            var voiceToGet = results.MinBy(voice => voice.Name);
+            var voiceToGet = results.OrderBy(voice => voice.Name).FirstOrDefault();
             var result = await ElevenLabsClient.VoicesEndpoint.GetVoiceAsync(voiceToGet);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Id} | {result.Name} | {result.PreviewUrl}");
