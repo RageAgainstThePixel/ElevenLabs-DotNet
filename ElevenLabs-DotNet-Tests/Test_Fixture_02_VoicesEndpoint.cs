@@ -78,7 +78,7 @@ namespace ElevenLabs.Tests
             {
                 { "accent", "american" }
             };
-            var clipPath = Path.GetFullPath("..\\..\\..\\Assets\\test_sample_01.ogg");
+            var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
             var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { clipPath }, testLabels);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Name}");
@@ -99,7 +99,7 @@ namespace ElevenLabs.Tests
                 { "accent", "american" },
                 { "key", "value" }
             };
-            var clipPath = Path.GetFullPath("..\\..\\..\\Assets\\test_sample_01.ogg");
+            var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
             var result = await ElevenLabsClient.VoicesEndpoint.EditVoiceAsync(voiceToEdit, new[] { clipPath }, testLabels);
             Assert.NotNull(result);
             Assert.IsTrue(result);
