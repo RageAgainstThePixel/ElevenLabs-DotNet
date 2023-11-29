@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Models
 {
-    public sealed class ModelsEndpoint : BaseEndPoint
+    public sealed class ModelsEndpoint : ElevenLabsBaseEndPoint
     {
-        public ModelsEndpoint(ElevenLabsClient api) : base(api) { }
+        public ModelsEndpoint(ElevenLabsClient client) : base(client) { }
 
         protected override string Root => "models";
 
@@ -19,7 +19,7 @@ namespace ElevenLabs.Models
         /// <returns>A list of <see cref="Model"/>s you can use.</returns>
         public async Task<IReadOnlyList<Model>> GetModelsAsync()
         {
-            var response = await Api.Client.GetAsync(GetUrl());
+            var response = await client.Client.GetAsync(GetUrl());
             var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }

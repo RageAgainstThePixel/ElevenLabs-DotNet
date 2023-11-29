@@ -14,11 +14,11 @@ namespace ElevenLabs.Tests
         public async Task Test_01_GetHistory()
         {
             Assert.NotNull(ElevenLabsClient.HistoryEndpoint);
-            var results = await ElevenLabsClient.HistoryEndpoint.GetHistoryAsync();
-            Assert.NotNull(results);
-            Assert.IsNotEmpty(results.HistoryItems);
+            var historyInfo = await ElevenLabsClient.HistoryEndpoint.GetHistoryAsync();
+            Assert.NotNull(historyInfo);
+            Assert.IsNotEmpty(historyInfo.HistoryItems);
 
-            foreach (var item in results.HistoryItems.OrderBy(item => item.Date))
+            foreach (var item in historyInfo.HistoryItems.OrderBy(item => item.Date))
             {
                 Console.WriteLine($"{item.State} {item.Date} | {item.Id} | {item.Text.Length} | {item.Text}");
             }
@@ -31,7 +31,7 @@ namespace ElevenLabs.Tests
             var historyInfo = await ElevenLabsClient.HistoryEndpoint.GetHistoryAsync();
             Assert.NotNull(historyInfo);
             Assert.IsNotEmpty(historyInfo.HistoryItems);
-            var downloadItem = historyInfo.HistoryItems.MaxBy(item => item.Date);
+            var downloadItem = historyInfo.HistoryItems.OrderByDescending(item => item.Date).FirstOrDefault();
             Assert.NotNull(downloadItem);
             Console.WriteLine($"Downloading {downloadItem!.Id}...");
             var voiceClip = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryAudioAsync(downloadItem);

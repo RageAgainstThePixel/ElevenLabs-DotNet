@@ -9,11 +9,10 @@ namespace ElevenLabs.User
     /// <summary>
     /// Access to your user account information.
     /// </summary>
-    public sealed class UserEndpoint : BaseEndPoint
+    public sealed class UserEndpoint : ElevenLabsBaseEndPoint
     {
-        public UserEndpoint(ElevenLabsClient api) : base(api) { }
+        public UserEndpoint(ElevenLabsClient client) : base(client) { }
 
-        /// <inheritdoc />
         protected override string Root => "user";
 
         /// <summary>
@@ -21,7 +20,7 @@ namespace ElevenLabs.User
         /// </summary>
         public async Task<UserInfo> GetUserInfoAsync()
         {
-            var response = await Api.Client.GetAsync(GetUrl());
+            var response = await client.Client.GetAsync(GetUrl());
             var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<UserInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
@@ -31,7 +30,7 @@ namespace ElevenLabs.User
         /// </summary>
         public async Task<SubscriptionInfo> GetSubscriptionInfoAsync()
         {
-            var response = await Api.Client.GetAsync(GetUrl("/subscription"));
+            var response = await client.Client.GetAsync(GetUrl("/subscription"));
             var responseAsString = await response.ReadAsStringAsync(EnableDebug);
             return JsonSerializer.Deserialize<SubscriptionInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }

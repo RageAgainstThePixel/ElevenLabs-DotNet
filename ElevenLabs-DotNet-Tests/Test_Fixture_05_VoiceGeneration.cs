@@ -35,6 +35,7 @@ namespace ElevenLabs.Tests
             Assert.NotNull(result);
             Console.WriteLine(result.Id);
             var deleteResult = await ElevenLabsClient.VoicesEndpoint.DeleteVoiceAsync(result.Id);
+            Assert.NotNull(deleteResult);
             Assert.IsTrue(deleteResult);
         }
     }

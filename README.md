@@ -5,9 +5,9 @@
 [![NuGet version (ElevenLabs-DotNet-Proxy)](https://img.shields.io/nuget/v/ElevenLabs-DotNet-Proxy.svg?label=ElevenLabs-DotNet-Proxy&logo=nuget)](https://www.nuget.org/packages/ElevenLabs-DotNet-Proxy/)
 [![Nuget Publish](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml/badge.svg)](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml)
 
-A non-official [Eleven Labs](https://elevenlabs.io/) voice synthesis RESTful client.
+A non-official [Eleven Labs](https://elevenlabs.io/?from=partnerbrown9849) voice synthesis RESTful client.
 
-I am not affiliated with Eleven Labs and an account with api access is required.
+I am not affiliated with ElevenLabs and an account with api access is required.
 
 ***All copyrights, trademarks, logos, and assets are the property of their respective owners.***
 
@@ -15,7 +15,7 @@ I am not affiliated with Eleven Labs and an account with api access is required.
 
 ### Install from NuGet
 
-Install package [`ElevenLabs` from Nuget](https://www.nuget.org/packages/ElevenLabs-DotNet/).  Here's how via command line:
+Install package [`ElevenLabs-DotNet` from Nuget](https://www.nuget.org/packages/ElevenLabs-DotNet/).  Here's how via command line:
 
 ```powershell
 Install-Package ElevenLabs-DotNet
@@ -34,7 +34,7 @@ Install-Package ElevenLabs-DotNet
 - [Authentication](#authentication)
 - [API Proxy](#api-proxy)
 - [Text to Speech](#text-to-speech)
-  - [Stream Text To Speech](#stream-text-to-speech) :new:
+  - [Stream Text To Speech](#stream-text-to-speech)
 - [Voices](#voices)
   - [Get All Voices](#get-all-voices)
   - [Get Default Voice Settings](#get-default-voice-settings)
@@ -44,13 +44,13 @@ Install-Package ElevenLabs-DotNet
   - [Edit Voice](#edit-voice)
   - [Delete Voice](#delete-voice)
   - [Samples](#samples)
-    - [Download Voice Sample](#download-voice-sample) :new:
+    - [Download Voice Sample](#download-voice-sample)
     - [Delete Voice Sample](#delete-voice-sample)
 - [History](#history)
   - [Get History](#get-history)
   - [Get History Item](#get-history-item)
-  - [Download History Audio](#download-history-audio) :new:
-  - [Download History Items](#download-history-items) :new:
+  - [Download History Audio](#download-history-audio)
+  - [Download History Items](#download-history-items)
   - [Delete History Item](#delete-history-item)
 - [User](#user)
   - [Get User Info](#get-user-info)
@@ -112,7 +112,7 @@ var api = new ElevenLabsClient(ElevenLabsAuthentication.LoadFromEnv());
 
 Using either the [ElevenLabs-DotNet](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet) or [com.rest.elevenlabs](https://github.com/RageAgainstThePixel/com.rest.elevenlabs) packages directly in your front-end app may expose your API keys and other sensitive information. To mitigate this risk, it is recommended to set up an intermediate API that makes requests to ElevenLabs on behalf of your front-end app. This library can be utilized for both front-end and intermediary host configurations, ensuring secure communication with the ElevenLabs API.
 
-### Front End Example
+#### Front End Example
 
 In the front end example, you will need to securely authenticate your users using your preferred OAuth provider. Once the user is authenticated, exchange your custom auth token with your API key on the backend.
 
@@ -135,7 +135,7 @@ var api = new ElevenLabsClient(auth, settings);
 
 This setup allows your front end application to securely communicate with your backend that will be using the ElevenLabs-DotNet-Proxy, which then forwards requests to the ElevenLabs API. This ensures that your ElevenLabs API keys and other sensitive information remain secure throughout the process.
 
-### Back End Example
+#### Back End Example
 
 In this example, we demonstrate how to set up and use `ElevenLabsProxyStartup` in a new ASP.NET Core web app. The proxy server will handle authentication and forward requests to the ElevenLabs API, ensuring that your API keys and other sensitive information remain secure.
 
@@ -182,7 +182,8 @@ Convert text to speech.
 var api = new ElevenLabsClient();
 var text = "The quick brown fox jumps over the lazy dog.";
 var voice = (await api.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
-var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice);
+var defaultVoiceSettings = await api.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
+var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice, defaultVoiceSettings);
 await File.WriteAllBytesAsync($"{voiceClip.Id}.mp3", voiceClip.ClipData.ToArray());
 ```
 
@@ -310,17 +311,21 @@ Access to your previously synthesized audio clips including its metadata.
 
 #### Get History
 
+Get metadata about all your generated audio.
+
 ```csharp
 var api = new ElevenLabsClient();
 var historyItems = await api.HistoryEndpoint.GetHistoryAsync();
 
-foreach (var historyItem in historyItems.OrderBy(historyItem => historyItem.Date))
+foreach (var item in historyItems.OrderBy(historyItem => historyItem.Date))
 {
-    Console.WriteLine($"{historyItem.State} {historyItem.Date} | {historyItem.Id} | {historyItem.Text.Length} | {historyItem.Text}");
+    Console.WriteLine($"{item.State} {item.Date} | {item.Id} | {item.Text.Length} | {item.Text}");
 }
 ```
 
 #### Get History Item
+
+Get information about a specific item.
 
 ```csharp
 var api = new ElevenLabsClient();
@@ -337,9 +342,11 @@ await File.WriteAllBytesAsync($"{voiceClip.Id}.mp3", voiceClip.ClipData.ToArray(
 
 #### Download History Items
 
+Downloads the last 100 history items, or the collection of specified items.
+
 ```csharp
 var api = new ElevenLabsClient();
-var historyInfo = await api.HistoryEndpoint.DownloadHistoryItemsAsync();
+var voiceClips = await api.HistoryEndpoint.DownloadHistoryItemsAsync();
 ```
 
 #### Delete History Item
