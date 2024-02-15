@@ -64,9 +64,9 @@ namespace ElevenLabs.Voices
 
                 foreach (var voice in voices)
                 {
-                    voiceSettingsTasks.Add(Task.Run(LocalGetVoiceSettings, cancellationToken));
+                    voiceSettingsTasks.Add(Task.Run(LocalGetVoiceSettingsAsync, cancellationToken));
 
-                    async Task LocalGetVoiceSettings()
+                    async Task LocalGetVoiceSettingsAsync()
                     {
                         voice.Settings = await GetVoiceSettingsAsync(voice, cancellationToken).ConfigureAwait(false);
                     }
