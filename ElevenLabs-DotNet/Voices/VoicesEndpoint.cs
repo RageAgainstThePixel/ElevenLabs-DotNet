@@ -62,7 +62,7 @@ namespace ElevenLabs.Voices
             {
                 var voiceSettingsTasks = new List<Task>();
 
-                foreach(var voice in voices)
+                foreach (var voice in voices)
                 {
                     voiceSettingsTasks.Add(Task.Run(LocalGetVoiceSettings, cancellationToken));
 
