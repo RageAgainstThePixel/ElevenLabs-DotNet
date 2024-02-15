@@ -37,28 +37,44 @@ namespace ElevenLabs.Voices
         protected override string Root => "voices";
 
         /// <summary>
-        /// Gets a list of all available voices for a user.
+        /// Gets a list of all available voices for a user, and downloads all their settings.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
-        public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
+        {
+            return GetAllVoicesAsync(true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a list of all available voices for a user.
+        /// </summary>
+        /// <param name="downloadSettings">Whether to download all settings for the voices.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
+        public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(bool downloadSettings, CancellationToken cancellationToken = default)
         {
             var response = await client.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions).Voices;
-            var voiceSettingsTasks = new List<Task>();
 
-            foreach (var voice in voices)
+            if (downloadSettings)
             {
-                voiceSettingsTasks.Add(Task.Run(LocalGetVoiceSettings, cancellationToken));
+                var voiceSettingsTasks = new List<Task>();
 
-                async Task LocalGetVoiceSettings()
+                foreach(var voice in voices)
                 {
-                    voice.Settings = await GetVoiceSettingsAsync(voice, cancellationToken).ConfigureAwait(false);
+                    voiceSettingsTasks.Add(Task.Run(LocalGetVoiceSettings, cancellationToken));
+
+                    async Task LocalGetVoiceSettings()
+                    {
+                        voice.Settings = await GetVoiceSettingsAsync(voice, cancellationToken).ConfigureAwait(false);
+                    }
                 }
+
+                await Task.WhenAll(voiceSettingsTasks).ConfigureAwait(false);
             }
 
-            await Task.WhenAll(voiceSettingsTasks).ConfigureAwait(false);
             return voices.ToList();
         }
 
