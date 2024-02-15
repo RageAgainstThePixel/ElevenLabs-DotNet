@@ -197,7 +197,7 @@ var text = "The quick brown fox jumps over the lazy dog.";
 var voice = (await api.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
 string fileName = "myfile.mp3";
 using var outputFileStream = File.OpenWrite(fileName);
-var voiceClip = await TextToSpeechAsync(text, voice,
+var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice,
 partialClipCallback: async (partialClip) =>
 {
     // Write the incoming data to the output file stream.
