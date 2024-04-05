@@ -207,7 +207,7 @@ namespace ElevenLabs.Voices
 		/// Add a new voice to your collection of voices in VoiceLab from a stream
 		/// </summary>
 		/// <param name="name">Name of the voice you want to add.</param>
-		/// <param name="sampleDatums">Collection of samples as a stream to be used for the new voice</param>
+		/// <param name="sampleDatums">Collection of samples as an array of bytes to be used for the new voice</param>
 		/// <param name="labels">Optional, labels for the new voice.</param>
 		/// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
 		public async Task<Voice> AddVoiceAsync(string name, IEnumerable<byte[]> sampleDatums, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
