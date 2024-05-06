@@ -130,7 +130,7 @@ namespace ElevenLabs.Voices
         /// <summary>
         /// Edit your settings for a specific voice.
         /// </summary>
-        /// <param name="voiceId">Id of the voice settings to edit.</param>
+        /// <param name="voiceId">The id of the voice settings to edit.</param>
         /// <param name="voiceSettings"><see cref="VoiceSettings"/>.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>True, if voice settings was successfully edited.</returns>
@@ -203,59 +203,14 @@ namespace ElevenLabs.Voices
             return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-		/// <summary>
-		/// Add a new voice to your collection of voices in VoiceLab from a stream
-		/// </summary>
-		/// <param name="name">Name of the voice you want to add.</param>
-		/// <param name="sampleDatums">Collection of samples as an array of bytes to be used for the new voice</param>
-		/// <param name="labels">Optional, labels for the new voice.</param>
-		/// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-		public async Task<Voice> AddVoiceAsync(string name, IEnumerable<byte[]> sampleDatums, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
-		{
-			var form = new MultipartFormDataContent();
-
-			if (string.IsNullOrWhiteSpace(name))
-			{
-				throw new ArgumentNullException(nameof(name));
-			}
-
-			form.Add(new StringContent(name), "name");
-
-			if (sampleDatums != null)
-			{
-				int fileItr = 0;
-				foreach (byte[] datum in sampleDatums)
-				{
-					try
-					{
-						form.Add(new ByteArrayContent(datum), "files", $"file-{fileItr++}");
-					}
-					catch (Exception e)
-					{
-						Console.WriteLine(e);
-					}
-				}
-			}
-
-			if (labels != null)
-			{
-				form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
-			}
-
-			var response = await client.Client.PostAsync(GetUrl("/add"), form, cancellationToken).ConfigureAwait(false);
-			var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-			var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
-			return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
-		}
-
-		/// <summary>
-		/// Add a new voice to your collection of voices in VoiceLab from a stream
-		/// </summary>
-		/// <param name="name">Name of the voice you want to add.</param>
-		/// <param name="sampleStreams">Collection of samples as a stream to be used for the new voice</param>
-		/// <param name="labels">Optional, labels for the new voice.</param>
-		/// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-		public async Task<Voice> AddVoiceAsync(string name, IEnumerable<Stream> sampleStreams, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Add a new voice to your collection of voices in VoiceLab from a stream
+        /// </summary>
+        /// <param name="name">Name of the voice you want to add.</param>
+        /// <param name="samples">Collection of samples as an array of bytes to be used for the new voice</param>
+        /// <param name="labels">Optional, labels for the new voice.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        public async Task<Voice> AddVoiceAsync(string name, IEnumerable<byte[]> samples, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
         {
             var form = new MultipartFormDataContent();
 
@@ -264,25 +219,71 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (samples == null)
+            {
+                throw new ArgumentNullException(nameof(samples));
+            }
+
             form.Add(new StringContent(name), "name");
 
-            if (sampleStreams != null)
+            var fileItr = 0;
+
+            foreach (var content in samples)
             {
-                int fileItr = 0;
-                foreach (Stream voiceStream in sampleStreams)
+                try
                 {
-                    try
-                    {
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            await voiceStream.CopyToAsync(ms, cancellationToken);
-                            form.Add(new ByteArrayContent(ms.ToArray()),"files", $"file-{fileItr++}");
-                        }
-					}
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    form.Add(new ByteArrayContent(content), "files", $"file-{fileItr++}");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+
+            if (labels != null)
+            {
+                form.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
+            }
+
+            var response = await client.Client.PostAsync(GetUrl("/add"), form, cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
+            var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Add a new voice to your collection of voices in VoiceLab from a stream
+        /// </summary>
+        /// <param name="name">Name of the voice you want to add.</param>
+        /// <param name="sampleStreams">Collection of samples as a stream to be used for the new voice</param>
+        /// <param name="labels">Optional, labels for the new voice.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        public async Task<Voice> AddVoiceAsync(string name, IEnumerable<Stream> sampleStreams, IReadOnlyDictionary<string, string> labels = null, CancellationToken cancellationToken = default)
+        {
+            var form = new MultipartFormDataContent();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (sampleStreams == null)
+            {
+                throw new ArgumentNullException(nameof(sampleStreams));
+            }
+
+            form.Add(new StringContent(name), "name");
+            var fileItr = 0;
+
+            foreach (var voiceStream in sampleStreams)
+            {
+                try
+                {
+                    form.Add(new StreamContent(voiceStream), "files", $"file-{fileItr++}");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             }
 
