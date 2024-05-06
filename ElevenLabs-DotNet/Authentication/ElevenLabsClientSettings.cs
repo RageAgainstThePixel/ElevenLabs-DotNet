@@ -6,8 +6,9 @@ namespace ElevenLabs
 {
     public sealed class ElevenLabsClientSettings
     {
-        internal const string ElevenLabsDomain = "api.elevenlabs.io";
+        internal const string Https = "https://";
         internal const string DefaultApiVersion = "v1";
+        internal const string ElevenLabsDomain = "api.elevenlabs.io";
 
         /// <summary>
         /// Creates a new instance of <see cref="ElevenLabsClientSettings"/> for use with ElevenLabs API.
@@ -17,7 +18,7 @@ namespace ElevenLabs
             Domain = ElevenLabsDomain;
             ApiVersion = "v1";
             BaseRequest = $"/{ApiVersion}/";
-            BaseRequestUrlFormat = $"https://{Domain}{BaseRequest}{{0}}";
+            BaseRequestUrlFormat = $"{Https}{Domain}{BaseRequest}{{0}}";
         }
 
         /// <summary>
@@ -32,8 +33,8 @@ namespace ElevenLabs
                 domain = ElevenLabsDomain;
             }
 
-            if (!domain.Contains(".") &&
-                !domain.Contains(":"))
+            if (!domain.Contains('.') &&
+                !domain.Contains(':'))
             {
                 throw new ArgumentException($"You're attempting to pass a \"resourceName\" parameter to \"{nameof(domain)}\". Please specify \"resourceName:\" for this parameter in constructor.");
             }
@@ -43,10 +44,10 @@ namespace ElevenLabs
                 apiVersion = DefaultApiVersion;
             }
 
-            Domain = domain;
+            Domain = domain.Contains("http") ? domain : $"{Https}{domain}";
             ApiVersion = apiVersion;
             BaseRequest = $"/{ApiVersion}/";
-            BaseRequestUrlFormat = $"https://{Domain}{BaseRequest}{{0}}";
+            BaseRequestUrlFormat = $"{Domain}{BaseRequest}{{0}}";
         }
 
         public string Domain { get; }
@@ -57,6 +58,6 @@ namespace ElevenLabs
 
         public string BaseRequestUrlFormat { get; }
 
-        public static ElevenLabsClientSettings Default { get; } = new ElevenLabsClientSettings();
+        public static ElevenLabsClientSettings Default { get; } = new();
     }
 }

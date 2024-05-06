@@ -12,10 +12,14 @@
     <Authors>Stephen Hodgson</Authors>
     <Title>ElevenLabs-DotNet</Title>
     <Company>RageAgainstThePixel</Company>
-    <Copyright>2023</Copyright>
+    <Copyright>2024</Copyright>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <Version>2.1.1</Version>
-    <PackageReleaseNotes>Version 2.1.1
+    <Version>2.2.0</Version>
+    <PackageReleaseNotes>Version 2.2.0
+- Changed ElevenLabsClient to be IDisposable
+  - The ElevenLabsClient must now be disposed if you do not pass your own HttpClient
+- Updated ElevenLabsClientSettings to accept custom domains
+Version 2.1.1
 - Added VoicesEndpoint.GetAllVoicesAsync overload that allows skipping downloading the voice settings
 Version 2.1.0
 - Added ElevenLabsClient.EnableDebug option to enable and disable for all endpoints
