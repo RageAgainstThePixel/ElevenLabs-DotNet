@@ -6,6 +6,7 @@ using ElevenLabs.TextToSpeech;
 using ElevenLabs.User;
 using ElevenLabs.VoiceGeneration;
 using ElevenLabs.Voices;
+using System;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Text.Json;
@@ -13,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace ElevenLabs
 {
-    public sealed class ElevenLabsClient
+    public sealed class ElevenLabsClient : IDisposable
     {
         /// <summary>
         /// Creates a new client for the Eleven Labs API, handling auth and allowing for access to various API endpoints.
@@ -27,6 +28,12 @@ namespace ElevenLabs
         /// </param>
         /// <param name="httpClient">Optional, <see cref="HttpClient"/>.</param>
         /// <exception cref="AuthenticationException">Raised when authentication details are missing or invalid.</exception>
+        /// <see cref="ElevenLabsClient"/> implements <see cref="IDisposable"/> to manage the lifecycle of the resources it uses, including <see cref="HttpClient"/>.
+        /// <remarks>
+        /// When you initialize <see cref="ElevenLabsClient"/>, it will create an internal <see cref="HttpClient"/> instance if one is not provided.
+        /// This internal HttpClient is disposed of when ElevenLabsClient is disposed of.
+        /// If you provide an external HttpClient instance to ElevenLabsClient, you are responsible for managing its disposal.
+        /// </remarks>
         public ElevenLabsClient(ElevenLabsAuthentication elevenLabsAuthentication = null, ElevenLabsClientSettings clientSettings = null, HttpClient httpClient = null)
         {
             ElevenLabsAuthentication = elevenLabsAuthentication ?? ElevenLabsAuthentication.Default;
@@ -37,7 +44,19 @@ namespace ElevenLabs
                 throw new AuthenticationException("You must provide API authentication.  Please refer to https://github.com/RageAgainstThePixel/ElevenLabs-DotNet#authentication for details.");
             }
 
-            Client = httpClient ?? new HttpClient();
+            if (httpClient == null)
+            {
+                httpClient = new HttpClient(new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = TimeSpan.FromMinutes(15)
+                });
+            }
+            else
+            {
+                isCustomClient = true;
+            }
+
+            Client = httpClient;
             Client.DefaultRequestHeaders.Add("User-Agent", "ElevenLabs-DotNet");
             Client.DefaultRequestHeaders.Add("xi-api-key", ElevenLabsAuthentication.ApiKey);
 
@@ -49,6 +68,38 @@ namespace ElevenLabs
             VoiceGenerationEndpoint = new VoiceGenerationEndpoint(this);
         }
 
+        ~ElevenLabsClient()
+        {
+            Dispose(false);
+        }
+
+        #region IDisposable
+
+        private bool isDisposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!isDisposed && disposing)
+            {
+                if (!isCustomClient)
+                {
+                    Client?.Dispose();
+                }
+
+                isDisposed = true;
+            }
+        }
+
+        #endregion IDisposable
+
+        private bool isCustomClient;
+
         /// <summary>
         /// <see cref="HttpClient"/> to use when making calls to the API.
         /// </summary>
@@ -57,7 +108,7 @@ namespace ElevenLabs
         /// <summary>
         /// The <see cref="JsonSerializationOptions"/> to use when making calls to the API.
         /// </summary>
-        internal static JsonSerializerOptions JsonSerializationOptions { get; } = new JsonSerializerOptions
+        internal static JsonSerializerOptions JsonSerializationOptions { get; } = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
