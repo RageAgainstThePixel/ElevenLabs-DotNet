@@ -51,7 +51,7 @@ In this example, we demonstrate how to set up and use `ElevenLabsProxyStartup` i
     - Powershell install: `Install-Package ElevenLabs-DotNet-Proxy`
     - Manually editing .csproj: `<PackageReference Include="ElevenLabs-DotNet-Proxy" />`
 3. Create a new class that inherits from `AbstractAuthenticationFilter` and override the `ValidateAuthentication` method. This will implement the `IAuthenticationFilter` that you will use to check user session token against your internal server.
-4. In `Program.cs`, create a new proxy web application by calling `ElevenLabsProxyStartup.CreateDefaultHost` method, passing your custom `AuthenticationFilter` as a type argument.
+4. In `Program.cs`, create a new proxy web application by calling `ElevenLabsProxyStartup.CreateWebApplication` method, passing your custom `AuthenticationFilter` as a type argument.
 5. Create `ElevenLabsAuthentication` and `ElevenLabsClientSettings` as you would normally with your API keys, org id, or Azure settings.
 
 ```csharp
@@ -63,7 +63,19 @@ public partial class Program
         {
             // You will need to implement your own class to properly test
             // custom issued tokens you've setup for your end users.
-            if (!request["xi-api-key"].ToString().Contains(userToken))
+            if (!request["xi-api-key"].ToString().Contains(TestUserToken))
+            {
+                throw new AuthenticationException("User is not authorized");
+            }
+        }
+
+        public override async Task ValidateAuthenticationAsync(IHeaderDictionary request)
+        {
+            await Task.CompletedTask; // remote resource call
+
+            // You will need to implement your own class to properly test
+            // custom issued tokens you've setup for your end users.
+            if (!request["xi-api-key"].ToString().Contains(TestUserToken))
             {
                 throw new AuthenticationException("User is not authorized");
             }
@@ -72,9 +84,9 @@ public partial class Program
 
     public static void Main(string[] args)
     {
-        var client = new ElevenLabsClient();
-        var proxy = ElevenLabsProxyStartup.CreateDefaultHost<AuthenticationFilter>(args, client);
-        proxy.Run();
+        var auth = ElevenLabsAuthentication.LoadFromEnv();
+        var client = new ElevenLabsClient(auth);
+        ElevenLabsProxyStartup.CreateWebApplication<AuthenticationFilter>(args, client).Run();
     }
 }
 ```

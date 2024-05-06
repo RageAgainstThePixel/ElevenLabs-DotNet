@@ -86,7 +86,43 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_06_EditVoice()
+        public async Task Test_06_AddVoiceFromByteArray()
+        {
+            Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
+            var testLabels = new Dictionary<string, string>
+            {
+                { "accent", "american" }
+            };
+            var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
+            byte[] clipData = await File.ReadAllBytesAsync(clipPath);
+            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { clipData }, testLabels);
+            Assert.NotNull(result);
+            Console.WriteLine($"{result.Name}");
+            Assert.IsNotEmpty(result.Samples);
+        }
+
+
+        [Test]
+        public async Task Test_07_AddVoiceFromStream()
+        {
+            Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
+            var testLabels = new Dictionary<string, string>
+            {
+                { "accent", "american" }
+            };
+            var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
+
+            using (FileStream fs = File.OpenRead(clipPath))
+            {
+                var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { fs }, testLabels);
+                Assert.NotNull(result);
+                Console.WriteLine($"{result.Name}");
+                Assert.IsNotEmpty(result.Samples);
+            }
+        }
+
+        [Test]
+        public async Task Test_08_EditVoice()
         {
             Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();
@@ -106,7 +142,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_07_GetVoiceSample()
+        public async Task Test_09_GetVoiceSample()
         {
             Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();
@@ -124,7 +160,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_08_DeleteVoiceSample()
+        public async Task Test_10_DeleteVoiceSample()
         {
             Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();
@@ -143,7 +179,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_09_DeleteVoice()
+        public async Task Test_11_DeleteVoice()
         {
             Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();

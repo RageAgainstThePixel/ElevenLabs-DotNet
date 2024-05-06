@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -26,7 +27,7 @@ namespace ElevenLabs.Proxy
         private IAuthenticationFilter authenticationFilter;
 
         // Copied from https://github.com/microsoft/reverse-proxy/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/RequestUtilities.cs#L61-L83
-        private static readonly HashSet<string> ExcludedHeaders = new HashSet<string>()
+        private static readonly HashSet<string> excludedHeaders = new()
         {
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
@@ -49,7 +50,12 @@ namespace ElevenLabs.Proxy
 #endif
         };
 
-        public void ConfigureServices(IServiceCollection services) { }
+        /// <summary>
+        /// Configures the <see cref="elevenLabsClient"/> and <see cref="IAuthenticationFilter"/> services.
+        /// </summary>
+        /// <param name="services"></param>
+        public void ConfigureServices(IServiceCollection services)
+            => SetupServices(services.BuildServiceProvider());
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -58,8 +64,7 @@ namespace ElevenLabs.Proxy
                 app.UseDeveloperExceptionPage();
             }
 
-            elevenLabsClient = app.ApplicationServices.GetRequiredService<ElevenLabsClient>();
-            authenticationFilter = app.ApplicationServices.GetRequiredService<IAuthenticationFilter>();
+            SetupServices(app.ApplicationServices);
 
             app.UseHttpsRedirection();
             app.UseRouting();
@@ -77,25 +82,43 @@ namespace ElevenLabs.Proxy
         /// <param name="args">Startup args.</param>
         /// <param name="elevenLabsClient"><see cref="ElevenLabsClient"/> with configured <see cref="ElevenLabsAuthentication"/> and <see cref="ElevenLabsClientSettings"/>.</param>
         public static IHost CreateDefaultHost<T>(string[] args, ElevenLabsClient elevenLabsClient) where T : class, IAuthenticationFilter
-        {
-            return Host.CreateDefaultBuilder(args)
+            => Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<ElevenLabsProxyStartup>();
-                    webBuilder.ConfigureKestrel(options =>
-                    {
-                        options.AllowSynchronousIO = false;
-                        options.Limits.MinRequestBodyDataRate = null;
-                        options.Limits.MinResponseDataRate = null;
-                        options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
-                        options.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(2);
-                    });
+                    webBuilder.ConfigureKestrel(ConfigureKestrel);
                 })
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(elevenLabsClient);
                     services.AddSingleton<IAuthenticationFilter, T>();
                 }).Build();
+
+        public static WebApplication CreateWebApplication<T>(string[] args, ElevenLabsClient elevenLabsClient) where T : class, IAuthenticationFilter
+        {
+            var builder = WebApplication.CreateBuilder(args);
+            builder.WebHost.ConfigureKestrel(ConfigureKestrel);
+            builder.Services.AddSingleton(elevenLabsClient);
+            builder.Services.AddSingleton<IAuthenticationFilter, T>();
+            var app = builder.Build();
+            var startup = new ElevenLabsProxyStartup();
+            startup.Configure(app, app.Environment);
+            return app;
+        }
+
+        private static void ConfigureKestrel(KestrelServerOptions options)
+        {
+            options.AllowSynchronousIO = false;
+            options.Limits.MinRequestBodyDataRate = null;
+            options.Limits.MinResponseDataRate = null;
+            options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
+            options.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(2);
+        }
+
+        private void SetupServices(IServiceProvider serviceProvider)
+        {
+            elevenLabsClient = serviceProvider.GetRequiredService<ElevenLabsClient>();
+            authenticationFilter = serviceProvider.GetRequiredService<IAuthenticationFilter>();
         }
 
         private static async Task HealthEndpoint(HttpContext context)
@@ -115,31 +138,34 @@ namespace ElevenLabs.Proxy
         {
             try
             {
+                // ReSharper disable once MethodHasAsyncOverload
+                // just in case either method is implemented we call it twice.
                 authenticationFilter.ValidateAuthentication(httpContext.Request.Headers);
+                await authenticationFilter.ValidateAuthenticationAsync(httpContext.Request.Headers);
 
                 var method = new HttpMethod(httpContext.Request.Method);
                 var uri = new Uri(string.Format(elevenLabsClient.ElevenLabsClientSettings.BaseRequestUrlFormat, $"{endpoint}{httpContext.Request.QueryString}"));
-                var elevenLabsRequest = new HttpRequestMessage(method, uri);
+                using var request = new HttpRequestMessage(method, uri);
 
-                elevenLabsRequest.Content = new StreamContent(httpContext.Request.Body);
+                request.Content = new StreamContent(httpContext.Request.Body);
 
                 if (httpContext.Request.ContentType != null)
                 {
-                    elevenLabsRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(httpContext.Request.ContentType);
+                    request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(httpContext.Request.ContentType);
                 }
 
-                var proxyResponse = await elevenLabsClient.Client.SendAsync(elevenLabsRequest, HttpCompletionOption.ResponseHeadersRead);
+                var proxyResponse = await elevenLabsClient.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 httpContext.Response.StatusCode = (int)proxyResponse.StatusCode;
 
                 foreach (var (key, value) in proxyResponse.Headers)
                 {
-                    if (ExcludedHeaders.Contains(key)) { continue; }
+                    if (excludedHeaders.Contains(key)) { continue; }
                     httpContext.Response.Headers[key] = value.ToArray();
                 }
 
                 foreach (var (key, value) in proxyResponse.Content.Headers)
                 {
-                    if (ExcludedHeaders.Contains(key)) { continue; }
+                    if (excludedHeaders.Contains(key)) { continue; }
                     httpContext.Response.Headers[key] = value.ToArray();
                 }
 
