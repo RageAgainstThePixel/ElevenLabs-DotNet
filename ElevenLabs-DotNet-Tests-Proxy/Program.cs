@@ -2,8 +2,8 @@
 
 using ElevenLabs.Proxy;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using System.Security.Authentication;
+using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests.Proxy
 {
@@ -27,14 +27,25 @@ namespace ElevenLabs.Tests.Proxy
                     throw new AuthenticationException("User is not authorized");
                 }
             }
+
+            public override async Task ValidateAuthenticationAsync(IHeaderDictionary request)
+            {
+                await Task.CompletedTask; // remote resource call
+
+                // You will need to implement your own class to properly test
+                // custom issued tokens you've setup for your end users.
+                if (!request["xi-api-key"].ToString().Contains(TestUserToken))
+                {
+                    throw new AuthenticationException("User is not authorized");
+                }
+            }
         }
 
         public static void Main(string[] args)
         {
             var auth = ElevenLabsAuthentication.LoadFromEnv();
             var client = new ElevenLabsClient(auth);
-            var proxy = ElevenLabsProxyStartup.CreateDefaultHost<AuthenticationFilter>(args, client);
-            proxy.Run();
+            ElevenLabsProxyStartup.CreateWebApplication<AuthenticationFilter>(args, client).Run();
         }
     }
 }

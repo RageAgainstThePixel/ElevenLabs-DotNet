@@ -19,6 +19,7 @@
 - Changed ElevenLabsClient to be IDisposable
   - The ElevenLabsClient must now be disposed if you do not pass your own HttpClient
 - Updated ElevenLabsClientSettings to accept custom domains
+- Added filesystemless overloads for uploading audio clips
 Version 2.1.1
 - Added VoicesEndpoint.GetAllVoicesAsync overload that allows skipping downloading the voice settings
 Version 2.1.0

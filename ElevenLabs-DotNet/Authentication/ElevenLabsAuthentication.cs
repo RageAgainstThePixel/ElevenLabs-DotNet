@@ -51,9 +51,9 @@ namespace ElevenLabs
                     return cachedDefault;
                 }
 
-                var auth = (LoadFromDirectory()) ??
-                            LoadFromDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)) ??
-                            LoadFromEnv();
+                var auth = LoadFromDirectory() ??
+                           LoadFromDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)) ??
+                           LoadFromEnv();
                 cachedDefault = auth;
                 return auth;
             }
