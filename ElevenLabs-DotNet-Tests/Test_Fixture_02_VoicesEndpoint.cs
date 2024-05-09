@@ -43,7 +43,7 @@ namespace ElevenLabs.Tests
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();
             Assert.NotNull(results);
             Assert.IsNotEmpty(results);
-            var voiceToGet = results.OrderBy(voice => voice.Name).FirstOrDefault();
+            var voiceToGet = results.MinBy(voice => voice.Name);
             var result = await ElevenLabsClient.VoicesEndpoint.GetVoiceAsync(voiceToGet);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Id} | {result.Name} | {result.PreviewUrl}");
@@ -94,7 +94,7 @@ namespace ElevenLabs.Tests
                 { "accent", "american" }
             };
             var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
-            byte[] clipData = await File.ReadAllBytesAsync(clipPath);
+            var clipData = await File.ReadAllBytesAsync(clipPath);
             var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { clipData }, testLabels);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Name}");
@@ -112,13 +112,11 @@ namespace ElevenLabs.Tests
             };
             var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
 
-            using (FileStream fs = File.OpenRead(clipPath))
-            {
-                var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { fs }, testLabels);
-                Assert.NotNull(result);
-                Console.WriteLine($"{result.Name}");
-                Assert.IsNotEmpty(result.Samples);
-            }
+            await using var fs = File.OpenRead(clipPath);
+            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { fs }, testLabels);
+            Assert.NotNull(result);
+            Console.WriteLine($"{result.Name}");
+            Assert.IsNotEmpty(result.Samples);
         }
 
         [Test]
