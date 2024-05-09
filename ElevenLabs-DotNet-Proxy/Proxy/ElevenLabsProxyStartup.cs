@@ -73,7 +73,7 @@ namespace ElevenLabs.Proxy
         /// </summary>
         /// <typeparam name="T"><see cref="IAuthenticationFilter"/> type to use to validate your custom issued tokens.</typeparam>
         /// <param name="args">Startup args.</param>
-        /// <param name="openAIClient"><see cref="OpenAIClient"/> with configured <see cref="OpenAIAuthentication"/> and <see cref="OpenAIClientSettings"/>.</param>
+        /// <param name="elevenLabsClient"><see cref="ElevenLabsClient"/> with configured <see cref="ElevenLabsAuthentication"/> and <see cref="ElevenLabsClientSettings"/>.</param>
         public static WebApplication CreateWebApplication<T>(string[] args, ElevenLabsClient elevenLabsClient) where T : class, IAuthenticationFilter
         {
             var builder = WebApplication.CreateBuilder(args);
