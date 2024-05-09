@@ -42,10 +42,16 @@ namespace ElevenLabs.Proxy
 #endif
         };
 
-        public static void MapElevenLabsEndpoints(this IEndpointRouteBuilder endpoints,
-            ElevenLabsClient elevenLabsClient, IAuthenticationFilter authenticationFilter)
+        /// <summary>
+        /// Maps the <see cref="ElevenLabsClient"/> endpoints.
+        /// </summary>
+        /// <param name="endpoints"><see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="elevenLabsClient"><see cref="ElevenLabsClient"/>.</param>
+        /// <param name="authenticationFilter"><see cref="IAuthenticationFilter"/>.</param>
+        /// <param name="routePrefix">Optional, custom route prefix. i.e. '/elevenlabs'.</param>
+        public static void MapElevenLabsEndpoints(this IEndpointRouteBuilder endpoints, ElevenLabsClient elevenLabsClient, IAuthenticationFilter authenticationFilter, string routePrefix = "")
         {
-            endpoints.Map($"{elevenLabsClient.ElevenLabsClientSettings.BaseRequest}{{**endpoint}}", HandleRequest);
+            endpoints.Map($"{routePrefix}{elevenLabsClient.ElevenLabsClientSettings.BaseRequest}{{**endpoint}}", HandleRequest);
 
             async Task HandleRequest(HttpContext httpContext, string endpoint)
             {

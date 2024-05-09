@@ -15,9 +15,11 @@
     <PackageTags>ElevenLabs, AI, ML, API, api-proxy, proxy, gateway</PackageTags>
     <Title>ElevenLabs API Proxy</Title>
     <PackageId>ElevenLabs-DotNet-Proxy</PackageId>
-    <Version>2.2.1</Version>
+    <Version>2.2.2</Version>
     <RootNamespace>ElevenLabs.Proxy</RootNamespace>
-    <PackageReleaseNotes>Version 2.2.1
+    <PackageReleaseNotes>Version 2.2.2
+- Updated EndpointRouteBuilder with optional route prefix parameter
+Version 2.2.1
 - Refactor with modern WebApplication builder
 - Added ElevenLabs.Proxy.EndpointRouteBuilder
     </PackageReleaseNotes>
