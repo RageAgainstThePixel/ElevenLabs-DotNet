@@ -42,9 +42,7 @@ namespace ElevenLabs.Voices
         /// <param name="cancellationToken"></param>
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
         public Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
-        {
-            return GetAllVoicesAsync(true, cancellationToken);
-        }
+            => GetAllVoicesAsync(true, cancellationToken);
 
         /// <summary>
         /// Gets a list of all available voices for a user.
