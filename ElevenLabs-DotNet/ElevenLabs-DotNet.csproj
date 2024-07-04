@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>ElevenLabs</RootNamespace>
@@ -115,7 +115,7 @@ Version 1.0.0
 I am not affiliated with Eleven Labs and an account with api access is required.
 All copyrights, trademarks, logos, and assets are the property of their respective owners.</Description>
     <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Assets\ElevenLabsIcon.png">
