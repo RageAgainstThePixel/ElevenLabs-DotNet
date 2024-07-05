@@ -27,6 +27,7 @@ internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
         (string dubbingId, float expectedDurationSecs) = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
         Assert.IsFalse(string.IsNullOrEmpty(dubbingId));
         Assert.IsTrue(expectedDurationSecs > 0);
+        Console.WriteLine($"Expected Duration: {expectedDurationSecs:0.00} seconds");
 
         Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(dubbingId, progress: new Progress<string>(msg => Console.WriteLine(msg))));
 
