@@ -42,7 +42,6 @@ internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
         }
         Assert.IsTrue(dubbedPath.Exists);
         Assert.IsTrue(dubbedPath.Length > 0);
-        Console.WriteLine($"Expected Duration: {expectedDurationSecs:0.00} seconds");
 
         FileInfo transcriptPath = new($"{srcFile.FullName}.dubbed.{request.TargetLanguage}.srt");
         {
