@@ -18,17 +18,17 @@ using System.Threading.Tasks;
 public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEndPoint(client)
 {
 	private const string DubbingId = "dubbing_id";
-	private const string ExpectedDurationSeconds = "expected_duration_sec";
+	private const string ExpectedDurationSecs = "expected_duration_sec";
 
 	/// <summary>
 	/// Gets or sets the maximum number of retry attempts to wait for the dubbing completion status.
 	/// </summary>
-	public int MaxRetries { get; set; } = 30;
+	public int DefaultMaxRetries { get; set; } = 30;
 
 	/// <summary>
 	/// Gets or sets the timeout interval for waiting between dubbing status checks.
 	/// </summary>
-	public TimeSpan TimeoutInterval { get; set; } = TimeSpan.FromSeconds(10);
+	public TimeSpan DefaultTimeoutInterval { get; set; } = TimeSpan.FromSeconds(10);
 
 	protected override string Root => "dubbing";
 
@@ -36,15 +36,13 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
 	/// Initiates a dubbing operation asynchronously based on the provided <paramref name="request"/>.
 	/// </summary>
 	/// <param name="request">The <see cref="DubbingRequest"/> containing dubbing configuration and files.</param>
-	/// <param name="progress">An optional <see cref="IProgress{string}"/> implementation to report progress updates.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
 	/// <returns>
-	/// A task representing the asynchronous dubbing operation. The task completes with the dubbing ID 
-	/// if the operation succeeds and the dubbing completes within the specified retries and timeout interval;
-	/// otherwise, returns <see langword="null"/> if the dubbing operation times out or fails.
+	/// A task representing the asynchronous dubbing operation. The task completes with the dubbing ID and expected duration 
+	/// in seconds if the operation succeeds.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
-	public async Task<string> DubbingAsync(DubbingRequest request, IProgress<string> progress = null, CancellationToken cancellationToken = default)
+	public async Task<(string DubbingId, float ExpectedDurationSecs)> DubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(request);
 
@@ -127,11 +125,8 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
 
 		using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
 		string dubbingId = doc.RootElement.GetProperty(DubbingId).GetString();
-		progress?.Report("Dubbing ID: " + dubbingId);
-
-		float expectedDurationSeconds = doc.RootElement.GetProperty(ExpectedDurationSeconds).GetSingle();
-		progress?.Report("Expected duration in seconds: " + expectedDurationSeconds.ToString(CultureInfo.InvariantCulture));
-		return await WaitForDubbingCompletionAsync(dubbingId, progress, cancellationToken).ConfigureAwait(false) ? dubbingId : null;
+		float expectedDurationSeconds = doc.RootElement.GetProperty(ExpectedDurationSecs).GetSingle();
+		return (dubbingId, expectedDurationSeconds);
 	}
 
 	private static void AppendFileToForm(MultipartFormDataContent content, string name, FileInfo fileInfo, MediaTypeHeaderValue mediaType)
@@ -152,9 +147,27 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
 		content.Add(fileContent);
 	}
 
-	private async Task<bool> WaitForDubbingCompletionAsync(string dubbingId, IProgress<string> progress = null, CancellationToken cancellationToken = default)
+	/// <summary>
+	/// Waits asynchronously for a dubbing operation to complete. This method polls the dubbing status at regular intervals,
+	/// reporting progress updates if a progress reporter is provided.
+	/// </summary>
+	/// <param name="dubbingId">The ID of the dubbing project.</param>
+	/// <param name="maxRetries">The maximum number of retries for checking the dubbing completion status. If not specified, a default value is used.</param>
+	/// <param name="timeoutInterval">The time to wait between each status check. If not specified, a default interval is used.</param>
+	/// <param name="progress">An optional <see cref="IProgress{string}"/> implementation to report progress updates, such as status messages and errors.</param>
+	/// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the waiting operation.</param>
+	/// <returns>
+	/// A task that represents the asynchronous wait operation. The task result is <see langword="true"/> if the dubbing completes successfully within the specified number of retries and timeout interval; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <remarks>
+	/// This method checks the dubbing status by sending requests to the dubbing service at intervals defined by the <paramref name="timeoutInterval"/> parameter.
+	/// If the dubbing status is "dubbed", the method returns <see langword="true"/>. If the dubbing fails or the specified number of <paramref name="maxRetries"/> is reached without successful completion, the method returns <see langword="false"/>.
+	/// </remarks>
+	public async Task<bool> WaitForDubbingCompletionAsync(string dubbingId, int? maxRetries = null, TimeSpan? timeoutInterval = null, IProgress<string> progress = null, CancellationToken cancellationToken = default)
 	{
-		for (int i = 0; i < MaxRetries; i++)
+		maxRetries ??= DefaultMaxRetries;
+		timeoutInterval ??= DefaultTimeoutInterval;
+		for (int i = 0; i < maxRetries; i++)
 		{
 			DubbingMetadataResponse metadata = await GetDubbingProjectMetadataAsync(dubbingId, cancellationToken).ConfigureAwait(false);
 			if (metadata.Status.Equals("dubbed", StringComparison.Ordinal))
@@ -163,16 +176,16 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
 			}
 			else if (metadata.Status.Equals("dubbing", StringComparison.Ordinal))
 			{
-				progress?.Report($"Dubbing in progress... Will check status again in {TimeoutInterval.TotalSeconds} seconds.");
-				await Task.Delay(TimeoutInterval, cancellationToken).ConfigureAwait(false);
+				progress?.Report($"Dubbing for {dubbingId} in progress... Will check status again in {timeoutInterval.Value} seconds.");
+				await Task.Delay(timeoutInterval.Value, cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				progress?.Report($"Dubbing failed: {metadata.Error}");
+				progress?.Report($"Dubbing for {dubbingId} failed: {metadata.Error}");
 				return false;
 			}
 		}
-		progress?.Report("Dubbing timed out or exceeded expected duration.");
+		progress?.Report($"Dubbing for {dubbingId} timed out or exceeded expected duration.");
 		return false;
 	}
 
