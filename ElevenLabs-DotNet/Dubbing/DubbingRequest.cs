@@ -10,7 +10,7 @@ public sealed class DubbingRequest
     /// <summary>
     /// A video (MediaType: "video/mp4") or audio (MediaType: "audio/mpeg") file intended for voice cloning
     /// </summary>
-    public (string FilePath, string MediaType) File { get; init; }
+    public (string FilePath, string MediaType)? File { get; init; }
 
     /// <summary>
     /// CSV file containing transcription/translation metadata
