@@ -42,18 +42,21 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
     /// in seconds if the operation succeeds.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
-    public async Task<(string DubbingId, float ExpectedDurationSecs)> DubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
+    public async Task<(string DubbingId, float ExpectedDurationSecs)> StartDubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        using var content = new MultipartFormDataContent();
+        using MultipartFormDataContent content = new();
 
         if (!string.IsNullOrEmpty(request.Mode))
         {
             content.Add(new StringContent(request.Mode), "mode");
         }
 
-        AppendFileToForm(content, "file", new(request.File.FilePath), MediaTypeHeaderValue.Parse(request.File.MediaType));
+        if (request.File.HasValue)
+        {
+            AppendFileToForm(content, "file", new(request.File.Value.FilePath), MediaTypeHeaderValue.Parse(request.File.Value.MediaType));
+        }
 
         if (!string.IsNullOrEmpty(request.CsvFilePath))
         {
@@ -123,9 +126,9 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
         using HttpResponseMessage response = await client.Client.PostAsync(GetUrl(), content, cancellationToken).ConfigureAwait(false);
         await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
 
-        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-        string dubbingId = doc.RootElement.GetProperty(DubbingId).GetString();
-        float expectedDurationSeconds = doc.RootElement.GetProperty(ExpectedDurationSecs).GetSingle();
+        using var responseDoc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+        string dubbingId = responseDoc.RootElement.GetProperty(DubbingId).GetString();
+        float expectedDurationSeconds = responseDoc.RootElement.GetProperty(ExpectedDurationSecs).GetSingle();
         return (dubbingId, expectedDurationSeconds);
     }
 
@@ -137,7 +140,7 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
         }
 
         FileStream fileStream = fileInfo.OpenRead();
-        var fileContent = new StreamContent(fileStream);
+        StreamContent fileContent = new(fileStream);
         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
         {
             Name = name,
@@ -176,7 +179,7 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
             }
             else if (metadata.Status.Equals("dubbing", StringComparison.Ordinal))
             {
-                progress?.Report($"Dubbing for {dubbingId} in progress... Will check status again in {timeoutInterval.Value} seconds.");
+                progress?.Report($"Dubbing for {dubbingId} in progress... Will check status again in {timeoutInterval.Value.TotalSeconds} seconds.");
                 await Task.Delay(timeoutInterval.Value, cancellationToken).ConfigureAwait(false);
             }
             else
@@ -217,13 +220,11 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
     public async IAsyncEnumerable<byte[]> GetDubbedFileAsync(string dubbingId, string languageCode, int bufferSize = 8192, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         string url = $"{GetUrl()}/{dubbingId}/audio/{languageCode}";
-
         using HttpResponseMessage response = await client.Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
 
         using Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         byte[] buffer = new byte[bufferSize];
-
         int bytesRead;
         while ((bytesRead = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
