@@ -1,54 +1,53 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <SignAssembly>false</SignAssembly>
-        <Authors>Stephen Hodgson</Authors>
-        <Product>ElevenLabs-DotNet-Proxy</Product>
-        <Description>A simple Proxy API gateway for ElevenLabs-DotNet to make authenticated requests from a front end application without exposing your API keys.</Description>
-        <Copyright>2024</Copyright>
-        <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
-        <PackageTags>ElevenLabs, AI, ML, API, api-proxy, proxy, gateway</PackageTags>
-        <Title>ElevenLabs API Proxy</Title>
-        <PackageId>ElevenLabs-DotNet-Proxy</PackageId>
-        <Version>2.2.2</Version>
-        <RootNamespace>ElevenLabs.Proxy</RootNamespace>
-        <PackageReleaseNotes>
-            Version 2.2.2
-            - Updated EndpointRouteBuilder with optional route prefix parameter
-            Version 2.2.1
-            - Refactor with modern WebApplication builder
-            - Added ElevenLabs.Proxy.EndpointRouteBuilder
-        </PackageReleaseNotes>
-        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <IncludeSymbols>True</IncludeSymbols>
-        <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    </PropertyGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\ElevenLabs-DotNet\ElevenLabs-DotNet.csproj" />
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="..\ElevenLabs-DotNet\Assets\ElevenLabsIcon.png">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-        <None Include="..\LICENSE">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-        <None Update="Readme.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
+  <PropertyGroup>
+      <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <SignAssembly>false</SignAssembly>
+    <Authors>Stephen Hodgson</Authors>
+    <Product>ElevenLabs-DotNet-Proxy</Product>
+    <Description>A simple Proxy API gateway for ElevenLabs-DotNet to make authenticated requests from a front end application without exposing your API keys.</Description>
+    <Copyright>2024</Copyright>
+    <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
+    <PackageTags>ElevenLabs, AI, ML, API, api-proxy, proxy, gateway</PackageTags>
+    <Title>ElevenLabs API Proxy</Title>
+    <PackageId>ElevenLabs-DotNet-Proxy</PackageId>
+    <Version>2.2.2</Version>
+    <RootNamespace>ElevenLabs.Proxy</RootNamespace>
+    <PackageReleaseNotes>Version 2.2.2
+- Updated EndpointRouteBuilder with optional route prefix parameter
+Version 2.2.1
+- Refactor with modern WebApplication builder
+- Added ElevenLabs.Proxy.EndpointRouteBuilder
+    </PackageReleaseNotes>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <IncludeSymbols>True</IncludeSymbols>
+    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ElevenLabs-DotNet\ElevenLabs-DotNet.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\ElevenLabs-DotNet\Assets\ElevenLabsIcon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

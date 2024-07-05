@@ -1,137 +1,134 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-        <LangVersion>latest</LangVersion>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <RootNamespace>ElevenLabs</RootNamespace>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <Nullable>disable</Nullable>
-        <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
-        <Authors>Stephen Hodgson</Authors>
-        <Title>ElevenLabs-DotNet</Title>
-        <Company>RageAgainstThePixel</Company>
-        <Copyright>2024</Copyright>
-        <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-        <Version>2.2.1</Version>
-        <PackageReleaseNotes>
-            Version 2.2.1
-            - Misc formatting changes
-            Version 2.2.0
-            - Changed ElevenLabsClient to be IDisposable
-            - The ElevenLabsClient must now be disposed if you do not pass your own HttpClient
-            - Updated ElevenLabsClientSettings to accept custom domains
-            - Added filesystemless overloads for uploading audio clips
-            Version 2.1.1
-            - Added VoicesEndpoint.GetAllVoicesAsync overload that allows skipping downloading the voice settings
-            Version 2.1.0
-            - Added ElevenLabsClient.EnableDebug option to enable and disable for all endpoints
-            - Synced changes from unity package
-            - Updated unit test
-            Version 2.0.3
-            - Fixed text to speech streaming
-            Version 2.0.2
-            - Added the u-law format
-            Version 2.0.1
-            - Pass some cancellation tokens to internals
-            Version 2.0.0
-            Refactoring to support latest API changes
-            - Biggest Change is the new VoiceClip signature for all endpoints which contains all the information about the generated clip.
-            - Refactored HistoryEndpoint
-            - Made HistoryInfo public
-            - GetHistoryAsync now returns HistoryInfo and contains additional pageSize and startAfter properties
-            - Added GetHistoryItemAsync
-            - Renamed GetHistoryAudioAsync -&gt; DownloadHistoryAudioAsync
-            - DownloadHistoryItemsAsync now returns a list of VoiceClips, and no longer asks for saveDirectory
-            - HistoryItem.TextHash was modified to generate hash based on item id, instead of voiceId
-            - Refactored ModelsEndpoint
-            - Added Model.MultiLingualV2
-            - Refactored TextToSpeechEndpoint
-            - Refactored TextToSpeechAsync
-            - Removed saveDirectory parameter
-            - Removed deleteCachedFile parameter
-            - Added outputFormat parameter
-            - Changed return type to VoiceClip
-            - Refactored StreamTextToSpeechAsync
-            - Removed saveDirectory parameter
-            - Removed deleteCachedFile parameter
-            -  Added  outputFormat
-            - Added partialClipCallback for queuing and playing partial clips as they are received
-            - Refactored VoiceGenerationEndpoint
-            - Renamed GenerateVoiceAsync -&gt; GenerateVoicePreviewAsync
-            - Removed saveDirectory parameter
-            - Renamed GeneratedVoiceRequest -&gt; GeneratedVoicePreviewRequest
-            - Refactored VoicesEndpoint
-            - Preserve default values in VoiceSettings
-            - Refactored GetVoiceAsync
-            - withSettings parameter is now false by default per API
-            - Renamed GetVoiceSampleAsync -&gt; DownloadVoiceSampleAsync
-            - Changed return type to VoiceClip
-            - Removed saveDirectory parameter
-            Version 1.3.6
-            - Added Voice.HighQualityBaseModelIds
-            - Added CreateVoiceRequest.Description
-            Version 1.3.5
-            - Updated voice settings
-            Version 1.3.4
-            - Added VoiceSettings setters for convience
-            - Added voice validation in tts endpoint
-            Version 1.3.3
-            - Assign default voice names
-            - Get voice details if missing in tts
-            Version 1.3.2
-            - Added voice equality operators
-            - Added better parameter validation checks in Endpoints
-            Version 1.3.0
-            - Added ModelsEndpoint
-            - Updated TextToSpeech.TextToSpeechAsync with optional Model parameter. Defaults to eleven_monolingual_v1
-            Version 1.2.1
-            - Updated docs
-            Version 1.2.0
-            - Added ability to create voice from Id
-            - Refactored internal extension classes
-            - Fixed auth parsing
-            - Added ability to load configuration file from specific path
-            - Added optional parameter deleteCachedFile to TextToSpeechEndpoint.TextToSpeechAsync. Default is false
-            Version 1.1.0
-            - Added support for ElevenLabs-DotNet-Proxy
-            Version 1.0.4
-            - Updated docs
-            - Removed exception when sample item path is null or whitespace
-            Version 1.0.3
-            - Updated DownloadHistoryItemsAsync to download all items if no ids are specified
-            - Updated docs
-            Version 1.0.2
-            - Added VoiceGenerationEndpoint
-            - Added unit tests for voice design and instant voice cloning
-            - Updated docs
-            Version 1.0.1
-            - Updated docs
-            Version 1.0.0
-            - Initial Release!
-        </PackageReleaseNotes>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <Description>
-            A non-official Eleven Labs voice synthesis RESTful client.
-            I am not affiliated with Eleven Labs and an account with api access is required.
-            All copyrights, trademarks, logos, and assets are the property of their respective owners.
-        </Description>
-        <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    </PropertyGroup>
-    <ItemGroup>
-        <None Include="Assets\ElevenLabsIcon.png">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-        <None Include="..\README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-        <None Include="..\LICENSE">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
+  <PropertyGroup>
+      <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RootNamespace>ElevenLabs</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
+    <Authors>Stephen Hodgson</Authors>
+    <Title>ElevenLabs-DotNet</Title>
+    <Company>RageAgainstThePixel</Company>
+    <Copyright>2024</Copyright>
+    <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
+    <Version>2.2.1</Version>
+    <PackageReleaseNotes>Version 2.2.1
+- Misc formatting changes
+Version 2.2.0
+- Changed ElevenLabsClient to be IDisposable
+  - The ElevenLabsClient must now be disposed if you do not pass your own HttpClient
+- Updated ElevenLabsClientSettings to accept custom domains
+- Added filesystemless overloads for uploading audio clips
+Version 2.1.1
+- Added VoicesEndpoint.GetAllVoicesAsync overload that allows skipping downloading the voice settings
+Version 2.1.0
+- Added ElevenLabsClient.EnableDebug option to enable and disable for all endpoints
+- Synced changes from unity package
+- Updated unit test
+Version 2.0.3
+- Fixed text to speech streaming
+Version 2.0.2
+- Added the u-law format
+Version 2.0.1
+- Pass some cancellation tokens to internals
+Version 2.0.0
+Refactoring to support latest API changes
+- Biggest Change is the new VoiceClip signature for all endpoints which contains all the information about the generated clip.
+- Refactored HistoryEndpoint
+  - Made HistoryInfo public
+- GetHistoryAsync now returns HistoryInfo and contains additional pageSize and startAfter properties
+  - Added GetHistoryItemAsync
+  - Renamed GetHistoryAudioAsync -&gt; DownloadHistoryAudioAsync
+- DownloadHistoryItemsAsync now returns a list of VoiceClips, and no longer asks for saveDirectory
+- HistoryItem.TextHash was modified to generate hash based on item id, instead of voiceId
+- Refactored ModelsEndpoint
+  - Added Model.MultiLingualV2
+- Refactored TextToSpeechEndpoint
+  - Refactored TextToSpeechAsync
+    - Removed saveDirectory parameter
+    - Removed deleteCachedFile parameter
+    - Added outputFormat parameter
+    - Changed return type to VoiceClip
+  - Refactored StreamTextToSpeechAsync
+    - Removed saveDirectory parameter
+    - Removed deleteCachedFile parameter
+    -  Added  outputFormat
+- Added partialClipCallback for queuing and playing partial clips as they are received
+- Refactored VoiceGenerationEndpoint
+  - Renamed GenerateVoiceAsync -&gt; GenerateVoicePreviewAsync
+    - Removed saveDirectory parameter
+  - Renamed GeneratedVoiceRequest -&gt; GeneratedVoicePreviewRequest
+- Refactored VoicesEndpoint
+  - Preserve default values in VoiceSettings
+  - Refactored GetVoiceAsync
+    - withSettings parameter is now false by default per API
+  - Renamed GetVoiceSampleAsync -&gt; DownloadVoiceSampleAsync
+    - Changed return type to VoiceClip
+    - Removed saveDirectory parameter
+Version 1.3.6
+- Added Voice.HighQualityBaseModelIds
+- Added CreateVoiceRequest.Description
+Version 1.3.5
+- Updated voice settings
+Version 1.3.4
+- Added VoiceSettings setters for convience
+- Added voice validation in tts endpoint
+Version 1.3.3
+- Assign default voice names
+- Get voice details if missing in tts
+Version 1.3.2
+- Added voice equality operators
+- Added better parameter validation checks in Endpoints
+Version 1.3.0
+- Added ModelsEndpoint
+- Updated TextToSpeech.TextToSpeechAsync with optional Model parameter. Defaults to eleven_monolingual_v1
+Version 1.2.1
+- Updated docs
+Version 1.2.0
+- Added ability to create voice from Id
+- Refactored internal extension classes
+- Fixed auth parsing
+- Added ability to load configuration file from specific path
+- Added optional parameter deleteCachedFile to TextToSpeechEndpoint.TextToSpeechAsync. Default is false
+Version 1.1.0
+- Added support for ElevenLabs-DotNet-Proxy
+Version 1.0.4
+- Updated docs
+- Removed exception when sample item path is null or whitespace
+Version 1.0.3
+- Updated DownloadHistoryItemsAsync to download all items if no ids are specified
+- Updated docs
+Version 1.0.2
+- Added VoiceGenerationEndpoint
+- Added unit tests for voice design and instant voice cloning
+- Updated docs
+Version 1.0.1
+- Updated docs
+Version 1.0.0
+- Initial Release!
+    </PackageReleaseNotes>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Description>A non-official Eleven Labs voice synthesis RESTful client.
+I am not affiliated with Eleven Labs and an account with api access is required.
+All copyrights, trademarks, logos, and assets are the property of their respective owners.</Description>
+    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="Assets\ElevenLabsIcon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>
