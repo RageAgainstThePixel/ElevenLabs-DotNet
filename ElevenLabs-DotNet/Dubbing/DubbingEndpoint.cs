@@ -42,11 +42,11 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
     /// in seconds if the operation succeeds.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
-    public async Task<(string DubbingId, float ExpectedDurationSecs)> StartDubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
+    public async Task<DubbingResponse> StartDubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        using MultipartFormDataContent content = new();
+        using MultipartFormDataContent content = [];
 
         if (!string.IsNullOrEmpty(request.Mode))
         {
@@ -126,10 +126,8 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
         using HttpResponseMessage response = await client.Client.PostAsync(GetUrl(), content, cancellationToken).ConfigureAwait(false);
         await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
 
-        using var responseDoc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-        string dubbingId = responseDoc.RootElement.GetProperty(DubbingId).GetString();
-        float expectedDurationSeconds = responseDoc.RootElement.GetProperty(ExpectedDurationSecs).GetSingle();
-        return (dubbingId, expectedDurationSeconds);
+        using Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync<DubbingResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static void AppendFileToForm(MultipartFormDataContent content, string name, FileInfo fileInfo, MediaTypeHeaderValue mediaType)
@@ -172,7 +170,7 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
         timeoutInterval ??= DefaultTimeoutInterval;
         for (int i = 0; i < maxRetries; i++)
         {
-            DubbingMetadataResponse metadata = await GetDubbingProjectMetadataAsync(dubbingId, cancellationToken).ConfigureAwait(false);
+            DubbingProjectMetadata metadata = await GetDubbingProjectMetadataAsync(dubbingId, cancellationToken).ConfigureAwait(false);
             if (metadata.Status.Equals("dubbed", StringComparison.Ordinal))
             {
                 return true;
@@ -192,14 +190,14 @@ public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEnd
         return false;
     }
 
-    private async Task<DubbingMetadataResponse> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
+    private async Task<DubbingProjectMetadata> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
     {
         string url = $"{GetUrl()}/{dubbingId}";
         HttpResponseMessage response = await client.Client.GetAsync(url, cancellationToken).ConfigureAwait(false);
         await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
         string responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        return JsonSerializer.Deserialize<DubbingMetadataResponse>(responseBody)
-            ?? throw new JsonException("Could not deserialize the response!");
+        return JsonSerializer.Deserialize<DubbingProjectMetadata>(responseBody)
+            ?? throw new JsonException("Could not deserialize the dubbing project metadata!");
     }
 
     /// <summary>
