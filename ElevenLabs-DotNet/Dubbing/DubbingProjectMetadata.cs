@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-public sealed class DubbingMetadataResponse
+public sealed class DubbingProjectMetadata
 {
     [JsonPropertyName("dubbing_id")]
     public string DubbingId { get; set; }

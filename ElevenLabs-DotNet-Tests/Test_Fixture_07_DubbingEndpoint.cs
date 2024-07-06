@@ -24,18 +24,18 @@ internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
             Watermark = false,
         };
 
-        (string dubbingId, float expectedDurationSecs) = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
-        Assert.IsFalse(string.IsNullOrEmpty(dubbingId));
-        Assert.IsTrue(expectedDurationSecs > 0);
-        Console.WriteLine($"Expected Duration: {expectedDurationSecs:0.00} seconds");
+        DubbingResponse response = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
+        Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
+        Assert.IsTrue(response.ExpectedDurationSeconds > 0);
+        Console.WriteLine($"Expected Duration: {response.ExpectedDurationSeconds:0.00} seconds");
 
-        Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(dubbingId, progress: new Progress<string>(msg => Console.WriteLine(msg))));
+        Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(response.DubbingId, progress: new Progress<string>(msg => Console.WriteLine(msg))));
 
         FileInfo srcFile = new(audio.FilePath);
         FileInfo dubbedPath = new($"{srcFile.FullName}.dubbed.{request.TargetLanguage}{srcFile.Extension}");
         {
             await using FileStream fs = File.Open(dubbedPath.FullName, FileMode.Create);
-            await foreach (byte[] chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(dubbingId, request.TargetLanguage))
+            await foreach (byte[] chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(response.DubbingId, request.TargetLanguage))
             {
                 await fs.WriteAsync(chunk);
             }
@@ -45,7 +45,7 @@ internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
 
         FileInfo transcriptPath = new($"{srcFile.FullName}.dubbed.{request.TargetLanguage}.srt");
         {
-            string transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(dubbingId, request.TargetLanguage, "srt");
+            string transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage, "srt");
             await File.WriteAllTextAsync(transcriptPath.FullName, transcriptFile);
         }
         Assert.IsTrue(transcriptPath.Exists);
@@ -67,18 +67,18 @@ internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
             Watermark = true,
         };
 
-        (string dubbingId, float expectedDurationSecs) = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
-        Assert.IsFalse(string.IsNullOrEmpty(dubbingId));
-        Assert.IsTrue(expectedDurationSecs > 0);
-        Console.WriteLine($"Expected Duration: {expectedDurationSecs:0.00} seconds");
+        DubbingResponse response = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
+        Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
+        Assert.IsTrue(response.ExpectedDurationSeconds > 0);
+        Console.WriteLine($"Expected Duration: {response.ExpectedDurationSeconds:0.00} seconds");
 
-        Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(dubbingId, progress: new Progress<string>(msg => Console.WriteLine(msg))));
+        Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(response.DubbingId, progress: new Progress<string>(msg => Console.WriteLine(msg))));
 
         string assetsDir = Path.GetFullPath("../../../Assets");
         FileInfo dubbedPath = new(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.mp4"));
         {
             await using FileStream fs = File.Open(dubbedPath.FullName, FileMode.Create);
-            await foreach (byte[] chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(dubbingId, request.TargetLanguage))
+            await foreach (byte[] chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(response.DubbingId, request.TargetLanguage))
             {
                 await fs.WriteAsync(chunk);
             }
@@ -88,7 +88,7 @@ internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
 
         FileInfo transcriptPath = new(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.srt"));
         {
-            string transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(dubbingId, request.TargetLanguage, "srt");
+            string transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage, "srt");
             await File.WriteAllTextAsync(transcriptPath.FullName, transcriptFile);
         }
         Assert.IsTrue(transcriptPath.Exists);
