@@ -1,22 +1,30 @@
-﻿namespace ElevenLabs.Dubbing;
+﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-public sealed class DubbingProjectMetadata
+namespace ElevenLabs.Dubbing
 {
-    [JsonPropertyName("dubbing_id")]
-    public string DubbingId { get; set; }
+    public sealed class DubbingProjectMetadata
+    {
+        [JsonInclude]
+        [JsonPropertyName("dubbing_id")]
+        public string DubbingId { get; private set; }
 
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
+        [JsonInclude]
+        [JsonPropertyName("name")]
+        public string Name { get; private set; }
 
-    [JsonPropertyName("status")]
-    public string Status { get; set; }
+        [JsonInclude]
+        [JsonPropertyName("status")]
+        public string Status { get; private set; }
 
-    [JsonPropertyName("target_languages")]
-    public List<string> TargetLanguages { get; set; }
+        [JsonInclude]
+        [JsonPropertyName("target_languages")]
+        public List<string> TargetLanguages { get; private set; }
 
-    [JsonPropertyName("error")]
-    public string Error { get; set; }
+        [JsonInclude]
+        [JsonPropertyName("error")]
+        public string Error { get; private set; }
+    }
 }
