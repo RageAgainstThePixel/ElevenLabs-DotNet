@@ -2,6 +2,7 @@
 
 using ElevenLabs.Extensions;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ElevenLabs.User
@@ -18,20 +19,20 @@ namespace ElevenLabs.User
         /// <summary>
         /// Gets information about your user account.
         /// </summary>
-        public async Task<UserInfo> GetUserInfoAsync()
+        public async Task<UserInfo> GetUserInfoAsync(CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl());
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await client.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<UserInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
         /// Gets your subscription info.
         /// </summary>
-        public async Task<SubscriptionInfo> GetSubscriptionInfoAsync()
+        public async Task<SubscriptionInfo> GetSubscriptionInfoAsync(CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl("/subscription"));
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await client.Client.GetAsync(GetUrl("/subscription"), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<SubscriptionInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }

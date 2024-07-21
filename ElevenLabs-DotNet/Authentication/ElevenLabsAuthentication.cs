@@ -12,6 +12,7 @@ namespace ElevenLabs
     public sealed class ElevenLabsAuthentication
     {
         internal const string CONFIG_FILE = ".elevenlabs";
+        private const string ELEVENLABS_API_KEY = nameof(ELEVENLABS_API_KEY);
         private const string ELEVEN_LABS_API_KEY = nameof(ELEVEN_LABS_API_KEY);
 
         private readonly AuthInfo authInfo;
@@ -53,12 +54,15 @@ namespace ElevenLabs
 
                 var auth = LoadFromDirectory() ??
                            LoadFromDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)) ??
-                           LoadFromEnv();
+                           LoadFromEnvironment();
                 cachedDefault = auth;
                 return auth;
             }
             internal set => cachedDefault = value;
         }
+
+        [Obsolete("Use LoadFromEnvironment")]
+        public static ElevenLabsAuthentication LoadFromEnv() => LoadFromEnvironment();
 
         /// <summary>
         /// Attempts to load api keys from environment variables, as "ELEVEN_LABS_API_KEY"
@@ -67,9 +71,14 @@ namespace ElevenLabs
         /// Returns the loaded <see cref="ElevenLabsAuthentication"/> any api keys were found,
         /// or <see langword="null"/> if there were no matching environment vars.
         /// </returns>
-        public static ElevenLabsAuthentication LoadFromEnv()
+        public static ElevenLabsAuthentication LoadFromEnvironment()
         {
             var apiKey = Environment.GetEnvironmentVariable(ELEVEN_LABS_API_KEY);
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                apiKey = Environment.GetEnvironmentVariable(ELEVENLABS_API_KEY);
+            }
 
             return string.IsNullOrEmpty(apiKey) ? null : new ElevenLabsAuthentication(apiKey);
         }
@@ -150,6 +159,7 @@ namespace ElevenLabs
 
                             switch (part)
                             {
+                                case ELEVENLABS_API_KEY:
                                 case ELEVEN_LABS_API_KEY:
                                     apiKey = nextPart.Trim();
                                     break;

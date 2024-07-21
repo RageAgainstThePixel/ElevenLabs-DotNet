@@ -3,6 +3,7 @@
 using ElevenLabs.Extensions;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ElevenLabs.Models
@@ -17,10 +18,10 @@ namespace ElevenLabs.Models
         /// Access the different models available to the platform.
         /// </summary>
         /// <returns>A list of <see cref="Model"/>s you can use.</returns>
-        public async Task<IReadOnlyList<Model>> GetModelsAsync()
+        public async Task<IReadOnlyList<Model>> GetModelsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl());
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug);
+            var response = await client.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }

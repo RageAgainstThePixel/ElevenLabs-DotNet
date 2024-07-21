@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_000_Proxy : AbstractTestFixture
+    internal class TestFixture_000_Proxy : AbstractTestFixture
     {
         [Test]
         public async Task Test_01_Health()

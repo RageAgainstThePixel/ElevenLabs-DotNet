@@ -94,7 +94,7 @@ namespace ElevenLabs.TextToSpeech
                 ? HttpCompletionOption.ResponseContentRead
                 : HttpCompletionOption.ResponseHeadersRead;
             var response = await client.Client.SendAsync(postRequest, requestOption, cancellationToken);
-            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(clipId))

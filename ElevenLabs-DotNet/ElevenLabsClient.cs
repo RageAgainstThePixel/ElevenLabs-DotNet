@@ -2,6 +2,7 @@
 
 using ElevenLabs.History;
 using ElevenLabs.Models;
+using ElevenLabs.SoundGeneration;
 using ElevenLabs.TextToSpeech;
 using ElevenLabs.User;
 using ElevenLabs.VoiceGeneration;
@@ -19,11 +20,11 @@ namespace ElevenLabs
         /// <summary>
         /// Creates a new client for the Eleven Labs API, handling auth and allowing for access to various API endpoints.
         /// </summary>
-        /// <param name="elevenLabsAuthentication">The API authentication information to use for API calls,
+        /// <param name="authentication">The API authentication information to use for API calls,
         /// or <see langword="null"/> to attempt to use the <see cref="ElevenLabsAuthentication.Default"/>,
         /// potentially loading from environment vars or from a config file.
         /// </param>
-        /// <param name="clientSettings">
+        /// <param name="settings">
         /// Optional, <see cref="ElevenLabsClientSettings"/> for specifying a proxy domain.
         /// </param>
         /// <param name="httpClient">Optional, <see cref="HttpClient"/>.</param>
@@ -34,10 +35,10 @@ namespace ElevenLabs
         /// This internal HttpClient is disposed of when ElevenLabsClient is disposed of.
         /// If you provide an external HttpClient instance to ElevenLabsClient, you are responsible for managing its disposal.
         /// </remarks>
-        public ElevenLabsClient(ElevenLabsAuthentication elevenLabsAuthentication = null, ElevenLabsClientSettings clientSettings = null, HttpClient httpClient = null)
+        public ElevenLabsClient(ElevenLabsAuthentication authentication = null, ElevenLabsClientSettings settings = null, HttpClient httpClient = null)
         {
-            ElevenLabsAuthentication = elevenLabsAuthentication ?? ElevenLabsAuthentication.Default;
-            ElevenLabsClientSettings = clientSettings ?? ElevenLabsClientSettings.Default;
+            ElevenLabsAuthentication = authentication ?? ElevenLabsAuthentication.Default;
+            ElevenLabsClientSettings = settings ?? ElevenLabsClientSettings.Default;
 
             if (string.IsNullOrWhiteSpace(ElevenLabsAuthentication?.ApiKey))
             {
@@ -62,10 +63,12 @@ namespace ElevenLabs
 
             UserEndpoint = new UserEndpoint(this);
             VoicesEndpoint = new VoicesEndpoint(this);
+            SharedVoicesEndpoint = new SharedVoicesEndpoint(this);
             ModelsEndpoint = new ModelsEndpoint(this);
             HistoryEndpoint = new HistoryEndpoint(this);
             TextToSpeechEndpoint = new TextToSpeechEndpoint(this);
             VoiceGenerationEndpoint = new VoiceGenerationEndpoint(this);
+            SoundGenerationEndpoint = new SoundGenerationEndpoint(this);
         }
 
         ~ElevenLabsClient()
@@ -129,6 +132,8 @@ namespace ElevenLabs
 
         public VoicesEndpoint VoicesEndpoint { get; }
 
+        public SharedVoicesEndpoint SharedVoicesEndpoint { get; }
+
         public ModelsEndpoint ModelsEndpoint { get; }
 
         public HistoryEndpoint HistoryEndpoint { get; }
@@ -136,5 +141,7 @@ namespace ElevenLabs
         public TextToSpeechEndpoint TextToSpeechEndpoint { get; }
 
         public VoiceGenerationEndpoint VoiceGenerationEndpoint { get; }
+
+        public SoundGenerationEndpoint SoundGenerationEndpoint { get; }
     }
 }

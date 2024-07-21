@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_01_UserEndpoint : AbstractTestFixture
+    internal class TestFixture_01_UserEndpoint : AbstractTestFixture
     {
         [Test]
         public async Task Test_01_GetUserInfo()

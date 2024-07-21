@@ -41,8 +41,8 @@ namespace ElevenLabs.Voices
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
-        public Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
-            => GetAllVoicesAsync(true, cancellationToken);
+        public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(CancellationToken cancellationToken = default)
+            => await GetAllVoicesAsync(true, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Gets a list of all available voices for a user.
@@ -62,7 +62,7 @@ namespace ElevenLabs.Voices
 
                 foreach (var voice in voices)
                 {
-                    voiceSettingsTasks.Add(Task.Run(LocalGetVoiceSettingsAsync, cancellationToken));
+                    voiceSettingsTasks.Add(LocalGetVoiceSettingsAsync());
 
                     async Task LocalGetVoiceSettingsAsync()
                     {
@@ -348,7 +348,7 @@ namespace ElevenLabs.Voices
             }
 
             var response = await client.Client.PostAsync(GetUrl($"/{voice.Id}/edit"), form, cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, form, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 
@@ -366,7 +366,7 @@ namespace ElevenLabs.Voices
             }
 
             var response = await client.Client.DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 
@@ -394,7 +394,7 @@ namespace ElevenLabs.Voices
             }
 
             var response = await client.Client.GetAsync(GetUrl($"/{voice.Id}/samples/{sample.Id}/audio"), cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using var memoryStream = new MemoryStream();
             await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
@@ -420,8 +420,8 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(sampleId));
             }
 
-            var response = await client.Client.DeleteAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken);
-            await response.CheckResponseAsync(cancellationToken);
+            var response = await client.Client.DeleteAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 

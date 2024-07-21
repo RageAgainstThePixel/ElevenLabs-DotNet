@@ -51,13 +51,22 @@ namespace ElevenLabs.Models
         #region Predefined Models
 
         [JsonIgnore]
-        public static Model MonoLingualV1 { get; } = new Model("eleven_monolingual_v1");
+        public static Model MonoLingualV1 { get; } = new("eleven_monolingual_v1");
 
         [JsonIgnore]
-        public static Model MultiLingualV1 { get; } = new Model("eleven_multilingual_v1");
+        public static Model MultiLingualV1 { get; } = new("eleven_multilingual_v1");
 
         [JsonIgnore]
-        public static Model MultiLingualV2 { get; } = new Model("eleven_multilingual_v2");
+        public static Model MultiLingualV2 { get; } = new("eleven_multilingual_v2");
+
+        [JsonIgnore]
+        public static Model TurboV2 { get; } = new("eleven_turbo_v2");
+
+        [JsonIgnore]
+        public static Model EnglishSpeechToSpeechV2 { get; } = new("eleven_english_sts_v2");
+
+        [JsonIgnore]
+        public static Model MultilingualSpeechToSpeechV2 { get; } = new("eleven_multilingual_sts_v2");
 
         #endregion Predefined Models
     }
