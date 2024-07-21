@@ -1,5 +1,6 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using ElevenLabs.Dubbing;
 using ElevenLabs.History;
 using ElevenLabs.Models;
 using ElevenLabs.SoundGeneration;
@@ -69,6 +70,7 @@ namespace ElevenLabs
             TextToSpeechEndpoint = new TextToSpeechEndpoint(this);
             VoiceGenerationEndpoint = new VoiceGenerationEndpoint(this);
             SoundGenerationEndpoint = new SoundGenerationEndpoint(this);
+            DubbingEndpoint = new DubbingEndpoint(this);
         }
 
         ~ElevenLabsClient()
@@ -143,5 +145,7 @@ namespace ElevenLabs
         public VoiceGenerationEndpoint VoiceGenerationEndpoint { get; }
 
         public SoundGenerationEndpoint SoundGenerationEndpoint { get; }
+
+        public DubbingEndpoint DubbingEndpoint { get; }
     }
 }
