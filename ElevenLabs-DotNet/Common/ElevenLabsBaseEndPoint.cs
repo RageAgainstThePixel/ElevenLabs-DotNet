@@ -3,47 +3,58 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ElevenLabs
+namespace ElevenLabs;
+
+public abstract class ElevenLabsBaseEndPoint
 {
-    public abstract class ElevenLabsBaseEndPoint
+    internal ElevenLabsBaseEndPoint(ElevenLabsClient client) => this.client = client;
+
+    // ReSharper disable once InconsistentNaming
+    protected readonly ElevenLabsClient client;
+
+    /// <summary>
+    ///     The root endpoint address.
+    /// </summary>
+    protected abstract string Root { get; }
+
+    /// <summary>
+    ///     Gets the full formatted url for the API endpoint.
+    /// </summary>
+    /// <param name="endpoint">The endpoint url.</param>
+    /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
+    protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
     {
-        internal ElevenLabsBaseEndPoint(ElevenLabsClient client) => this.client = client;
+        var result = string.Format(client.ElevenLabsClientSettings.BaseRequestUrlFormat, $"{Root}{endpoint}");
 
-        // ReSharper disable once InconsistentNaming
-        protected readonly ElevenLabsClient client;
-
-        /// <summary>
-        /// The root endpoint address.
-        /// </summary>
-        protected abstract string Root { get; }
-
-        /// <summary>
-        /// Gets the full formatted url for the API endpoint.
-        /// </summary>
-        /// <param name="endpoint">The endpoint url.</param>
-        /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
-        protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
+        if (queryParameters is { Count: not 0 })
         {
-            var result = string.Format(client.ElevenLabsClientSettings.BaseRequestUrlFormat, $"{Root}{endpoint}");
-
-            if (queryParameters is { Count: not 0 })
-            {
-                result += $"?{string.Join('&', queryParameters.Select(parameter => $"{parameter.Key}={parameter.Value}"))}";
-            }
-
-            return result;
+            result += $"?{string.Join('&', queryParameters.Select(parameter => $"{parameter.Key}={parameter.Value}"))}";
         }
 
-        private bool enableDebug;
+        return result;
+    }
 
-        /// <summary>
-        /// Enables or disables the logging of all http responses of header and body information for this endpoint.<br/>
-        /// WARNING! Enabling this in your production build, could potentially leak sensitive information!
-        /// </summary>
-        public bool EnableDebug
+    protected string GetWebSocketUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
+    {
+        var result = string.Format(client.ElevenLabsClientSettings.BaseRequestWebSocketUrlFormat, $"{Root}{endpoint}");
+
+        if (queryParameters is { Count: not 0 })
         {
-            get => enableDebug || client.EnableDebug;
-            set => enableDebug = value;
+            result += $"?{string.Join('&', queryParameters.Select(parameter => $"{parameter.Key}={parameter.Value}"))}";
         }
+
+        return result;
+    }
+
+    private bool enableDebug;
+
+    /// <summary>
+    ///     Enables or disables the logging of all http responses of header and body information for this endpoint.<br />
+    ///     WARNING! Enabling this in your production build, could potentially leak sensitive information!
+    /// </summary>
+    public bool EnableDebug
+    {
+        get => enableDebug || client.EnableDebug;
+        set => enableDebug = value;
     }
 }
