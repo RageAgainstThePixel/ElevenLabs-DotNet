@@ -94,6 +94,9 @@ namespace ElevenLabs.Models
         /// Our state-of-the-art speech to speech model suitable for scenarios where you need maximum control over the content and prosody of your generations.
         /// </summary>
         [JsonIgnore]
+        public static Model TurboV25 { get; } = new("eleven_turbo_v2_5");
+
+        [JsonIgnore]
         public static Model EnglishSpeechToSpeechV2 { get; } = new("eleven_english_sts_v2");
 
         /// <summary>
