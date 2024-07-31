@@ -180,8 +180,6 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
                 WebSocketReceiveResult receiveResult = await client.WebSocketClient.ReceiveAsync(
                     new ArraySegment<byte>(buffer), cancellationToken);
 
-                Console.WriteLine($"{receiveResult.MessageType} - {receiveResult.Count}");
-
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
                     await client.WebSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
