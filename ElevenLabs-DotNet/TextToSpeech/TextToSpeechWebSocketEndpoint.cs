@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace ElevenLabs.TextToSpeech;
 
 /// <summary>
-///     Access to convert text to synthesized speech.
+///     Access to convert text to synthesized speech using a WebSocket connection.
 /// </summary>
 public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
 {
@@ -64,7 +64,8 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
     ///     (best latency, but can mispronounce eg numbers and dates).
     /// </param>
     /// <param name="cancellationToken">Optional, <see cref="CancellationToken" />.</param>
-    /// <returns><see cref="VoiceClip" />.</returns>
+    /// <exception cref="ArgumentNullException">Raised when <paramref name="voice" /> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Raised when <paramref name="partialClipCallback" /> is null.</exception>
     public async Task StartTextToSpeechAsync(Voice voice, Func<VoiceClip, Task> partialClipCallback,
         VoiceSettings voiceSettings = null, GenerationConfig generationConfig = null, Model model = null,
         OutputFormat outputFormat = OutputFormat.MP3_44100_128, bool? enableLogging = null,
@@ -115,69 +116,114 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
             cancellationToken);
     }
 
+    /// <summary>
+    ///     Sends text to the WebSocket for speech synthesis.
+    /// </summary>
+    /// <param name="text">Text input to synthesize speech for. Needs to end with a space and cannot be null or empty.</param>
+    /// <param name="flush">
+    ///     Forces the generation of audio. Set this value to true when you have finished sending text, but
+    ///     want to keep the websocket connection open.
+    /// </param>
+    /// <param name="tryTriggerGeneration">
+    ///     Use this to attempt to immediately trigger the generation of audio. Most users
+    ///     shouldn't use this.
+    /// </param>
+    /// <param name="cancellationToken">Optional, <see cref="CancellationToken" />.</param>
+    /// <exception cref="InvalidOperationException">Raised when the WebSocket is not open.</exception>
+    /// <exception cref="ArgumentNullException">Raised when <paramref name="text" /> is null or empty.</exception>
     public async Task SendTextToSpeechAsync(string text, bool? flush = null, bool tryTriggerGeneration = false,
         CancellationToken cancellationToken = default)
     {
+        if (client.WebSocketClient.State != WebSocketState.Open)
+        {
+            throw new InvalidOperationException("WebSocket is not open!");
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new ArgumentNullException($"{nameof(text)} cannot be null or empty!");
+        }
+
         TextToSpeechWebSocketRequest request = new(text, flush, tryTriggerGeneration);
         await client.WebSocketClient.SendAsync(request.ToArraySegment(), WebSocketMessageType.Text, true,
             cancellationToken);
     }
 
+    /// <summary>
+    ///     Closes the text to speech WebSocket connection.
+    /// </summary>
+    /// <param name="cancellationToken">Optional, <see cref="CancellationToken" />.</param>
+    /// <exception cref="InvalidOperationException">Raised when the WebSocket is not open.</exception>
     public async Task EndTextToSpeechAsync(CancellationToken cancellationToken = default)
     {
+        if (client.WebSocketClient.State != WebSocketState.Open)
+        {
+            throw new InvalidOperationException("WebSocket is not open!");
+        }
+
         TextToSpeechWebSocketLastMessageRequest lastMessageRequest = new();
         await client.WebSocketClient.SendAsync(lastMessageRequest.ToArraySegment(), WebSocketMessageType.Text, true,
             cancellationToken);
+        await client.WebSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationToken);
     }
 
     private async Task ReceiveMessagesAsync(Func<VoiceClip, Task> partialClipCallback, Voice voice,
         CancellationToken cancellationToken)
     {
-        byte[] buffer = new byte[8192];
-        StringBuilder message = new();
-
-        while (client.WebSocketClient.State == WebSocketState.Open)
+        try
         {
-            WebSocketReceiveResult receiveResult = await client.WebSocketClient.ReceiveAsync(
-                new ArraySegment<byte>(buffer), cancellationToken);
+            byte[] buffer = new byte[8192];
+            StringBuilder message = new();
 
-            if (receiveResult.MessageType == WebSocketMessageType.Close)
+            while (client.WebSocketClient.State == WebSocketState.Open)
             {
-                await client.WebSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
-                    cancellationToken);
-                break;
+                WebSocketReceiveResult receiveResult = await client.WebSocketClient.ReceiveAsync(
+                    new ArraySegment<byte>(buffer), cancellationToken);
+
+                Console.WriteLine($"{receiveResult.MessageType} - {receiveResult.Count}");
+
+                if (receiveResult.MessageType == WebSocketMessageType.Close)
+                {
+                    await client.WebSocketClient.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
+                        cancellationToken);
+                    break;
+                }
+
+                string jsonString = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+                message.Append(jsonString);
+
+                if (!receiveResult.EndOfMessage)
+                {
+                    continue;
+                }
+
+                TextToSpeechWebSocketResponse response = JsonSerializer.Deserialize<TextToSpeechWebSocketResponse>(
+                    message.ToString(), ElevenLabsClient.JsonSerializationOptions);
+
+                if (response == null)
+                {
+                    throw new ArgumentException("Failed to parse response!");
+                }
+
+                message.Clear();
+
+                if (!string.IsNullOrWhiteSpace(response.Audio))
+                {
+                    string text = response.Alignment is { Chars: not null }
+                        ? string.Concat(response.Alignment.Chars)
+                        : null;
+                    VoiceClip voiceClip = new(string.Empty, text, voice, response.AudioBytes);
+                    await partialClipCallback(voiceClip);
+                }
+                else
+                {
+                    await partialClipCallback(null);
+                }
             }
-
-            string jsonString = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
-            message.Append(jsonString);
-
-            if (!receiveResult.EndOfMessage)
-            {
-                continue;
-            }
-
-            TextToSpeechWebSocketResponse response = JsonSerializer.Deserialize<TextToSpeechWebSocketResponse>(
-                message.ToString(), ElevenLabsClient.JsonSerializationOptions);
-
-            if (response == null)
-            {
-                throw new ArgumentException("Failed to parse response!");
-            }
-
-            message.Clear();
-
-            if (!string.IsNullOrWhiteSpace(response.Audio))
-            {
-                string text = response.Alignment is { Chars: not null }
-                    ? string.Concat(response.Alignment.Chars)
-                    : null;
-                VoiceClip voiceClip = new(string.Empty, text, voice, response.AudioBytes);
-                await partialClipCallback(voiceClip).ConfigureAwait(false);
-            }
-            else
-            {
-                await partialClipCallback(null).ConfigureAwait(false);
-            }
+        }
+        finally
+        {
+            client.ReinitializeWebSocketClient();
         }
     }
 }

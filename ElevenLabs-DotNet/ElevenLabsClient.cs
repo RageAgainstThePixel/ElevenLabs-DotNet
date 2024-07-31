@@ -31,7 +31,7 @@ namespace ElevenLabs
         ///     Optional, <see cref="ElevenLabsClientSettings" /> for specifying a proxy domain.
         /// </param>
         /// <param name="httpClient">Optional, <see cref="HttpClient" />.</param>
-        /// <param name="webSocketClient">Optional, <see cref="WebSocket" />.</param>
+        /// <param name="clientWebSocketSpawner">Optional, to create custom versions of <see cref="ClientWebSocket" />.</param>
         /// <exception cref="AuthenticationException">Raised when authentication details are missing or invalid.</exception>
         /// <see cref="ElevenLabsClient" />
         /// implements
@@ -46,7 +46,8 @@ namespace ElevenLabs
         ///     If you provide an external HttpClient instance to ElevenLabsClient, you are responsible for managing its disposal.
         /// </remarks>
         public ElevenLabsClient(ElevenLabsAuthentication authentication = null,
-            ElevenLabsClientSettings settings = null, HttpClient httpClient = null, ClientWebSocket webSocketClient = null)
+            ElevenLabsClientSettings settings = null, HttpClient httpClient = null,
+            Func<ClientWebSocket> clientWebSocketSpawner = null)
         {
             ElevenLabsAuthentication = authentication ?? ElevenLabsAuthentication.Default;
             ElevenLabsClientSettings = settings ?? ElevenLabsClientSettings.Default;
@@ -69,20 +70,12 @@ namespace ElevenLabs
                 isCustomClient = true;
             }
 
-            if (webSocketClient == null)
-            {
-                webSocketClient = new ClientWebSocket();
-            }
-            else
-            {
-                isCustomWebSocketClient = true;
-            }
-
             Client = httpClient;
             Client.DefaultRequestHeaders.Add("User-Agent", "ElevenLabs-DotNet");
             Client.DefaultRequestHeaders.Add("xi-api-key", ElevenLabsAuthentication.ApiKey);
 
-            WebSocketClient = webSocketClient;
+            this.clientWebSocketSpawner = clientWebSocketSpawner;
+            WebSocketClient = clientWebSocketSpawner == null ? new ClientWebSocket() : clientWebSocketSpawner();
             WebSocketClient.Options.SetRequestHeader("User-Agent", "ElevenLabs-DotNet");
             WebSocketClient.Options.SetRequestHeader("xi-api-key", ElevenLabsAuthentication.ApiKey);
 
@@ -96,6 +89,14 @@ namespace ElevenLabs
             VoiceGenerationEndpoint = new VoiceGenerationEndpoint(this);
             SoundGenerationEndpoint = new SoundGenerationEndpoint(this);
             DubbingEndpoint = new DubbingEndpoint(this);
+        }
+
+        public void ReinitializeWebSocketClient()
+        {
+            WebSocketClient.Dispose();
+            WebSocketClient = clientWebSocketSpawner == null ? new ClientWebSocket() : clientWebSocketSpawner();
+            WebSocketClient.Options.SetRequestHeader("User-Agent", "ElevenLabs-DotNet");
+            WebSocketClient.Options.SetRequestHeader("xi-api-key", ElevenLabsAuthentication.ApiKey);
         }
 
         ~ElevenLabsClient()
@@ -121,12 +122,8 @@ namespace ElevenLabs
                 {
                     Client?.Dispose();
                 }
-                
-                if (!isCustomWebSocketClient)
-                {
-                    WebSocketClient?.Dispose();
-                }
 
+                WebSocketClient?.Dispose();
                 isDisposed = true;
             }
         }
@@ -135,7 +132,7 @@ namespace ElevenLabs
 
         private bool isCustomClient;
 
-        private bool isCustomWebSocketClient;
+        private Func<ClientWebSocket> clientWebSocketSpawner;
 
         /// <summary>
         ///     <see cref="HttpClient" /> to use when making calls to the API.
@@ -145,7 +142,7 @@ namespace ElevenLabs
         /// <summary>
         ///     <see cref="ClientWebSocket" /> to use when making calls to the API.
         /// </summary>
-        internal ClientWebSocket WebSocketClient { get; }
+        internal ClientWebSocket WebSocketClient { get; private set; }
 
         /// <summary>
         ///     The <see cref="JsonSerializationOptions" /> to use when making calls to the API.
@@ -178,7 +175,7 @@ namespace ElevenLabs
         public HistoryEndpoint HistoryEndpoint { get; }
 
         public TextToSpeechEndpoint TextToSpeechEndpoint { get; }
-        
+
         public TextToSpeechWebSocketEndpoint TextToSpeechWebSocketEndpoint { get; }
 
         public VoiceGenerationEndpoint VoiceGenerationEndpoint { get; }

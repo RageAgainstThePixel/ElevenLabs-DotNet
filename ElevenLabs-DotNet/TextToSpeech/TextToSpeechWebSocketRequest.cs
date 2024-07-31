@@ -9,6 +9,19 @@ namespace ElevenLabs.TextToSpeech;
 
 public sealed class TextToSpeechWebSocketRequest
 {
+    /// <summary>
+    ///     Text needs to end with a space and cannot be null or empty.
+    /// </summary>
+    /// <param name="text">The text to be converted to speech. Needs to end with a space, cannot be null or empty.</param>
+    /// <param name="flush">
+    ///     Forces the generation of audio. Set this value to true when you have finished sending text, but
+    ///     want to keep the websocket connection open.
+    /// </param>
+    /// <param name="tryTriggerGeneration">
+    ///     Use this to attempt to immediately trigger the generation of audio. Most users
+    ///     shouldn't use this.
+    /// </param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="text" /> is null or empty.</exception>
     public TextToSpeechWebSocketRequest(string text, bool? flush = null, bool tryTriggerGeneration = false)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -40,7 +53,7 @@ public sealed class TextToSpeechWebSocketRequest
     /// </summary>
     [JsonPropertyName("flush"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Flush { get; }
-    
+
     public ArraySegment<byte> ToArraySegment()
     {
         string json = JsonSerializer.Serialize(this);
