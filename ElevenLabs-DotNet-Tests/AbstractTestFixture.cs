@@ -31,7 +31,7 @@ namespace ElevenLabs.Tests
             var settings = new ElevenLabsClientSettings(domain: domain);
             var auth = new ElevenLabsAuthentication(TestUserToken);
             ElevenLabsClient = new ElevenLabsClient(auth, settings, HttpClient);
-            ElevenLabsClient.EnableDebug = true;
+            // ElevenLabsClient.EnableDebug = true;
         }
     }
 }

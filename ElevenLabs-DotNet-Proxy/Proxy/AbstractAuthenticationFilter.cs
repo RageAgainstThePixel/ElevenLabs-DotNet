@@ -9,7 +9,7 @@ namespace ElevenLabs.Proxy
     public abstract class AbstractAuthenticationFilter : IAuthenticationFilter
     {
         /// <inheritdoc />
-        public abstract void ValidateAuthentication(IHeaderDictionary request);
+        public virtual void ValidateAuthentication(IHeaderDictionary request) { }
 
         /// <inheritdoc />
         public abstract Task ValidateAuthenticationAsync(IHeaderDictionary request);
