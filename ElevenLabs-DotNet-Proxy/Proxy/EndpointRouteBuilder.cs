@@ -57,9 +57,10 @@ namespace ElevenLabs.Proxy
             {
                 try
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     // ReSharper disable once MethodHasAsyncOverload
-                    // just in case either method is implemented we call it twice.
                     authenticationFilter.ValidateAuthentication(httpContext.Request.Headers);
+#pragma warning restore CS0618 // Type or member is obsolete
                     await authenticationFilter.ValidateAuthenticationAsync(httpContext.Request.Headers);
 
                     var method = new HttpMethod(httpContext.Request.Method);
@@ -69,6 +70,11 @@ namespace ElevenLabs.Proxy
                         ));
                     using var request = new HttpRequestMessage(method, uri);
                     request.Content = new StreamContent(httpContext.Request.Body);
+
+                    if (httpContext.Request.Body.CanSeek)
+                    {
+                        httpContext.Request.Body.Position = 0;
+                    }
 
                     if (httpContext.Request.ContentType != null)
                     {
@@ -80,21 +86,13 @@ namespace ElevenLabs.Proxy
 
                     foreach (var (key, value) in proxyResponse.Headers)
                     {
-                        if (excludedHeaders.Contains(key))
-                        {
-                            continue;
-                        }
-
+                        if (excludedHeaders.Contains(key)) { continue; }
                         httpContext.Response.Headers[key] = value.ToArray();
                     }
 
                     foreach (var (key, value) in proxyResponse.Content.Headers)
                     {
-                        if (excludedHeaders.Contains(key))
-                        {
-                            continue;
-                        }
-
+                        if (excludedHeaders.Contains(key)) { continue; }
                         httpContext.Response.Headers[key] = value.ToArray();
                     }
 
@@ -103,6 +101,7 @@ namespace ElevenLabs.Proxy
 
                     if (httpContext.Response.ContentType.Equals(streamingContent))
                     {
+                        using var reader = new StreamReader(await request.Content.ReadAsStreamAsync());
                         var stream = await proxyResponse.Content.ReadAsStreamAsync();
                         await WriteServerStreamEventsAsync(httpContext, stream);
                     }
@@ -119,7 +118,7 @@ namespace ElevenLabs.Proxy
                 catch (Exception e)
                 {
                     httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    var response = JsonSerializer.Serialize(new { error = new { e.Message, e.StackTrace } });
+                    var response = JsonSerializer.Serialize(new { error = new { message = e.Message, stackTrace = e.StackTrace } });
                     await httpContext.Response.WriteAsync(response);
                 }
 

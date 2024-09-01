@@ -24,7 +24,7 @@ namespace ElevenLabs.VoiceGeneration
         /// <returns><see cref="GeneratedVoiceOptions"/>.</returns>
         public async Task<GeneratedVoiceOptions> GetVoiceGenerationOptionsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.GetAsync(GetUrl("/generate-voice/parameters"), cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<GeneratedVoiceOptions>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
@@ -37,8 +37,8 @@ namespace ElevenLabs.VoiceGeneration
         /// <returns>Tuple with generated voice id and audio data.</returns>
         public async Task<Tuple<string, ReadOnlyMemory<byte>>> GenerateVoicePreviewAsync(GeneratedVoicePreviewRequest generatedVoicePreviewRequest, CancellationToken cancellationToken = default)
         {
-            var payload = JsonSerializer.Serialize(generatedVoicePreviewRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
-            var response = await client.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken).ConfigureAwait(false);
+            using var payload = JsonSerializer.Serialize(generatedVoicePreviewRequest, ElevenLabsClient.JsonSerializationOptions).ToJsonStringContent();
+            using var response = await client.Client.PostAsync(GetUrl("/generate-voice"), payload, cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             var generatedVoiceId = response.Headers.FirstOrDefault(pair => pair.Key == "generated_voice_id").Value.FirstOrDefault();
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -64,8 +64,8 @@ namespace ElevenLabs.VoiceGeneration
         /// <returns><see cref="Voice"/>.</returns>
         public async Task<Voice> CreateVoiceAsync(CreateVoiceRequest createVoiceRequest, CancellationToken cancellationToken = default)
         {
-            var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
-            var response = await client.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken).ConfigureAwait(false);
+            using var payload = JsonSerializer.Serialize(createVoiceRequest).ToJsonStringContent();
+            using var response = await client.Client.PostAsync(GetUrl("/create-voice"), payload, cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }

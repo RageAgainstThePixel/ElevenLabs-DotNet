@@ -13,7 +13,7 @@ namespace ElevenLabs.Tests
         [Test]
         public async Task Test_01_Health()
         {
-            var response = await HttpClient.GetAsync("/health");
+            using var response = await HttpClient.GetAsync("/health");
             var responseAsString = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"[{response.StatusCode}] {responseAsString}");
             Assert.IsTrue(HttpStatusCode.OK == response.StatusCode);

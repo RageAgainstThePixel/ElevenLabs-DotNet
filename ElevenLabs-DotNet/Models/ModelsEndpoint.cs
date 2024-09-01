@@ -20,7 +20,7 @@ namespace ElevenLabs.Models
         /// <returns>A list of <see cref="Model"/>s you can use.</returns>
         public async Task<IReadOnlyList<Model>> GetModelsAsync(CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<IReadOnlyList<Model>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
