@@ -24,6 +24,7 @@
     <PackageReleaseNotes>
 Version 3.0.0
 - Renamed ElevenLabsProxyStartup to ElevenLabsProxy
+- Deprecated ValidateAuthentication
 Version 2.2.2
 - Updated EndpointRouteBuilder with optional route prefix parameter
 Version 2.2.1
