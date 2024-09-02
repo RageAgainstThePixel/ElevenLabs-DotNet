@@ -5,11 +5,11 @@ using System.Text.Json.Serialization;
 
 namespace ElevenLabs.History
 {
-    public sealed class HistoryInfo
+    public sealed class HistoryInfo<T>
     {
         [JsonInclude]
         [JsonPropertyName("history")]
-        public IReadOnlyList<HistoryItem> HistoryItems { get; private set; }
+        public IReadOnlyList<T> HistoryItems { get; private set; }
 
         [JsonInclude]
         [JsonPropertyName("last_history_item_id")]

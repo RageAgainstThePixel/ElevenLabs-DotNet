@@ -30,8 +30,8 @@ namespace ElevenLabs.History
         /// </param>
         /// <param name="startAfterId">Optional, the id of the item to start after.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns><see cref="HistoryInfo"/>.</returns>
-        public async Task<HistoryInfo> GetHistoryAsync(int? pageSize = null, string startAfterId = null, CancellationToken cancellationToken = default)
+        /// <returns><see cref="HistoryInfo{HistoryItem}"/>.</returns>
+        public async Task<HistoryInfo<HistoryItem>> GetHistoryAsync(int? pageSize = null, string startAfterId = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>();
 
@@ -45,9 +45,9 @@ namespace ElevenLabs.History
                 parameters.Add("start_after_history_item_id", startAfterId);
             }
 
-            var response = await client.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
+            using var response = await client.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
-            return JsonSerializer.Deserialize<HistoryInfo>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<HistoryInfo<HistoryItem>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
 
         /// <summary>
@@ -58,9 +58,21 @@ namespace ElevenLabs.History
         /// <returns><see cref="HistoryItem"/></returns>
         public async Task<HistoryItem> GetHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl($"/{id}"), cancellationToken);
+            using var response = await client.Client.GetAsync(GetUrl($"/{id}"), cancellationToken);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return JsonSerializer.Deserialize<HistoryItem>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+        }
+
+        /// <summary>
+        /// Download audio of a history item.
+        /// </summary>
+        /// <param name="id"><see cref="HistoryItem.Id"/> or <see cref="VoiceClip.Id"/>.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns><see cref="VoiceClip"/>.</returns>
+        public async Task<VoiceClip> DownloadHistoryAudioAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var historyItem = await GetHistoryItemAsync(id, cancellationToken).ConfigureAwait(false);
+            return await DownloadHistoryAudioAsync(historyItem, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -72,8 +84,8 @@ namespace ElevenLabs.History
         public async Task<VoiceClip> DownloadHistoryAudioAsync(HistoryItem historyItem, CancellationToken cancellationToken = default)
         {
             var voice = await client.VoicesEndpoint.GetVoiceAsync(historyItem.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var response = await client.Client.GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(cancellationToken);
+            using var response = await client.Client.GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, cancellationToken);
             var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var memoryStream = new MemoryStream();
             byte[] clipData;
@@ -100,7 +112,7 @@ namespace ElevenLabs.History
         /// <returns>True, if history item was successfully deleted.</returns>
         public async Task<bool> DeleteHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
+            using var response = await client.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
             await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return response.IsSuccessStatusCode;
         }
@@ -117,15 +129,15 @@ namespace ElevenLabs.History
         public async Task<IReadOnlyList<VoiceClip>> DownloadHistoryItemsAsync(List<string> historyItemIds = null, CancellationToken cancellationToken = default)
         {
             historyItemIds ??= (await GetHistoryAsync(cancellationToken: cancellationToken)).HistoryItems.Select(item => item.Id).ToList();
-            var voiceClips = new ConcurrentBag<VoiceClip>();
+            var clips = new ConcurrentBag<VoiceClip>();
 
-            async Task DownloadItem(string historyItemId)
+            async Task DownloadItem(string id)
             {
                 try
                 {
-                    var historyItem = await GetHistoryItemAsync(historyItemId, cancellationToken).ConfigureAwait(false);
-                    var voiceClip = await DownloadHistoryAudioAsync(historyItem, cancellationToken).ConfigureAwait(false);
-                    voiceClips.Add(voiceClip);
+                    var historyItem = await GetHistoryItemAsync(id, cancellationToken).ConfigureAwait(false);
+                    var clip = await DownloadHistoryAudioAsync(historyItem, cancellationToken).ConfigureAwait(false);
+                    clips.Add(clip);
                 }
                 catch (Exception e)
                 {
@@ -134,7 +146,7 @@ namespace ElevenLabs.History
             }
 
             await Task.WhenAll(historyItemIds.Select(DownloadItem)).ConfigureAwait(false);
-            return voiceClips.ToList();
+            return clips.ToList();
         }
     }
 }

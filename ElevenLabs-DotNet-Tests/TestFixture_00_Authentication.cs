@@ -8,29 +8,29 @@ using System.Text.Json;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_00_Authentication
+    internal class TestFixture_00_Authentication
     {
         [SetUp]
         public void Setup()
         {
             var authJson = new AuthInfo("key-test12");
             var authText = JsonSerializer.Serialize(authJson);
-            File.WriteAllText(".elevenlabs", authText);
+            File.WriteAllText(ElevenLabsAuthentication.CONFIG_FILE, authText);
         }
 
         [Test]
-        public void Test_01_GetAuthFromEnv()
+        public void Test_01_GetAuthFromEnvironment()
         {
-            var auth = ElevenLabsAuthentication.LoadFromEnv();
+            var auth = ElevenLabsAuthentication.LoadFromEnvironment();
             Assert.IsNotNull(auth);
             Assert.IsNotNull(auth.ApiKey);
             Assert.IsNotEmpty(auth.ApiKey);
         }
 
         [Test]
-        public void Test_02_GetAuthFromFile()
+        public void Test_02_GetAuthFromPath()
         {
-            var auth = ElevenLabsAuthentication.LoadFromDirectory();
+            var auth = ElevenLabsAuthentication.LoadFromPath(ElevenLabsAuthentication.CONFIG_FILE);
             Assert.IsNotNull(auth);
             Assert.IsNotNull(auth.ApiKey);
             Assert.AreEqual("key-test12", auth.ApiKey);
@@ -119,9 +119,9 @@ namespace ElevenLabs.Tests
         [TearDown]
         public void TearDown()
         {
-            if (File.Exists(".elevenlabs"))
+            if (File.Exists(ElevenLabsAuthentication.CONFIG_FILE))
             {
-                File.Delete(".elevenlabs");
+                File.Delete(ElevenLabsAuthentication.CONFIG_FILE);
             }
         }
     }

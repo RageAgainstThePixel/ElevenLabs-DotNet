@@ -77,7 +77,7 @@ namespace ElevenLabs.TextToSpeech
             }
 
             var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await client.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
-            var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model, defaultVoiceSettings)).ToJsonStringContent();
+            using var payload = JsonSerializer.Serialize(new TextToSpeechRequest(text, model, defaultVoiceSettings)).ToJsonStringContent();
             var parameters = new Dictionary<string, string>
             {
                 { OutputFormatParameter, outputFormat.ToString().ToLower() }
@@ -93,8 +93,8 @@ namespace ElevenLabs.TextToSpeech
             var requestOption = partialClipCallback == null
                 ? HttpCompletionOption.ResponseContentRead
                 : HttpCompletionOption.ResponseHeadersRead;
-            var response = await client.Client.SendAsync(postRequest, requestOption, cancellationToken);
-            await response.CheckResponseAsync(cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.SendAsync(postRequest, requestOption, cancellationToken);
+            await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(clipId))

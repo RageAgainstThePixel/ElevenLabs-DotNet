@@ -18,16 +18,6 @@ namespace ElevenLabs.Tests.Proxy
         // ReSharper disable once ClassNeverInstantiated.Local
         private class AuthenticationFilter : AbstractAuthenticationFilter
         {
-            public override void ValidateAuthentication(IHeaderDictionary request)
-            {
-                // You will need to implement your own class to properly test
-                // custom issued tokens you've setup for your end users.
-                if (!request["xi-api-key"].ToString().Contains(TestUserToken))
-                {
-                    throw new AuthenticationException("User is not authorized");
-                }
-            }
-
             public override async Task ValidateAuthenticationAsync(IHeaderDictionary request)
             {
                 await Task.CompletedTask; // remote resource call
@@ -43,9 +33,9 @@ namespace ElevenLabs.Tests.Proxy
 
         public static void Main(string[] args)
         {
-            var auth = ElevenLabsAuthentication.LoadFromEnv();
+            var auth = ElevenLabsAuthentication.LoadFromEnvironment();
             var client = new ElevenLabsClient(auth);
-            ElevenLabsProxyStartup.CreateWebApplication<AuthenticationFilter>(args, client).Run();
+            ElevenLabsProxy.CreateWebApplication<AuthenticationFilter>(args, client).Run();
         }
     }
 }

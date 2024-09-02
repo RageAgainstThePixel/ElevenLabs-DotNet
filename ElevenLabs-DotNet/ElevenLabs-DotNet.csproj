@@ -1,21 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RootNamespace>ElevenLabs</RootNamespace>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-    <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
-    <Authors>Stephen Hodgson</Authors>
     <Title>ElevenLabs-DotNet</Title>
+    <Product>ElevenLabs-DotNet</Product>
+    <PackageId>ElevenLabs-DotNet</PackageId>
+    <RootNamespace>ElevenLabs</RootNamespace>
     <Company>RageAgainstThePixel</Company>
+    <Authors>Stephen Hodgson</Authors>
+    <Description>A non-official Eleven Labs voice synthesis RESTful client.
+I am not affiliated with Eleven Labs and an account with api access is required.
+All copyrights, trademarks, logos, and assets are the property of their respective owners.
+    </Description>
     <Copyright>2024</Copyright>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
     <PackageTags>ElevenLabs, AI, ML, Voice, TTS</PackageTags>
-    <Version>2.2.1</Version>
-    <PackageReleaseNotes>Version 2.2.1
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>Assets\ElevenLabsIcon.png</PackageIcon>
+    <DelaySign>true</DelaySign>
+    <SignAssembly>false</SignAssembly>
+    <IncludeSymbols>true</IncludeSymbols>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Version>3.0.0</Version>
+    <PackageReleaseNotes>
+Version 3.0.0
+- Updated to .NET 8.0
+- Added ability to specify fully customizable domain proxies
+- Added environment variable parsing for ELEVENLABS_API_KEY
+- Added SoundEffects API endpoints
+- Added Dubbing API endpoints
+- Updated default models
+- Fixed adding and editing voices
+Version 2.2.1
 - Misc formatting changes
 Version 2.2.0
 - Changed ElevenLabsClient to be IDisposable
@@ -110,24 +130,18 @@ Version 1.0.1
 Version 1.0.0
 - Initial Release!
     </PackageReleaseNotes>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Description>A non-official Eleven Labs voice synthesis RESTful client.
-I am not affiliated with Eleven Labs and an account with api access is required.
-All copyrights, trademarks, logos, and assets are the property of their respective owners.</Description>
-    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Assets\ElevenLabsIcon.png">
-      <Pack>True</Pack>
+    <None Update="Assets\ElevenLabsIcon.png">
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\README.md">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\LICENSE">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>

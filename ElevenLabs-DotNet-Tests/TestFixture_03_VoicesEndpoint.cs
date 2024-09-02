@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_02_VoicesEndpoint : AbstractTestFixture
+    internal class TestFixture_03_VoicesEndpoint : AbstractTestFixture
     {
         [Test]
-        public async Task Test_01_GetVoices()
+        public async Task Test_01_01_GetVoices()
         {
             Assert.NotNull(ElevenLabsClient.VoicesEndpoint);
             var results = await ElevenLabsClient.VoicesEndpoint.GetAllVoicesAsync();
@@ -23,6 +23,20 @@ namespace ElevenLabs.Tests
             foreach (var voice in results)
             {
                 Console.WriteLine($"{voice.Id} | {voice.Name} | similarity boost: {voice.Settings?.SimilarityBoost} | stability: {voice.Settings?.Stability}");
+            }
+        }
+
+        [Test]
+        public async Task Test_01_02_GetSharedVoices()
+        {
+            Assert.NotNull(ElevenLabsClient.SharedVoicesEndpoint);
+            var results = await ElevenLabsClient.SharedVoicesEndpoint.GetSharedVoicesAsync();
+            Assert.NotNull(results);
+            Assert.IsNotEmpty(results.Voices);
+
+            foreach (var voice in results.Voices)
+            {
+                Console.WriteLine($"{voice.OwnerId} | {voice.VoiceId} | {voice.Date} | {voice.Name}");
             }
         }
 
@@ -79,7 +93,8 @@ namespace ElevenLabs.Tests
                 { "accent", "american" }
             };
             var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
-            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { clipPath }, testLabels);
+            var request = new VoiceRequest("Test Voice", clipPath, testLabels);
+            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync(request);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Name}");
             Assert.IsNotEmpty(result.Samples);
@@ -95,7 +110,8 @@ namespace ElevenLabs.Tests
             };
             var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
             var clipData = await File.ReadAllBytesAsync(clipPath);
-            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { clipData }, testLabels);
+            var request = new VoiceRequest("Test Voice", clipData, testLabels);
+            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync(request);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Name}");
             Assert.IsNotEmpty(result.Samples);
@@ -113,7 +129,8 @@ namespace ElevenLabs.Tests
             var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
 
             await using var fs = File.OpenRead(clipPath);
-            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync("Test Voice", new[] { fs }, testLabels);
+            var request = new VoiceRequest("Test Voice", fs, testLabels);
+            var result = await ElevenLabsClient.VoicesEndpoint.AddVoiceAsync(request);
             Assert.NotNull(result);
             Console.WriteLine($"{result.Name}");
             Assert.IsNotEmpty(result.Samples);
@@ -134,7 +151,7 @@ namespace ElevenLabs.Tests
                 { "key", "value" }
             };
             var clipPath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
-            var result = await ElevenLabsClient.VoicesEndpoint.EditVoiceAsync(voiceToEdit, new[] { clipPath }, testLabels);
+            var result = await ElevenLabsClient.VoicesEndpoint.EditVoiceAsync(voiceToEdit, [clipPath], testLabels);
             Assert.NotNull(result);
             Assert.IsTrue(result);
         }

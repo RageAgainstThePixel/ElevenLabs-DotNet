@@ -7,8 +7,6 @@ namespace ElevenLabs.History
 {
     public sealed class HistoryItem
     {
-        public static implicit operator string(HistoryItem historyItem) => historyItem.Id;
-
         [JsonInclude]
         [JsonPropertyName("history_item_id")]
         public string Id { get; private set; }
@@ -47,5 +45,7 @@ namespace ElevenLabs.History
         [JsonInclude]
         [JsonPropertyName("state")]
         public string State { get; private set; }
+
+        public static implicit operator string(HistoryItem historyItem) => historyItem?.Id;
     }
 }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_05_VoiceGeneration : AbstractTestFixture
+    internal class TestFixture_05_VoiceGeneration : AbstractTestFixture
     {
         [Test]
         public async Task Test_01_GetVoiceGenerationOptions()

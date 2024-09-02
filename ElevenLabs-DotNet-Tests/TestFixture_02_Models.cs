@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_06_Models : AbstractTestFixture
+    internal class TestFixture_02_Models : AbstractTestFixture
     {
         [Test]
         public async Task Test_01_GetModels()

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_04_HistoryEndpoint : AbstractTestFixture
+    internal class TestFixture_07_HistoryEndpoint : AbstractTestFixture
     {
         [Test]
         public async Task Test_01_GetHistory()
@@ -36,6 +36,7 @@ namespace ElevenLabs.Tests
             Console.WriteLine($"Downloading {downloadItem!.Id}...");
             var voiceClip = await ElevenLabsClient.HistoryEndpoint.DownloadHistoryAudioAsync(downloadItem);
             Assert.NotNull(voiceClip);
+            Assert.IsFalse(voiceClip.ClipData.IsEmpty);
         }
 
         [Test]
@@ -64,7 +65,6 @@ namespace ElevenLabs.Tests
             Assert.IsNotEmpty(historyInfo.HistoryItems);
             var itemsToDelete = historyInfo.HistoryItems.Where(item => item.Text.Contains("The quick brown fox jumps over the lazy dog.")).ToList();
             Assert.NotNull(itemsToDelete);
-            Assert.IsNotEmpty(itemsToDelete);
 
             foreach (var historyItem in itemsToDelete)
             {

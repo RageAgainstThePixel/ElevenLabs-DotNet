@@ -1,34 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <SignAssembly>false</SignAssembly>
     <Authors>Stephen Hodgson</Authors>
+    <Title>ElevenLabs API Proxy</Title>
     <Product>ElevenLabs-DotNet-Proxy</Product>
+    <PackageId>ElevenLabs-DotNet-Proxy</PackageId>
+    <RootNamespace>ElevenLabs.Proxy</RootNamespace>
     <Description>A simple Proxy API gateway for ElevenLabs-DotNet to make authenticated requests from a front end application without exposing your API keys.</Description>
     <Copyright>2024</Copyright>
     <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
     <PackageTags>ElevenLabs, AI, ML, API, api-proxy, proxy, gateway</PackageTags>
-    <Title>ElevenLabs API Proxy</Title>
-    <PackageId>ElevenLabs-DotNet-Proxy</PackageId>
-    <Version>2.2.2</Version>
-    <RootNamespace>ElevenLabs.Proxy</RootNamespace>
-    <PackageReleaseNotes>Version 2.2.2
+    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <SignAssembly>false</SignAssembly>
+    <Version>3.0.0</Version>
+    <PackageReleaseNotes>
+Version 3.0.0
+- Renamed ElevenLabsProxyStartup to ElevenLabsProxy
+- Deprecated ValidateAuthentication
+Version 2.2.2
 - Updated EndpointRouteBuilder with optional route prefix parameter
 Version 2.2.1
 - Refactor with modern WebApplication builder
 - Added ElevenLabs.Proxy.EndpointRouteBuilder
     </PackageReleaseNotes>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageReadmeFile>Readme.md</PackageReadmeFile>
-    <IncludeSymbols>True</IncludeSymbols>
-    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ElevenLabs-DotNet\ElevenLabs-DotNet.csproj" />
@@ -36,17 +38,17 @@ Version 2.2.1
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ElevenLabs-DotNet\Assets\ElevenLabsIcon.png">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\LICENSE">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
   <ItemGroup>
     <None Update="Readme.md">
-      <Pack>True</Pack>
+      <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
