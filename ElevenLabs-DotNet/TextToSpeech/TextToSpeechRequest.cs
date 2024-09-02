@@ -17,7 +17,7 @@ namespace ElevenLabs.TextToSpeech
             }
 
             Text = text;
-            Model = model ?? Models.Model.MonoLingualV1;
+            Model = model ?? Models.Model.EnglishV1;
             VoiceSettings = voiceSettings ?? throw new ArgumentNullException(nameof(voiceSettings));
         }
 
