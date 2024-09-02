@@ -32,6 +32,7 @@ Version 3.0.0
 - Added ability to specify fully customizable domain proxies
 - Added environment variable parsing for ELEVENLABS_API_KEY
 - Added SoundEffects API endpoints
+- Added Dubbing API endpoints
 - Updated default models
 - Fixed adding and editing voices
 Version 2.2.1
