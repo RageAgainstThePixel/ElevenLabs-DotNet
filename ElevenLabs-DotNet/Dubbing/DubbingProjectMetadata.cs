@@ -22,7 +22,7 @@ namespace ElevenLabs.Dubbing
 
         [JsonInclude]
         [JsonPropertyName("target_languages")]
-        public List<string> TargetLanguages { get; private set; }
+        public IReadOnlyList<string> TargetLanguages { get; private set; }
 
         [JsonInclude]
         [JsonPropertyName("error")]

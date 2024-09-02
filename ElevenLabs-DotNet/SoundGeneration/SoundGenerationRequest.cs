@@ -8,7 +8,7 @@ namespace ElevenLabs.SoundGeneration
     public sealed class SoundGenerationRequest
     {
         /// <summary>
-        /// 
+        /// Constructor.
         /// </summary>
         /// <param name="text">
         /// The text that will get converted into a sound effect.
