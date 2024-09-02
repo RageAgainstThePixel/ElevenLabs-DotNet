@@ -33,14 +33,12 @@ namespace ElevenLabs.Dubbing
         protected override string Root => "dubbing";
 
         /// <summary>
-        /// Initiates a dubbing operation asynchronously based on the provided <paramref name="request"/>.
+        /// Dubs provided audio or video file into given language.
         /// </summary>
         /// <param name="request">The <see cref="DubbingRequest"/> containing dubbing configuration and files.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>
-        /// A task representing the asynchronous dubbing operation. The task completes with the dubbing ID and expected duration in seconds if the operation succeeds.
-        /// </returns>
-        public async Task<DubbingResponse> StartDubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
+        /// <returns> <see cref="DubbingResponse"/>.</returns>
+        public async Task<DubbingResponse> DubAsync(DubbingRequest request, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
             using var payload = new MultipartFormDataContent();
@@ -153,11 +151,11 @@ namespace ElevenLabs.Dubbing
         }
 
         /// <summary>
-        /// 
+        /// Returns metadata about a dubbing project, including whether it’s still in progress or not.
         /// </summary>
         /// <param name="dubbingId"></param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns></returns>
+        /// <returns><see cref="DubbingProjectMetadata"/>.</returns>
         public async Task<DubbingProjectMetadata> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
             var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
@@ -167,7 +165,7 @@ namespace ElevenLabs.Dubbing
         }
 
         /// <summary>
-        /// Retrieves the transcript for the dub asynchronously in the specified format (SRT or WebVTT).
+        /// Returns transcript for the dub in the specified format (SRT or WebVTT).
         /// </summary>
         /// <param name="dubbingId">The ID of the dubbing project.</param>
         /// <param name="languageCode">The language code of the transcript.</param>
@@ -189,7 +187,7 @@ namespace ElevenLabs.Dubbing
         }
 
         /// <summary>
-        /// Retrieves the dubbed file asynchronously as a sequence of byte arrays.
+        /// Returns dubbed file as a streamed file.
         /// </summary>
         /// <param name="dubbingId">The ID of the dubbing project.</param>
         /// <param name="languageCode">The language code of the dubbed content.</param>
