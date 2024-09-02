@@ -16,7 +16,7 @@ namespace ElevenLabs.Tests
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
             var filePath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
             var request = new DubbingRequest(filePath, "es", "en", 1);
-            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request, progress: new Progress<DubbingProjectMetadata>(metadata =>
+            var metadata = await ElevenLabsClient.DubbingEndpoint.DubAsync(request, progress: new Progress<DubbingProjectMetadata>(metadata =>
             {
                 switch (metadata.Status)
                 {
@@ -31,14 +31,14 @@ namespace ElevenLabs.Tests
                         break;
                 }
             }));
-            Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
-            Assert.IsTrue(response.ExpectedDurationSeconds > 0);
+            Assert.IsFalse(string.IsNullOrEmpty(metadata.DubbingId));
+            Assert.IsTrue(metadata.ExpectedDurationSeconds > 0);
 
             var srcFile = new FileInfo(filePath);
             var dubbedPath = new FileInfo($"{srcFile.FullName}.dubbed.{request.TargetLanguage}{srcFile.Extension}");
             {
                 await using var fs = File.Open(dubbedPath.FullName, FileMode.Create);
-                await foreach (var chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(response.DubbingId, request.TargetLanguage))
+                await foreach (var chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(metadata.DubbingId, request.TargetLanguage))
                 {
                     await fs.WriteAsync(chunk);
                 }
@@ -48,13 +48,13 @@ namespace ElevenLabs.Tests
 
             var transcriptPath = new FileInfo($"{srcFile.FullName}.dubbed.{request.TargetLanguage}.srt");
             {
-                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage);
+                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(metadata.DubbingId, request.TargetLanguage);
                 await File.WriteAllTextAsync(transcriptPath.FullName, transcriptFile);
             }
             Assert.IsTrue(transcriptPath.Exists);
             Assert.IsTrue(transcriptPath.Length > 0);
 
-            await ElevenLabsClient.DubbingEndpoint.DeleteDubbingProjectAsync(response.DubbingId);
+            await ElevenLabsClient.DubbingEndpoint.DeleteDubbingProjectAsync(metadata.DubbingId);
         }
 
         [Test]
@@ -62,9 +62,8 @@ namespace ElevenLabs.Tests
         {
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
 
-            var uri = new Uri("https://youtu.be/Zo5-rhYOlNk");
-            var request = new DubbingRequest(uri, "ja", "en", 1, true);
-            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request, progress: new Progress<DubbingProjectMetadata>(metadata =>
+            var request = new DubbingRequest(new Uri("https://youtu.be/Zo5-rhYOlNk"), "ja", "en", 1, true);
+            var metadata = await ElevenLabsClient.DubbingEndpoint.DubAsync(request, progress: new Progress<DubbingProjectMetadata>(metadata =>
             {
                 switch (metadata.Status)
                 {
@@ -79,14 +78,14 @@ namespace ElevenLabs.Tests
                         break;
                 }
             }));
-            Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
-            Assert.IsTrue(response.ExpectedDurationSeconds > 0);
+            Assert.IsFalse(string.IsNullOrEmpty(metadata.DubbingId));
+            Assert.IsTrue(metadata.ExpectedDurationSeconds > 0);
 
             var assetsDir = Path.GetFullPath("../../../Assets");
             var dubbedPath = new FileInfo(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.mp4"));
             {
                 await using var fs = File.Open(dubbedPath.FullName, FileMode.Create);
-                await foreach (var chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(response.DubbingId, request.TargetLanguage))
+                await foreach (var chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(metadata.DubbingId, request.TargetLanguage))
                 {
                     await fs.WriteAsync(chunk);
                 }
@@ -96,13 +95,13 @@ namespace ElevenLabs.Tests
 
             var transcriptPath = new FileInfo(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.srt"));
             {
-                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage);
+                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(metadata.DubbingId, request.TargetLanguage);
                 await File.WriteAllTextAsync(transcriptPath.FullName, transcriptFile);
             }
             Assert.IsTrue(transcriptPath.Exists);
             Assert.IsTrue(transcriptPath.Length > 0);
 
-            await ElevenLabsClient.DubbingEndpoint.DeleteDubbingProjectAsync(response.DubbingId);
+            await ElevenLabsClient.DubbingEndpoint.DeleteDubbingProjectAsync(metadata.DubbingId);
         }
     }
 }
