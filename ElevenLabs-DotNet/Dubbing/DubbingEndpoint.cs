@@ -4,9 +4,7 @@ using ElevenLabs.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -38,116 +36,76 @@ namespace ElevenLabs.Dubbing
         /// Initiates a dubbing operation asynchronously based on the provided <paramref name="request"/>.
         /// </summary>
         /// <param name="request">The <see cref="DubbingRequest"/> containing dubbing configuration and files.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>
-        /// A task representing the asynchronous dubbing operation. The task completes with the dubbing ID and expected duration 
-        /// in seconds if the operation succeeds.
+        /// A task representing the asynchronous dubbing operation. The task completes with the dubbing ID and expected duration in seconds if the operation succeeds.
         /// </returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
         public async Task<DubbingResponse> StartDubbingAsync(DubbingRequest request, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
+            using var payload = new MultipartFormDataContent();
 
-            using MultipartFormDataContent content = [];
-
-            if (!string.IsNullOrEmpty(request.Mode))
+            try
             {
-                content.Add(new StringContent(request.Mode), "mode");
+                foreach (var (fileName, mediaType, stream) in request.Files)
+                {
+                    await payload.AppendFileToFormAsync("file", stream, fileName, new(mediaType), cancellationToken);
+                }
+
+                if (!string.IsNullOrEmpty(request.ProjectName))
+                {
+                    payload.Add(new StringContent(request.ProjectName), "name");
+                }
+
+                if (request.SourceUrl != null)
+                {
+                    payload.Add(new StringContent(request.SourceUrl.ToString()), "source_url");
+                }
+
+                if (!string.IsNullOrEmpty(request.SourceLanguage))
+                {
+                    payload.Add(new StringContent(request.SourceLanguage), "source_lang");
+                }
+
+                if (!string.IsNullOrEmpty(request.TargetLanguage))
+                {
+                    payload.Add(new StringContent(request.TargetLanguage), "target_lang");
+                }
+
+                if (request.NumberOfSpeakers.HasValue)
+                {
+                    payload.Add(new StringContent(request.NumberOfSpeakers.Value.ToString(CultureInfo.InvariantCulture)), "num_speakers");
+                }
+
+                if (request.Watermark.HasValue)
+                {
+                    payload.Add(new StringContent(request.Watermark.Value.ToString()), "watermark");
+                }
+
+                if (request.StartTime.HasValue)
+                {
+                    payload.Add(new StringContent(request.StartTime.Value.ToString(CultureInfo.InvariantCulture)), "start_time");
+                }
+
+                if (request.EndTime.HasValue)
+                {
+                    payload.Add(new StringContent(request.EndTime.Value.ToString(CultureInfo.InvariantCulture)), "end_time");
+                }
+
+                if (request.HighestResolution.HasValue)
+                {
+                    payload.Add(new StringContent(request.HighestResolution.Value.ToString()), "highest_resolution");
+                }
+            }
+            finally
+            {
+                request.Dispose();
             }
 
-            if (!string.IsNullOrEmpty(request.FilePath))
-            {
-                AppendFileToForm(content, "file", new(request.FilePath), MediaTypeHeaderValue.Parse(request.MediaType));
-            }
-
-            if (!string.IsNullOrEmpty(request.CsvFilePath))
-            {
-                AppendFileToForm(content, "csv_file", new(request.CsvFilePath), new("text/csv"));
-            }
-
-            if (!string.IsNullOrEmpty(request.ForegroundAudioFilePath))
-            {
-                AppendFileToForm(content, "foreground_audio_file", new(request.ForegroundAudioFilePath), new("audio/mpeg"));
-            }
-
-            if (!string.IsNullOrEmpty(request.BackgroundAudioFilePath))
-            {
-                AppendFileToForm(content, "background_audio_file", new(request.BackgroundAudioFilePath), new("audio/mpeg"));
-            }
-
-            if (!string.IsNullOrEmpty(request.Name))
-            {
-                content.Add(new StringContent(request.Name), "name");
-            }
-
-            if (!string.IsNullOrEmpty(request.SourceUrl))
-            {
-                content.Add(new StringContent(request.SourceUrl), "source_url");
-            }
-
-            if (!string.IsNullOrEmpty(request.SourceLanguage))
-            {
-                content.Add(new StringContent(request.SourceLanguage), "source_lang");
-            }
-
-            if (!string.IsNullOrEmpty(request.TargetLanguage))
-            {
-                content.Add(new StringContent(request.TargetLanguage), "target_lang");
-            }
-
-            if (request.NumSpeakers.HasValue)
-            {
-                content.Add(new StringContent(request.NumSpeakers.Value.ToString(CultureInfo.InvariantCulture)), "num_speakers");
-            }
-
-            if (request.Watermark.HasValue)
-            {
-                content.Add(new StringContent(request.Watermark.Value.ToString()), "watermark");
-            }
-
-            if (request.StartTime.HasValue)
-            {
-                content.Add(new StringContent(request.StartTime.Value.ToString(CultureInfo.InvariantCulture)), "start_time");
-            }
-
-            if (request.EndTime.HasValue)
-            {
-                content.Add(new StringContent(request.EndTime.Value.ToString(CultureInfo.InvariantCulture)), "end_time");
-            }
-
-            if (request.HighestResolution.HasValue)
-            {
-                content.Add(new StringContent(request.HighestResolution.Value.ToString()), "highest_resolution");
-            }
-
-            if (request.DubbingStudio.HasValue)
-            {
-                content.Add(new StringContent(request.DubbingStudio.Value.ToString()), "dubbing_studio");
-            }
-
-            using var response = await client.Client.PostAsync(GetUrl(), content, cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.PostAsync(GetUrl(), payload, cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<DubbingResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-
-        private static void AppendFileToForm(MultipartFormDataContent content, string name, FileInfo fileInfo, MediaTypeHeaderValue mediaType)
-        {
-            if (!fileInfo.Exists)
-            {
-                throw new FileNotFoundException($"File not found: {fileInfo.FullName}");
-            }
-
-            var fileStream = fileInfo.OpenRead();
-            var fileContent = new StreamContent(fileStream);
-
-            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-            {
-                Name = name,
-                FileName = fileInfo.Name,
-            };
-            fileContent.Headers.ContentType = mediaType;
-            content.Add(fileContent);
         }
 
         /// <summary>
@@ -160,7 +118,8 @@ namespace ElevenLabs.Dubbing
         /// <param name="progress">An optional <see cref="IProgress{T}"/> implementation to report progress updates, such as status messages and errors.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the waiting operation.</param>
         /// <returns>
-        /// A task that represents the asynchronous wait operation. The task result is <see langword="true"/> if the dubbing completes successfully within the specified number of retries and timeout interval; otherwise, <see langword="false"/>.
+        /// A task that represents the asynchronous wait operation. The task result is <see langword="true"/>
+        /// if the dubbing completes successfully within the specified number of retries and timeout interval; otherwise, <see langword="false"/>.
         /// </returns>
         /// <remarks>
         /// This method checks the dubbing status by sending requests to the dubbing service at intervals defined by the <paramref name="timeoutInterval"/> parameter.
@@ -175,10 +134,7 @@ namespace ElevenLabs.Dubbing
             {
                 var metadata = await GetDubbingProjectMetadataAsync(dubbingId, cancellationToken).ConfigureAwait(false);
 
-                if (metadata.Status.Equals("dubbed", StringComparison.Ordinal))
-                {
-                    return true;
-                }
+                if (metadata.Status.Equals("dubbed", StringComparison.Ordinal)) { return true; }
 
                 if (metadata.Status.Equals("dubbing", StringComparison.Ordinal))
                 {
@@ -196,13 +152,40 @@ namespace ElevenLabs.Dubbing
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dubbingId"></param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns></returns>
         public async Task<DubbingProjectMetadata> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
             var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<DubbingProjectMetadata>(responseBody)
-                   ?? throw new JsonException("Could not deserialize the dubbing project metadata!");
+            return JsonSerializer.Deserialize<DubbingProjectMetadata>(responseBody);
+        }
+
+        /// <summary>
+        /// Retrieves the transcript for the dub asynchronously in the specified format (SRT or WebVTT).
+        /// </summary>
+        /// <param name="dubbingId">The ID of the dubbing project.</param>
+        /// <param name="languageCode">The language code of the transcript.</param>
+        /// <param name="formatType">Optional. The format type of the transcript file, either 'srt' or 'webvtt'.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. The task completes with the transcript content
+        /// as a string in the specified format.
+        /// </returns>
+        /// <remarks>
+        /// If <paramref name="formatType"/> is not specified, the method retrieves the transcript in its default format.
+        /// </remarks>
+        public async Task<string> GetTranscriptForDubAsync(string dubbingId, string languageCode, DubbingFormat formatType = DubbingFormat.Srt, CancellationToken cancellationToken = default)
+        {
+            var @params = new Dictionary<string, string> { { "format_type", formatType.ToString().ToLower() } };
+            using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/transcript/{languageCode}", @params), cancellationToken).ConfigureAwait(false);
+            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -211,7 +194,7 @@ namespace ElevenLabs.Dubbing
         /// <param name="dubbingId">The ID of the dubbing project.</param>
         /// <param name="languageCode">The language code of the dubbed content.</param>
         /// <param name="bufferSize">The size of the buffer used to read data from the response stream. Default is 8192 bytes.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>
         /// An asynchronous enumerable of byte arrays representing the dubbed file content. Each byte array
         /// contains a chunk of the dubbed file data.
@@ -238,31 +221,14 @@ namespace ElevenLabs.Dubbing
         }
 
         /// <summary>
-        /// Retrieves the transcript for the dub asynchronously in the specified format (SRT or WebVTT).
+        /// Deletes a dubbing project.
         /// </summary>
         /// <param name="dubbingId">The ID of the dubbing project.</param>
-        /// <param name="languageCode">The language code of the transcript.</param>
-        /// <param name="formatType">Optional. The format type of the transcript file, either 'srt' or 'webvtt'.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
-        /// <returns>
-        /// A task representing the asynchronous operation. The task completes with the transcript content
-        /// as a string in the specified format.
-        /// </returns>
-        /// <remarks>
-        /// If <paramref name="formatType"/> is not specified, the method retrieves the transcript in its default format.
-        /// </remarks>
-        public async Task<string> GetTranscriptForDubAsync(string dubbingId, string languageCode, string formatType = null, CancellationToken cancellationToken = default)
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        public async Task DeleteDubbingProjectAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
-            Dictionary<string, string> @params = null;
-
-            if (!string.IsNullOrEmpty(formatType))
-            {
-                @params = new Dictionary<string, string> { { "format_type", formatType } };
-            }
-
-            using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/transcript/{languageCode}", @params), cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.DeleteAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

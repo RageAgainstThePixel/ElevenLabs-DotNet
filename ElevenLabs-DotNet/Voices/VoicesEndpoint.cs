@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -196,16 +195,7 @@ namespace ElevenLabs.Voices
 
                 foreach (var (fileName, sample) in request.Samples)
                 {
-                    using var audioData = new MemoryStream();
-                    await sample.CopyToAsync(audioData, cancellationToken).ConfigureAwait(false);
-                    var content = new ByteArrayContent(audioData.ToArray());
-                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                    content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-                    {
-                        Name = "files",
-                        FileName = fileName
-                    };
-                    payload.Add(content, "files", fileName);
+                    await payload.AppendFileToFormAsync("files", sample, fileName, null, cancellationToken);
                 }
 
                 if (request.Labels != null)
@@ -218,12 +208,7 @@ namespace ElevenLabs.Voices
                 request.Dispose();
             }
 
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, GetUrl("/add"));
-            httpRequest.Content = payload;
-            httpRequest.Version = HttpVersion.Version10;
-            httpRequest.Headers.ExpectContinue = true;
-            httpRequest.Headers.ConnectionClose = false;
-            using var response = await client.Client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.PostAsync(GetUrl("/add"), payload, cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
             return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);

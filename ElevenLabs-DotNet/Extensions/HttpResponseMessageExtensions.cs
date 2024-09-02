@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -173,6 +174,22 @@ namespace ElevenLabs.Extensions
             }
 
             return responseAsString;
+        }
+
+        internal static async Task AppendFileToFormAsync(this MultipartFormDataContent content, string name, Stream stream, string fileName, MediaTypeHeaderValue mediaType = null, CancellationToken cancellationToken = default)
+        {
+            using var audioData = new MemoryStream();
+            await stream.CopyToAsync(audioData, cancellationToken).ConfigureAwait(false);
+            var fileContent = new ByteArrayContent(audioData.ToArray());
+            const string formData = "form-data";
+            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue(formData)
+            {
+                Name = name,
+                FileName = fileName
+            };
+            const string contentType = "application/octet-stream";
+            fileContent.Headers.ContentType = mediaType ?? new MediaTypeHeaderValue(contentType);
+            content.Add(fileContent);
         }
     }
 }

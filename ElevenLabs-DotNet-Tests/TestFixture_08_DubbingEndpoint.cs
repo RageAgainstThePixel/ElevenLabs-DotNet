@@ -8,23 +8,14 @@ using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
 {
-    internal class Test_Fixture_07_DubbingEndpoint : AbstractTestFixture
+    internal class TestFixture_08_DubbingEndpoint : AbstractTestFixture
     {
         [Test]
         public async Task Test_01_Dubbing_File()
         {
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
             var filePath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
-            var request = new DubbingRequest
-            {
-                FilePath = filePath,
-                MediaType = "audio/mpeg",
-                SourceLanguage = "en",
-                TargetLanguage = "es",
-                NumSpeakers = 1,
-                Watermark = false,
-            };
-
+            var request = new DubbingRequest(filePath, "es", "en", 1);
             var response = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
             Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
             Assert.IsTrue(response.ExpectedDurationSeconds > 0);
@@ -45,11 +36,13 @@ namespace ElevenLabs.Tests
 
             var transcriptPath = new FileInfo($"{srcFile.FullName}.dubbed.{request.TargetLanguage}.srt");
             {
-                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage, "srt");
+                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage);
                 await File.WriteAllTextAsync(transcriptPath.FullName, transcriptFile);
             }
             Assert.IsTrue(transcriptPath.Exists);
             Assert.IsTrue(transcriptPath.Length > 0);
+
+            await ElevenLabsClient.DubbingEndpoint.DeleteDubbingProjectAsync(response.DubbingId);
         }
 
         [Test]
@@ -58,15 +51,7 @@ namespace ElevenLabs.Tests
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
 
             var uri = new Uri("https://youtu.be/Zo5-rhYOlNk");
-            var request = new DubbingRequest
-            {
-                SourceUrl = uri.AbsoluteUri,
-                SourceLanguage = "en",
-                TargetLanguage = "ja",
-                NumSpeakers = 1,
-                Watermark = true,
-            };
-
+            var request = new DubbingRequest(uri, "ja", "en", 1, true);
             var response = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
             Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
             Assert.IsTrue(response.ExpectedDurationSeconds > 0);
@@ -87,11 +72,13 @@ namespace ElevenLabs.Tests
 
             var transcriptPath = new FileInfo(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.srt"));
             {
-                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage, "srt");
+                var transcriptFile = await ElevenLabsClient.DubbingEndpoint.GetTranscriptForDubAsync(response.DubbingId, request.TargetLanguage);
                 await File.WriteAllTextAsync(transcriptPath.FullName, transcriptFile);
             }
             Assert.IsTrue(transcriptPath.Exists);
             Assert.IsTrue(transcriptPath.Length > 0);
+
+            await ElevenLabsClient.DubbingEndpoint.DeleteDubbingProjectAsync(response.DubbingId);
         }
     }
 }
