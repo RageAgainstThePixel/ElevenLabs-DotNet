@@ -16,7 +16,7 @@ namespace ElevenLabs.Tests
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
             var filePath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
             var request = new DubbingRequest(filePath, "es", "en", 1);
-            var response = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
+            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request);
             Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
             Assert.IsTrue(response.ExpectedDurationSeconds > 0);
             Console.WriteLine($"Expected Duration: {response.ExpectedDurationSeconds:0.00} seconds");
@@ -52,7 +52,7 @@ namespace ElevenLabs.Tests
 
             var uri = new Uri("https://youtu.be/Zo5-rhYOlNk");
             var request = new DubbingRequest(uri, "ja", "en", 1, true);
-            var response = await ElevenLabsClient.DubbingEndpoint.StartDubbingAsync(request);
+            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request);
             Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
             Assert.IsTrue(response.ExpectedDurationSeconds > 0);
             Console.WriteLine($"Expected Duration: {response.ExpectedDurationSeconds:0.00} seconds");
