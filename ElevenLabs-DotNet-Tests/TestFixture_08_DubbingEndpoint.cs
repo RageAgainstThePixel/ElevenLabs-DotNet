@@ -16,11 +16,23 @@ namespace ElevenLabs.Tests
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
             var filePath = Path.GetFullPath("../../../Assets/test_sample_01.ogg");
             var request = new DubbingRequest(filePath, "es", "en", 1);
-            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request);
+            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request, progress: new Progress<DubbingProjectMetadata>(metadata =>
+            {
+                switch (metadata.Status)
+                {
+                    case "dubbing":
+                        Console.WriteLine($"Dubbing for {metadata.DubbingId} in progress... Expected Duration: {metadata.ExpectedDurationSeconds:0.00} seconds");
+                        break;
+                    case "dubbed":
+                        Console.WriteLine($"Dubbing for {metadata.DubbingId} complete in {metadata.TimeCompleted.TotalSeconds:0.00} seconds!");
+                        break;
+                    default:
+                        Console.WriteLine($"Status: {metadata.Status}");
+                        break;
+                }
+            }));
             Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
             Assert.IsTrue(response.ExpectedDurationSeconds > 0);
-            Console.WriteLine($"Expected Duration: {response.ExpectedDurationSeconds:0.00} seconds");
-            Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(response.DubbingId, progress: new Progress<string>(Console.WriteLine)));
 
             var srcFile = new FileInfo(filePath);
             var dubbedPath = new FileInfo($"{srcFile.FullName}.dubbed.{request.TargetLanguage}{srcFile.Extension}");
@@ -52,11 +64,23 @@ namespace ElevenLabs.Tests
 
             var uri = new Uri("https://youtu.be/Zo5-rhYOlNk");
             var request = new DubbingRequest(uri, "ja", "en", 1, true);
-            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request);
+            var response = await ElevenLabsClient.DubbingEndpoint.DubAsync(request, progress: new Progress<DubbingProjectMetadata>(metadata =>
+            {
+                switch (metadata.Status)
+                {
+                    case "dubbing":
+                        Console.WriteLine($"Dubbing for {metadata.DubbingId} in progress... Expected Duration: {metadata.ExpectedDurationSeconds:0.00} seconds");
+                        break;
+                    case "dubbed":
+                        Console.WriteLine($"Dubbing for {metadata.DubbingId} complete in {metadata.TimeCompleted.TotalSeconds:0.00} seconds!");
+                        break;
+                    default:
+                        Console.WriteLine($"Status: {metadata.Status}");
+                        break;
+                }
+            }));
             Assert.IsFalse(string.IsNullOrEmpty(response.DubbingId));
             Assert.IsTrue(response.ExpectedDurationSeconds > 0);
-            Console.WriteLine($"Expected Duration: {response.ExpectedDurationSeconds:0.00} seconds");
-            Assert.IsTrue(await ElevenLabsClient.DubbingEndpoint.WaitForDubbingCompletionAsync(response.DubbingId, progress: new Progress<string>(Console.WriteLine)));
 
             var assetsDir = Path.GetFullPath("../../../Assets");
             var dubbedPath = new FileInfo(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.mp4"));

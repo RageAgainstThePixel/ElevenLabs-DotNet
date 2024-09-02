@@ -1,5 +1,6 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -26,5 +27,11 @@ namespace ElevenLabs.Dubbing
         [JsonInclude]
         [JsonPropertyName("error")]
         public string Error { get; private set; }
+
+        [JsonIgnore]
+        public float ExpectedDurationSeconds { get; internal set; }
+
+        [JsonIgnore]
+        public TimeSpan TimeCompleted { get; internal set; }
     }
 }

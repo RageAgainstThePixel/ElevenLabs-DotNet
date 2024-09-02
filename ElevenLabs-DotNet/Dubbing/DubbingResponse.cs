@@ -13,5 +13,7 @@ namespace ElevenLabs.Dubbing
         [JsonInclude]
         [JsonPropertyName("expected_duration_sec")]
         public float ExpectedDurationSeconds { get; private set; }
+
+        public static implicit operator string(DubbingResponse response) => response?.DubbingId;
     }
 }

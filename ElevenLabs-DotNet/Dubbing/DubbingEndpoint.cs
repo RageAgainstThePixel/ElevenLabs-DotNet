@@ -3,6 +3,7 @@
 using ElevenLabs.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -20,25 +21,18 @@ namespace ElevenLabs.Dubbing
         private const string DubbingId = "dubbing_id";
         private const string ExpectedDurationSecs = "expected_duration_sec";
 
-        /// <summary>
-        /// Gets or sets the maximum number of retry attempts to wait for the dubbing completion status.
-        /// </summary>
-        public int DefaultMaxRetries { get; set; } = 30;
-
-        /// <summary>
-        /// Gets or sets the timeout interval for waiting between dubbing status checks.
-        /// </summary>
-        public TimeSpan DefaultTimeoutInterval { get; set; } = TimeSpan.FromSeconds(10);
-
         protected override string Root => "dubbing";
 
         /// <summary>
         /// Dubs provided audio or video file into given language.
         /// </summary>
         /// <param name="request">The <see cref="DubbingRequest"/> containing dubbing configuration and files.</param>
+        /// <param name="progress"></param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns> <see cref="DubbingResponse"/>.</returns>
-        public async Task<DubbingResponse> DubAsync(DubbingRequest request, CancellationToken cancellationToken = default)
+        /// <param name="maxRetries"></param>
+        /// <param name="pollingInterval"></param>
+        /// <returns> <see cref="DubbingProjectMetadata"/>.</returns>
+        public async Task<DubbingProjectMetadata> DubAsync(DubbingRequest request, int? maxRetries = null, TimeSpan? pollingInterval = null, IProgress<DubbingProjectMetadata> progress = null, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
             using var payload = new MultipartFormDataContent();
@@ -101,53 +95,52 @@ namespace ElevenLabs.Dubbing
             }
 
             using var response = await client.Client.PostAsync(GetUrl(), payload, cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
-            await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<DubbingResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var responseBody = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
+            var dubResponse = JsonSerializer.Deserialize<DubbingResponse>(responseBody);
+            var metadata = await WaitForDubbingCompletionAsync(dubResponse, maxRetries ?? 60, pollingInterval ?? TimeSpan.FromSeconds(dubResponse.ExpectedDurationSeconds), pollingInterval == null, progress, cancellationToken);
+            return metadata;
         }
 
-        /// <summary>
-        /// Waits asynchronously for a dubbing operation to complete. This method polls the dubbing status at regular intervals,
-        /// reporting progress updates if a progress reporter is provided.
-        /// </summary>
-        /// <param name="dubbingId">The ID of the dubbing project.</param>
-        /// <param name="maxRetries">The maximum number of retries for checking the dubbing completion status. If not specified, a default value is used.</param>
-        /// <param name="timeoutInterval">The time to wait between each status check. If not specified, a default interval is used.</param>
-        /// <param name="progress">An optional <see cref="IProgress{T}"/> implementation to report progress updates, such as status messages and errors.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the waiting operation.</param>
-        /// <returns>
-        /// A task that represents the asynchronous wait operation. The task result is <see langword="true"/>
-        /// if the dubbing completes successfully within the specified number of retries and timeout interval; otherwise, <see langword="false"/>.
-        /// </returns>
-        /// <remarks>
-        /// This method checks the dubbing status by sending requests to the dubbing service at intervals defined by the <paramref name="timeoutInterval"/> parameter.
-        /// If the dubbing status is "dubbed", the method returns <see langword="true"/>. If the dubbing fails or the specified number of <paramref name="maxRetries"/> is reached without successful completion, the method returns <see langword="false"/>.
-        /// </remarks>
-        public async Task<bool> WaitForDubbingCompletionAsync(string dubbingId, int? maxRetries = null, TimeSpan? timeoutInterval = null, IProgress<string> progress = null, CancellationToken cancellationToken = default)
+        private async Task<DubbingProjectMetadata> WaitForDubbingCompletionAsync(DubbingResponse dubbingResponse, int maxRetries, TimeSpan pollingInterval, bool adjustInterval, IProgress<DubbingProjectMetadata> progress = null, CancellationToken cancellationToken = default)
         {
-            maxRetries ??= DefaultMaxRetries;
-            timeoutInterval ??= DefaultTimeoutInterval;
+            var stopwatch = Stopwatch.StartNew();
 
-            for (var i = 0; i < maxRetries; i++)
+            for (var i = 1; i < maxRetries + 1; i++)
             {
-                var metadata = await GetDubbingProjectMetadataAsync(dubbingId, cancellationToken).ConfigureAwait(false);
+                var metadata = await GetDubbingProjectMetadataAsync(dubbingResponse, cancellationToken).ConfigureAwait(false);
+                metadata.ExpectedDurationSeconds = dubbingResponse.ExpectedDurationSeconds;
 
-                if (metadata.Status.Equals("dubbed", StringComparison.Ordinal)) { return true; }
+                if (metadata.Status.Equals("dubbed", StringComparison.Ordinal))
+                {
+                    stopwatch.Stop();
+                    metadata.TimeCompleted = stopwatch.Elapsed;
+                    progress?.Report(metadata);
+                    return metadata;
+                }
+
+                progress?.Report(metadata);
 
                 if (metadata.Status.Equals("dubbing", StringComparison.Ordinal))
                 {
-                    progress?.Report($"Dubbing for {dubbingId} in progress... Will check status again in {timeoutInterval.Value.TotalSeconds} seconds.");
-                    await Task.Delay(timeoutInterval.Value, cancellationToken).ConfigureAwait(false);
+                    if (EnableDebug)
+                    {
+                        Console.WriteLine($"Dubbing for {dubbingResponse.DubbingId} in progress... Will check status again in {pollingInterval.TotalSeconds} seconds.");
+                    }
+
+                    if (adjustInterval)
+                    {
+                        pollingInterval = TimeSpan.FromSeconds(dubbingResponse.ExpectedDurationSeconds / Math.Pow(2, i));
+                    }
+
+                    await Task.Delay(pollingInterval, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    progress?.Report($"Dubbing for {dubbingId} failed: {metadata.Error}");
-                    return false;
+                    throw new Exception($"Dubbing for {dubbingResponse.DubbingId} failed: {metadata.Error}");
                 }
             }
 
-            progress?.Report($"Dubbing for {dubbingId} timed out or exceeded expected duration.");
-            return false;
+            throw new TimeoutException($"Dubbing for {dubbingResponse.DubbingId} timed out or exceeded expected duration.");
         }
 
         /// <summary>
@@ -158,9 +151,8 @@ namespace ElevenLabs.Dubbing
         /// <returns><see cref="DubbingProjectMetadata"/>.</returns>
         public async Task<DubbingProjectMetadata> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
-            var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
+            var responseBody = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<DubbingProjectMetadata>(responseBody);
         }
 
@@ -182,8 +174,7 @@ namespace ElevenLabs.Dubbing
         {
             var @params = new Dictionary<string, string> { { "format_type", formatType.ToString().ToLower() } };
             using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/transcript/{languageCode}", @params), cancellationToken).ConfigureAwait(false);
-            await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            return await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -205,7 +196,6 @@ namespace ElevenLabs.Dubbing
         {
             using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/audio/{languageCode}"), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var buffer = new byte[bufferSize];
             int bytesRead;
