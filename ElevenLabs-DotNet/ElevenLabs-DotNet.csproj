@@ -28,10 +28,12 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <Version>3.0.0</Version>
     <PackageReleaseNotes>
 Version 3.0.0
+- Updated to .NET 8.0
 - Added ability to specify fully customizable domain proxies
 - Added environment variable parsing for ELEVENLABS_API_KEY
 - Added SoundEffects API endpoints
 - Updated default models
+- Fixed adding and editing voices
 Version 2.2.1
 - Misc formatting changes
 Version 2.2.0
