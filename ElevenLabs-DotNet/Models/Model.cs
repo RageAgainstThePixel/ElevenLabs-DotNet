@@ -101,7 +101,7 @@ namespace ElevenLabs.Models
         /// the content and the prosody of the generated speech across various languages.
         /// </summary>
         [JsonIgnore]
-        public static Model MultilingualSpeechToSpeechV2 { get; } = new("eleven_multilingual_sts_v2");
+        public static Model MultiLingualSpeechToSpeechV2 { get; } = new("eleven_multilingual_sts_v2");
 
         #endregion Predefined Models
     }
