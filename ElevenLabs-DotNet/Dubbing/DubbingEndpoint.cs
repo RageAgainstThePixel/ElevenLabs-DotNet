@@ -18,20 +18,17 @@ namespace ElevenLabs.Dubbing
     /// </summary>
     public sealed class DubbingEndpoint(ElevenLabsClient client) : ElevenLabsBaseEndPoint(client)
     {
-        private const string DubbingId = "dubbing_id";
-        private const string ExpectedDurationSecs = "expected_duration_sec";
-
         protected override string Root => "dubbing";
 
         /// <summary>
         /// Dubs provided audio or video file into given language.
         /// </summary>
         /// <param name="request">The <see cref="DubbingRequest"/> containing dubbing configuration and files.</param>
-        /// <param name="progress"></param>
+        /// <param name="progress"><see cref="IProgress{DubbingProjectMetadata}"/> progress callback.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <param name="maxRetries"></param>
-        /// <param name="pollingInterval"></param>
-        /// <returns> <see cref="DubbingProjectMetadata"/>.</returns>
+        /// <param name="maxRetries">Optional, number of retry attempts when polling.</param>
+        /// <param name="pollingInterval">Optional, <see cref="TimeSpan"/> between making requests.</param>
+        /// <returns><see cref="DubbingProjectMetadata"/>.</returns>
         public async Task<DubbingProjectMetadata> DubAsync(DubbingRequest request, int? maxRetries = null, TimeSpan? pollingInterval = null, IProgress<DubbingProjectMetadata> progress = null, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
@@ -39,9 +36,12 @@ namespace ElevenLabs.Dubbing
 
             try
             {
-                foreach (var (fileName, mediaType, stream) in request.Files)
+                if (request.Files != null)
                 {
-                    await payload.AppendFileToFormAsync("file", stream, fileName, new(mediaType), cancellationToken);
+                    foreach (var (fileName, mediaType, stream) in request.Files)
+                    {
+                        await payload.AppendFileToFormAsync("file", stream, fileName, new(mediaType), cancellationToken);
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(request.ProjectName))
@@ -97,8 +97,7 @@ namespace ElevenLabs.Dubbing
             using var response = await client.Client.PostAsync(GetUrl(), payload, cancellationToken).ConfigureAwait(false);
             var responseBody = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             var dubResponse = JsonSerializer.Deserialize<DubbingResponse>(responseBody);
-            var metadata = await WaitForDubbingCompletionAsync(dubResponse, maxRetries ?? 60, pollingInterval ?? TimeSpan.FromSeconds(dubResponse.ExpectedDurationSeconds), pollingInterval == null, progress, cancellationToken);
-            return metadata;
+            return await WaitForDubbingCompletionAsync(dubResponse, maxRetries ?? 60, pollingInterval ?? TimeSpan.FromSeconds(dubResponse.ExpectedDurationSeconds), pollingInterval == null, progress, cancellationToken);
         }
 
         private async Task<DubbingProjectMetadata> WaitForDubbingCompletionAsync(DubbingResponse dubbingResponse, int maxRetries, TimeSpan pollingInterval, bool adjustInterval, IProgress<DubbingProjectMetadata> progress = null, CancellationToken cancellationToken = default)
@@ -122,14 +121,14 @@ namespace ElevenLabs.Dubbing
 
                 if (metadata.Status.Equals("dubbing", StringComparison.Ordinal))
                 {
+                    if (adjustInterval && pollingInterval.TotalSeconds > 0.5f)
+                    {
+                        pollingInterval = TimeSpan.FromSeconds(dubbingResponse.ExpectedDurationSeconds / Math.Pow(2, i));
+                    }
+
                     if (EnableDebug)
                     {
                         Console.WriteLine($"Dubbing for {dubbingResponse.DubbingId} in progress... Will check status again in {pollingInterval.TotalSeconds} seconds.");
-                    }
-
-                    if (adjustInterval)
-                    {
-                        pollingInterval = TimeSpan.FromSeconds(dubbingResponse.ExpectedDurationSeconds / Math.Pow(2, i));
                     }
 
                     await Task.Delay(pollingInterval, cancellationToken).ConfigureAwait(false);
@@ -146,7 +145,7 @@ namespace ElevenLabs.Dubbing
         /// <summary>
         /// Returns metadata about a dubbing project, including whether it’s still in progress or not.
         /// </summary>
-        /// <param name="dubbingId"></param>
+        /// <param name="dubbingId">Dubbing project id.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="DubbingProjectMetadata"/>.</returns>
         public async Task<DubbingProjectMetadata> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
@@ -159,17 +158,13 @@ namespace ElevenLabs.Dubbing
         /// <summary>
         /// Returns transcript for the dub in the specified format (SRT or WebVTT).
         /// </summary>
-        /// <param name="dubbingId">The ID of the dubbing project.</param>
+        /// <param name="dubbingId">Dubbing project id.</param>
         /// <param name="languageCode">The language code of the transcript.</param>
-        /// <param name="formatType">Optional. The format type of the transcript file, either 'srt' or 'webvtt'.</param>
+        /// <param name="formatType">Optional. The format type of the transcript file, either <see cref="DubbingFormat.Srt"/> or <see cref="DubbingFormat.WebVtt"/>.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task completes with the transcript content
-        /// as a string in the specified format.
+        /// A string containing the transcript content in the specified format.
         /// </returns>
-        /// <remarks>
-        /// If <paramref name="formatType"/> is not specified, the method retrieves the transcript in its default format.
-        /// </remarks>
         public async Task<string> GetTranscriptForDubAsync(string dubbingId, string languageCode, DubbingFormat formatType = DubbingFormat.Srt, CancellationToken cancellationToken = default)
         {
             var @params = new Dictionary<string, string> { { "format_type", formatType.ToString().ToLower() } };
@@ -180,7 +175,7 @@ namespace ElevenLabs.Dubbing
         /// <summary>
         /// Returns dubbed file as a streamed file.
         /// </summary>
-        /// <param name="dubbingId">The ID of the dubbing project.</param>
+        /// <param name="dubbingId">Dubbing project id.</param>
         /// <param name="languageCode">The language code of the dubbed content.</param>
         /// <param name="bufferSize">The size of the buffer used to read data from the response stream. Default is 8192 bytes.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
@@ -211,7 +206,7 @@ namespace ElevenLabs.Dubbing
         /// <summary>
         /// Deletes a dubbing project.
         /// </summary>
-        /// <param name="dubbingId">The ID of the dubbing project.</param>
+        /// <param name="dubbingId">Dubbing project id.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         public async Task DeleteDubbingProjectAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
