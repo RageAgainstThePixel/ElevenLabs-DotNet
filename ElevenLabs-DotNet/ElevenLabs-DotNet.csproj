@@ -25,8 +25,11 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <SignAssembly>false</SignAssembly>
     <IncludeSymbols>true</IncludeSymbols>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Version>3.0.2</Version>
+    <Version>3.0.3</Version>
     <PackageReleaseNotes>
+Version 3.0.3
+- Fix DubbingRequest.DropBackgroundAudio flag not properly being set
+- Added DubbingRequest.UseProfanityFilter flag
 Version 3.0.2
 - Cleanup and polish for Dubbing API
 Version 3.0.1
