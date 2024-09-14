@@ -18,8 +18,9 @@ namespace ElevenLabs.Dubbing
             int? endTime = null,
             bool? highestResolution = null,
             bool? dropBackgroundAudio = null,
+            bool? useProfanityFilter = null,
             string projectName = null)
-            : this([filePath], targetLanguage, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, projectName)
+            : this([filePath], targetLanguage, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
         {
         }
 
@@ -33,8 +34,9 @@ namespace ElevenLabs.Dubbing
             int? endTime = null,
             bool? highestResolution = null,
             bool? dropBackgroundAudio = null,
+            bool? useProfanityFilter = null,
             string projectName = null)
-            : this(targetLanguage, null, filePaths, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, projectName)
+            : this(targetLanguage, null, filePaths, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
         {
         }
 
@@ -48,8 +50,9 @@ namespace ElevenLabs.Dubbing
             int? endTime = null,
             bool? highestResolution = null,
             bool? dropBackgroundAudio = null,
+            bool? useProfanityFilter = null,
             string projectName = null)
-            : this(targetLanguage, sourceUrl, null, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, projectName)
+            : this(targetLanguage, sourceUrl, null, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
         {
         }
 
@@ -64,6 +67,7 @@ namespace ElevenLabs.Dubbing
             int? endTime = null,
             bool? highestResolution = null,
             bool? dropBackgroundAudio = null,
+            bool? useProfanityFilter = null,
             string projectName = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(targetLanguage);
@@ -122,6 +126,7 @@ namespace ElevenLabs.Dubbing
             EndTime = endTime;
             HighestResolution = highestResolution;
             DropBackgroundAudio = dropBackgroundAudio;
+            UseProfanityFilter = useProfanityFilter;
             ProjectName = projectName;
         }
 
@@ -183,6 +188,11 @@ namespace ElevenLabs.Dubbing
         /// This can improve dub quality where it's known that audio shouldn't have a background track such as for speeches or monologues.
         /// </summary>
         public bool? DropBackgroundAudio { get; }
+
+        /// <summary>
+        /// [BETA] Whether transcripts should have profanities censored with the words '[censored]'.
+        /// </summary>
+        public bool? UseProfanityFilter { get; }
 
         /// <summary>
         /// Name of the dubbing project.

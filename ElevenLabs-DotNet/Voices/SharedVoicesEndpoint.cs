@@ -21,8 +21,8 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="SharedVoiceList"/>.</returns>
         public async Task<SharedVoiceList> GetSharedVoicesAsync(SharedVoiceQuery query = null, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl(queryParameters: query?.ToQueryParams()), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken);
+            using var response = await client.Client.GetAsync(GetUrl(queryParameters: query?.ToQueryParams()), cancellationToken).ConfigureAwait(false);
+            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<SharedVoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
         }
     }
