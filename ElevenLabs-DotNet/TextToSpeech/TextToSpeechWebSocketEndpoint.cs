@@ -22,6 +22,7 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
     private const string EnableSsmlParsingParameter = "enable_ssml_parsing";
     private const string OptimizeStreamingLatencyParameter = "optimize_streaming_latency";
     private const string OutputFormatParameter = "output_format";
+    private const string InactivityTimeoutParameter = "inactivity_timeout";
 
     public TextToSpeechWebSocketEndpoint(ElevenLabsClient client) : base(client)
     {
@@ -63,13 +64,17 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
     ///     4 - max latency optimizations, but also with text normalizer turned off for even more latency savings
     ///     (best latency, but can mispronounce eg numbers and dates).
     /// </param>
+    /// <param name="inactivityTimeout">
+    ///     The number of seconds that the connection can be inactive before it is automatically closed.
+    ///     Defaults to 20 seconds, with a maximum allowed value of 180 seconds.
+    /// </param>
     /// <param name="cancellationToken">Optional, <see cref="CancellationToken" />.</param>
     /// <exception cref="ArgumentNullException">Raised when <paramref name="voice" /> is null or empty.</exception>
     /// <exception cref="ArgumentNullException">Raised when <paramref name="partialClipCallback" /> is null.</exception>
     public async Task StartTextToSpeechAsync(Voice voice, Func<VoiceClip, Task> partialClipCallback,
         VoiceSettings voiceSettings = null, GenerationConfig generationConfig = null, Model model = null,
         OutputFormat outputFormat = OutputFormat.MP3_44100_128, bool? enableLogging = null,
-        bool? enableSsmlParsing = null, int? optimizeStreamingLatency = null,
+        bool? enableSsmlParsing = null, int? optimizeStreamingLatency = null, int? inactivityTimeout = null,
         CancellationToken cancellationToken = default)
     {
         if (voice == null ||
@@ -102,6 +107,11 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
         if (optimizeStreamingLatency.HasValue)
         {
             parameters.Add(OptimizeStreamingLatencyParameter, optimizeStreamingLatency.ToString());
+        }
+
+        if (inactivityTimeout.HasValue)
+        {
+            parameters.Add(InactivityTimeoutParameter, inactivityTimeout.ToString());
         }
 
         await client.WebSocketClient.ConnectAsync(
@@ -137,11 +147,6 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
         if (client.WebSocketClient.State != WebSocketState.Open)
         {
             throw new InvalidOperationException("WebSocket is not open!");
-        }
-
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new ArgumentNullException($"{nameof(text)} cannot be null or empty!");
         }
 
         TextToSpeechWebSocketRequest request = new(text, flush, tryTriggerGeneration);
