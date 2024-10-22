@@ -85,7 +85,7 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
 
         var parameters = new Dictionary<string, string>
         {
-            { ModelIdParameter, model?.Id ?? Model.MonoLingualV1.Id },
+            { ModelIdParameter, model?.Id ?? Model.EnglishV1.Id },
             { OutputFormatParameter, outputFormat.ToString().ToLower() }
         };
 
@@ -218,6 +218,10 @@ public sealed class TextToSpeechWebSocketEndpoint : ElevenLabsBaseEndPoint
                     await partialClipCallback(null);
                 }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
         finally
         {

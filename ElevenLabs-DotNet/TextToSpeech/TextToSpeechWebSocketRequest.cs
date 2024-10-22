@@ -24,11 +24,6 @@ public sealed class TextToSpeechWebSocketRequest
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="text" /> is null or empty.</exception>
     public TextToSpeechWebSocketRequest(string text, bool? flush = null, bool tryTriggerGeneration = false)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
         // if the last character of the text is not a space, append one
         Text = text[^1] != ' ' ? text + ' ' : text;
         TryTriggerGeneration = tryTriggerGeneration;
