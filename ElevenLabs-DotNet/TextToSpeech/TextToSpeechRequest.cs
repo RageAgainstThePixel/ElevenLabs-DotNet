@@ -85,7 +85,7 @@ namespace ElevenLabs.TextToSpeech
                 text = Encoding.UTF8.GetString(encoding.GetBytes(text));
             }
 
-            if(!string.IsNullOrEmpty(languageCode) && model != Models.Model.TurboV2_5)
+            if (!string.IsNullOrEmpty(languageCode) && model != Models.Model.TurboV2_5)
             {
                 throw new ArgumentException($"Currently only Turbo v2.5 model supports language enforcement.", nameof(languageCode));
             }
