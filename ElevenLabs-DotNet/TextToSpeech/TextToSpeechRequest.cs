@@ -31,6 +31,10 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="model">
         /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.
         /// </param>
+        /// <param name="languageCode">
+        /// Optional, Language code (ISO 639-1) used to enforce a language for the model. Currently only <see cref="Model.TurboV2_5"/> supports language enforcement. 
+        /// For other models, an error will be returned if language code is provided.
+        /// </param>
         /// <param name="outputFormat">
         /// Output format of the generated audio.<br/>
         /// Defaults to <see cref="OutputFormat.MP3_44100_128"/>
@@ -57,6 +61,7 @@ namespace ElevenLabs.TextToSpeech
             OutputFormat outputFormat = OutputFormat.MP3_44100_128,
             int? optimizeStreamingLatency = null,
             Model model = null,
+            string languageCode = null,
             string previousText = null)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -80,6 +85,11 @@ namespace ElevenLabs.TextToSpeech
                 text = Encoding.UTF8.GetString(encoding.GetBytes(text));
             }
 
+            if(!string.IsNullOrEmpty(languageCode) && model != Models.Model.TurboV2_5)
+            {
+                throw new ArgumentException($"Currently only Turbo v2.5 model supports language enforcement.", nameof(languageCode));
+            }
+
             Text = text;
             Model = model ?? Models.Model.MultiLingualV2;
             Voice = voice;
@@ -87,6 +97,7 @@ namespace ElevenLabs.TextToSpeech
             PreviousText = previousText;
             OutputFormat = outputFormat;
             OptimizeStreamingLatency = optimizeStreamingLatency;
+            LanguageCode = languageCode;
         }
 
         [JsonPropertyName("text")]
@@ -94,6 +105,9 @@ namespace ElevenLabs.TextToSpeech
 
         [JsonPropertyName("model_id")]
         public string Model { get; }
+
+        [JsonPropertyName("language_code")]
+        public string LanguageCode { get; }
 
         [JsonIgnore]
         public Voice Voice { get; }
