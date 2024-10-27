@@ -43,6 +43,10 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="model">
         /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.
         /// </param>
+        /// <param name="languageCode">
+        /// Optional, Language code (ISO 639-1) used to enforce a language for the model. Currently only <see cref="Model.TurboV2_5"/> supports language enforcement. 
+        /// For other models, an error will be returned if language code is provided.
+        /// </param>
         /// <param name="outputFormat">
         /// Output format of the generated audio.<br/>
         /// Defaults to <see cref="OutputFormat.MP3_44100_128"/>
@@ -64,10 +68,10 @@ namespace ElevenLabs.TextToSpeech
         /// </param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="VoiceClip"/>.</returns>
-        public async Task<VoiceClip> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, OutputFormat outputFormat = OutputFormat.MP3_44100_128, int? optimizeStreamingLatency = null, Func<VoiceClip, Task> partialClipCallback = null, CancellationToken cancellationToken = default)
+        public async Task<VoiceClip> TextToSpeechAsync(string text, Voice voice, VoiceSettings voiceSettings = null, Model model = null, OutputFormat outputFormat = OutputFormat.MP3_44100_128, int? optimizeStreamingLatency = null, string languageCode =  null, Func<VoiceClip, Task> partialClipCallback = null, CancellationToken cancellationToken = default)
         {
             var defaultVoiceSettings = voiceSettings ?? voice.Settings ?? await client.VoicesEndpoint.GetDefaultVoiceSettingsAsync(cancellationToken);
-            return await TextToSpeechAsync(new TextToSpeechRequest(voice, text, Encoding.UTF8, defaultVoiceSettings, outputFormat, optimizeStreamingLatency, model), partialClipCallback, cancellationToken).ConfigureAwait(false);
+            return await TextToSpeechAsync(new TextToSpeechRequest(voice, text, Encoding.UTF8, defaultVoiceSettings, outputFormat, optimizeStreamingLatency, model, languageCode), partialClipCallback, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

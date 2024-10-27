@@ -43,5 +43,25 @@ namespace ElevenLabs.Tests
             Assert.NotNull(voiceClip);
             Console.WriteLine(voiceClip.Id);
         }
+
+        [Test]
+        public async Task Test_TurboV2_5_LanguageEnforced_TextToSpeech()
+        {
+            Assert.NotNull(ElevenLabsClient.TextToSpeechEndpoint);
+            var voice = Voices.Voice.Adam;
+            Assert.NotNull(voice);
+            var defaultVoiceSettings = await ElevenLabsClient.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
+            var voiceClip = await ElevenLabsClient.TextToSpeechEndpoint.TextToSpeechAsync(
+                "Příliš žluťoučký kůň úpěl ďábelské ódy",
+                voice, 
+                defaultVoiceSettings,
+                Models.Model.TurboV2_5,
+                OutputFormat.MP3_44100_192,
+                null,
+                "cs");
+
+            Assert.NotNull(voiceClip);
+            Console.WriteLine(voiceClip.Id);
+        }
     }
 }
