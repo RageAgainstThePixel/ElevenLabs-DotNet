@@ -7,12 +7,13 @@ namespace ElevenLabs
 {
     public class GeneratedClip
     {
-        internal GeneratedClip(string id, string text, ReadOnlyMemory<byte> clipData)
+        internal GeneratedClip(string id, string text, ReadOnlyMemory<byte> clipData, int sampleRate = 44100)
         {
             Id = id;
             Text = text;
             TextHash = $"{id}{text}".GenerateGuid().ToString();
             ClipData = clipData;
+            SampleRate = sampleRate;
         }
 
         /// <summary>
@@ -34,5 +35,7 @@ namespace ElevenLabs
         /// The ray clip data.
         /// </summary>
         public ReadOnlyMemory<byte> ClipData { get; }
+
+        public int SampleRate { get; }
     }
 }

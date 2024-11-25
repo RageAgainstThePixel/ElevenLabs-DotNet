@@ -10,8 +10,9 @@ namespace ElevenLabs.TextToSpeech
 {
     public sealed class TextToSpeechRequest
     {
-        public TextToSpeechRequest(string text, Model model, VoiceSettings voiceSettings) :
-            this(null, text, voiceSettings: voiceSettings, model: model)
+        [Obsolete]
+        public TextToSpeechRequest(string text, Model model, VoiceSettings voiceSettings)
+            : this(null, text, voiceSettings: voiceSettings, model: model)
         {
         }
 
@@ -29,11 +30,7 @@ namespace ElevenLabs.TextToSpeech
         /// Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.
         /// </param>
         /// <param name="model">
-        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.MonoLingualV1"/>.
-        /// </param>
-        /// <param name="languageCode">
-        /// Optional, Language code (ISO 639-1) used to enforce a language for the model. Currently only <see cref="Model.TurboV2_5"/> supports language enforcement. 
-        /// For other models, an error will be returned if language code is provided.
+        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.TurboV2_5"/>.
         /// </param>
         /// <param name="outputFormat">
         /// Output format of the generated audio.<br/>
@@ -51,8 +48,14 @@ namespace ElevenLabs.TextToSpeech
         /// (best latency, but can mispronounce e.g. numbers and dates).
         /// </param>
         /// <param name="previousText"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <param name="nextText"></param>
+        /// <param name="previousRequestIds"></param>
+        /// <param name="nextRequestIds"></param>
+        /// <param name="languageCode">
+        /// Optional, Language code (ISO 639-1) used to enforce a language for the model. Currently only <see cref="Model.TurboV2_5"/> supports language enforcement. 
+        /// For other models, an error will be returned if language code is provided.
+        /// </param>
+        /// <param name="withTimestamps"></param>
         public TextToSpeechRequest(
             Voice voice,
             string text,
@@ -61,8 +64,12 @@ namespace ElevenLabs.TextToSpeech
             OutputFormat outputFormat = OutputFormat.MP3_44100_128,
             int? optimizeStreamingLatency = null,
             Model model = null,
+            string previousText = null,
+            string nextText = null,
+            string[] previousRequestIds = null,
+            string[] nextRequestIds = null,
             string languageCode = null,
-            string previousText = null)
+            bool withTimestamps = false)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -85,19 +92,26 @@ namespace ElevenLabs.TextToSpeech
                 text = Encoding.UTF8.GetString(encoding.GetBytes(text));
             }
 
-            if (!string.IsNullOrEmpty(languageCode) && model != Models.Model.TurboV2_5)
-            {
-                throw new ArgumentException($"Currently only Turbo v2.5 model supports language enforcement.", nameof(languageCode));
-            }
-
             Text = text;
-            Model = model ?? Models.Model.MultiLingualV2;
+            Model = model ?? Models.Model.TurboV2_5;
             Voice = voice;
-            VoiceSettings = voiceSettings ?? voice.Settings ?? throw new ArgumentNullException(nameof(voiceSettings));
-            PreviousText = previousText;
+            VoiceSettings = voiceSettings ?? voice.Settings;
             OutputFormat = outputFormat;
             OptimizeStreamingLatency = optimizeStreamingLatency;
+            PreviousText = previousText;
+            NextText = nextText;
+            if (previousRequestIds?.Length > 3)
+            {
+                previousRequestIds = previousRequestIds[..3];
+            }
+            PreviousRequestIds = previousRequestIds;
+            if (nextRequestIds?.Length > 3)
+            {
+                nextRequestIds = nextRequestIds[..3];
+            }
+            NextRequestIds = nextRequestIds;
             LanguageCode = languageCode;
+            WithTimestamps = withTimestamps;
         }
 
         [JsonPropertyName("text")]
@@ -106,14 +120,11 @@ namespace ElevenLabs.TextToSpeech
         [JsonPropertyName("model_id")]
         public string Model { get; }
 
-        [JsonPropertyName("language_code")]
-        public string LanguageCode { get; }
-
         [JsonIgnore]
         public Voice Voice { get; }
 
         [JsonPropertyName("voice_settings")]
-        public VoiceSettings VoiceSettings { get; }
+        public VoiceSettings VoiceSettings { get; internal set; }
 
         [JsonPropertyName("previous_text")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -124,5 +135,27 @@ namespace ElevenLabs.TextToSpeech
 
         [JsonIgnore]
         public int? OptimizeStreamingLatency { get; }
+
+        [JsonPropertyName("next_text")]
+        public string NextText { get; }
+
+        /// <remarks>
+        /// A maximum of three next or previous history item ids can be sent
+        /// </remarks>
+        [JsonPropertyName("previous_request_ids")]
+        public string[] PreviousRequestIds { get; }
+
+        /// <remarks>
+        /// A maximum of three next or previous history item ids can be sent
+        /// </remarks>
+        [JsonPropertyName("next_request_ids")]
+        public string[] NextRequestIds { get; }
+
+
+        [JsonPropertyName("language_code")]
+        public string LanguageCode { get; }
+
+        [JsonIgnore]
+        public bool WithTimestamps { get; }
     }
 }

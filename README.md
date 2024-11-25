@@ -204,8 +204,8 @@ Convert text to speech.
 var api = new ElevenLabsClient();
 var text = "The quick brown fox jumps over the lazy dog.";
 var voice = (await api.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
-var defaultVoiceSettings = await api.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
-var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice, defaultVoiceSettings);
+var request = new TextToSpeechRequest(voice, text);
+var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(request);
 await File.WriteAllBytesAsync($"{voiceClip.Id}.mp3", voiceClip.ClipData.ToArray());
 ```
 
@@ -219,7 +219,8 @@ var text = "The quick brown fox jumps over the lazy dog.";
 var voice = (await api.VoicesEndpoint.GetAllVoicesAsync()).FirstOrDefault();
 string fileName = "myfile.mp3";
 using var outputFileStream = File.OpenWrite(fileName);
-var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(text, voice,
+var request = new TextToSpeechRequest(voice, text);
+var voiceClip = await api.TextToSpeechEndpoint.TextToSpeechAsync(request,
 partialClipCallback: async (partialClip) =>
 {
     // Write the incoming data to the output file stream.
