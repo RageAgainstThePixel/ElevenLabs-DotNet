@@ -23,7 +23,7 @@ namespace ElevenLabs.TextToSpeech
         /// <see cref="Voice"/> to use.
         /// </param>
         /// <param name="text">
-        /// Text input to synthesize speech for. Maximum 5000 characters.
+        /// Text input to synthesize speech for.
         /// </param>
         /// <param name="encoding"><see cref="Encoding"/> to use for <see cref="text"/>.</param>
         /// <param name="voiceSettings">
@@ -74,11 +74,6 @@ namespace ElevenLabs.TextToSpeech
             if (string.IsNullOrWhiteSpace(text))
             {
                 throw new ArgumentNullException(nameof(text));
-            }
-
-            if (text.Length > 5000)
-            {
-                throw new ArgumentOutOfRangeException(nameof(text), $"{nameof(text)} cannot exceed 5000 characters");
             }
 
             if (voice == null ||
