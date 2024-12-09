@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <Authors>Stephen Hodgson</Authors>
+    <Title>ElevenLabs Client Dependency Injection</Title>
+    <Product>ElevenLabs-DotNet-DependencyInjection</Product>
+    <PackageId>ElevenLabs-DotNet-DependencyInjection</PackageId>
+    <RootNamespace>ElevenLabs.DependencyInjection</RootNamespace>
+    <Description>A package for inject your ElevenLabs Client to DI in your .NET projects.</Description>
+    <Copyright>2024</Copyright>
+    <PackageProjectUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RageAgainstThePixel/ElevenLabs-DotNet</RepositoryUrl>
+    <PackageTags>ElevenLabs, AI, ML, API</PackageTags>
+    <PackageIcon>ElevenLabsIcon.png</PackageIcon>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <SignAssembly>false</SignAssembly>
+    <Version>3.0.0</Version>
+    <PackageReleaseNotes>
+Version 3.0.0
+- Add .NET Core Dependency Injection Extensions
+    </PackageReleaseNotes>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ElevenLabs-DotNet\ElevenLabs-DotNet.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\ElevenLabs-DotNet\Assets\ElevenLabsIcon.png">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Readme.md">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElevenLabs-DotNet-Proxy", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElevenLabs-DotNet-Tests", "ElevenLabs-DotNet-Tests\ElevenLabs-DotNet-Tests.csproj", "{CCF51E5C-9798-4DE3-B83D-3E0F0848B84F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElevenLabs-DotNet-Tests-Proxy", "ElevenLabs-DotNet-Tests-Proxy\ElevenLabs-DotNet-Tests-Proxy.csproj", "{6E728878-5704-4E6C-92CB-575156FDCDD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElevenLabs-DotNet-Tests-Proxy", "ElevenLabs-DotNet-Tests-Proxy\ElevenLabs-DotNet-Tests-Proxy.csproj", "{6E728878-5704-4E6C-92CB-575156FDCDD1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElevenLabs-DotNet-DependencyInjection", "ElevenLabs-DotNet-DependencyInjection\ElevenLabs-DotNet-DependencyInjection.csproj", "{91061720-DDEE-48CC-9CD1-F363B66D5EBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElevenLabs-DotNet-Tests-DependencyInjection", "ElevenLabs-DotNet-Tests-DependencyInjection\ElevenLabs-DotNet-Tests-DependencyInjection.csproj", "{24586BA4-2363-4DFF-9817-0C6BC447270C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{6E728878-5704-4E6C-92CB-575156FDCDD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E728878-5704-4E6C-92CB-575156FDCDD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E728878-5704-4E6C-92CB-575156FDCDD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91061720-DDEE-48CC-9CD1-F363B66D5EBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91061720-DDEE-48CC-9CD1-F363B66D5EBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91061720-DDEE-48CC-9CD1-F363B66D5EBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91061720-DDEE-48CC-9CD1-F363B66D5EBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24586BA4-2363-4DFF-9817-0C6BC447270C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24586BA4-2363-4DFF-9817-0C6BC447270C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24586BA4-2363-4DFF-9817-0C6BC447270C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24586BA4-2363-4DFF-9817-0C6BC447270C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
