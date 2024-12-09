@@ -1,15 +1,14 @@
 using ElevenLabs.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 
 namespace ElevenLabs.Tests.DependencyInjection
 {
     public partial class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             // Create the host builder
-            HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+            var builder = WebApplication.CreateBuilder(args);
 
             // Add the ElevenLabs client to the service collection
             builder.Services.AddElevenLabsClient(options =>
@@ -18,24 +17,23 @@ namespace ElevenLabs.Tests.DependencyInjection
             });
 
             //OR if you want to use the default configuration section from appsettings
-            builder.Services.AddElevenLabsClient();
+            //builder.Services.AddElevenLabsClient();
 
             //OR if you want to use a specific configuration section
-            var options = new ElevenLabsClientOptions()
-            {
-                ApiKey = "YOUR_API_KEY",
-                ApiVersion = "v1",
-                Domain = "https://api.eleven-labs.com",
-                HttpClient = new System.Net.Http.HttpClient()
-            };
-            builder.Services.AddElevenLabsClient(options);
+            builder.Services.AddElevenLabsClient(builder.Configuration.GetSection("YourCustomSection"));
 
+            //OR if you want to use a specific configurations
+            //var options = new ElevenLabsClientOptions()
+            //{
+            //    ApiKey = "YOUR_API_KEY",
+            //    ApiVersion = "v1",
+            //    Domain = "https://api.eleven-labs.com",
+            //    HttpClient = new System.Net.Http.HttpClient()
+            //};
+            //builder.Services.AddElevenLabsClient(options);
 
-
-
-            using IHost host = builder.Build();
-
-            await host.RunAsync();
+            var app = builder.Build();
+            app.Run();
         }
     }
 }
