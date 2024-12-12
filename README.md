@@ -239,7 +239,7 @@ Gets a list of shared voices in the public voice library.
 
 ```csharp
 var api = new ElevenLabsClient();
-var results = await ElevenLabsClient.SharedVoicesEndpoint.GetSharedVoicesAsync();
+var results = await api.SharedVoicesEndpoint.GetSharedVoicesAsync();
 foreach (var voice in results.Voices)
 {
     Console.WriteLine($"{voice.OwnerId} | {voice.VoiceId} | {voice.Date} | {voice.Name}");
