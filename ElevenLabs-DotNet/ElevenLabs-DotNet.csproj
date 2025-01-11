@@ -25,8 +25,11 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <SignAssembly>false</SignAssembly>
     <IncludeSymbols>true</IncludeSymbols>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Version>3.4.1</Version>
+    <Version>3.4.2</Version>
     <PackageReleaseNotes>
+Version 3.4.2
+- Added flash models
+- Fixed http/https protocol in client settings
 Version 3.4.1
 - Removed text length check in TextToSpeechRequest
 Version 3.4.0
