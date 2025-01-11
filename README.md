@@ -38,7 +38,11 @@ dotnet add package ElevenLabs-DotNet
 
 ---
 
-## Documentation
+## [Documentation](https://rageagainstthepixel.github.io/ElevenLabs-DotNet)
+
+> Check out our new api docs!
+
+<https://rageagainstthepixel.github.io/ElevenLabs-DotNet>
 
 ### Table of Contents
 
