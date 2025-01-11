@@ -30,7 +30,7 @@ namespace ElevenLabs.TextToSpeech
         /// Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.
         /// </param>
         /// <param name="model">
-        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.TurboV2_5"/>.
+        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.FlashV2"/>.
         /// </param>
         /// <param name="outputFormat">
         /// Output format of the generated audio.<br/>
