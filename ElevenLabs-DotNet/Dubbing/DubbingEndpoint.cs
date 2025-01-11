@@ -38,9 +38,9 @@ namespace ElevenLabs.Dubbing
             {
                 if (request.Files != null)
                 {
-                    foreach (var (fileName, mediaType, stream) in request.Files)
+                    foreach (var dub in request.Files)
                     {
-                        await payload.AppendFileToFormAsync("file", stream, fileName, new(mediaType), cancellationToken);
+                        await payload.AppendFileToFormAsync("file", dub.Stream, dub.Name, new(dub.MediaType), cancellationToken);
                     }
                 }
 

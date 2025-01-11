@@ -29,6 +29,7 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <PackageReleaseNotes>
 Version 3.4.2
 - Added flash models
+- Added stream input support to dubbing endpoint
 - Fixed http/https protocol in client settings
 Version 3.4.1
 - Removed text length check in TextToSpeechRequest

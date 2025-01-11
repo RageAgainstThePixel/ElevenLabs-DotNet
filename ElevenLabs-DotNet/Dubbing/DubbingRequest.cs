@@ -57,7 +57,7 @@ namespace ElevenLabs.Dubbing
         }
 
         public DubbingRequest(
-            List<(string, string, Stream)> files,
+            List<DubbingStream> files,
             string targetLanguage,
             string sourceLanguage = null,
             int? numberOfSpeakers = null,
@@ -75,7 +75,7 @@ namespace ElevenLabs.Dubbing
         private DubbingRequest(
             string targetLanguage,
             Uri sourceUrl = null,
-            List<(string, string, Stream)> files = null,
+            List<DubbingStream> files = null,
             IEnumerable<string> filePaths = null,
             string sourceLanguage = null,
             int? numberOfSpeakers = null,
@@ -130,7 +130,7 @@ namespace ElevenLabs.Dubbing
                         ".webm" => "video/webm",
                         _ => "application/octet-stream"
                     };
-                    files.Add((fileInfo.Name, mediaType, stream));
+                    files.Add(new(stream, fileInfo.Name, mediaType));
                 }
             }
 
@@ -152,7 +152,7 @@ namespace ElevenLabs.Dubbing
         /// <summary>
         /// Files to dub.
         /// </summary>
-        public IReadOnlyList<(string, string, Stream)> Files { get; }
+        public IReadOnlyList<DubbingStream> Files { get; }
 
         /// <summary>
         /// URL of the source video/audio file.
@@ -221,12 +221,12 @@ namespace ElevenLabs.Dubbing
             if (disposing)
             {
                 if (Files == null) { return; }
-                foreach (var (_, _, stream) in Files)
+
+                foreach (var dub in Files)
                 {
                     try
                     {
-                        stream?.Close();
-                        stream?.Dispose();
+                        dub.Dispose();
                     }
                     catch (Exception e)
                     {
