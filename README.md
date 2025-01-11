@@ -391,7 +391,7 @@ var assetsDir = Path.GetFullPath("../../../Assets");
 var dubbedPath = new FileInfo(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.mp4"));
 {
     await using var fs = File.Open(dubbedPath.FullName, FileMode.Create);
-    await foreach (var chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(metadata.DubbingId, request.TargetLanguage))
+    await foreach (var chunk in api.DubbingEndpoint.GetDubbedFileAsync(metadata.DubbingId, request.TargetLanguage))
     {
         await fs.WriteAsync(chunk);
     }
