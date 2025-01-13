@@ -56,8 +56,8 @@
     "globalMetadata": {
       "_appName": "ElevenLabs-DotNet",
       "_appTitle": "ElevenLabs-DotNet",
-      "_appLogoPath": "Assets/ElevenLabsIcon.png",
-      "_appFaviconPath": "Assets/ElevenLabsIcon.png",
+      "_appLogoPath": "Assets/ElevenLabsIcon@x1.png",
+      "_appFaviconPath": "Assets/ElevenLabsIcon@x1.png",
       "_enableSearch": true,
       "pdf": false
     }
