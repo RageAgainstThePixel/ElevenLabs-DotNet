@@ -30,7 +30,7 @@ namespace ElevenLabs.TextToSpeech
         /// Optional, <see cref="VoiceSettings"/> that will override the default settings in <see cref="Voice.Settings"/>.
         /// </param>
         /// <param name="model">
-        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.TurboV2_5"/>.
+        /// Optional, <see cref="Model"/> to use. Defaults to <see cref="Model.FlashV2"/>.
         /// </param>
         /// <param name="outputFormat">
         /// Output format of the generated audio.<br/>
@@ -52,7 +52,7 @@ namespace ElevenLabs.TextToSpeech
         /// <param name="previousRequestIds"></param>
         /// <param name="nextRequestIds"></param>
         /// <param name="languageCode">
-        /// Optional, Language code (ISO 639-1) used to enforce a language for the model. Currently only <see cref="Model.TurboV2_5"/> supports language enforcement. 
+        /// Optional, Language code (ISO 639-1) used to enforce a language for the model. Currently only <see cref="Model.TurboV2_5"/> supports language enforcement.
         /// For other models, an error will be returned if language code is provided.
         /// </param>
         /// <param name="withTimestamps"></param>
@@ -88,7 +88,7 @@ namespace ElevenLabs.TextToSpeech
             }
 
             Text = text;
-            Model = model ?? Models.Model.TurboV2_5;
+            Model = model ?? Models.Model.FlashV2;
             Voice = voice;
             VoiceSettings = voiceSettings ?? voice.Settings;
             OutputFormat = outputFormat;

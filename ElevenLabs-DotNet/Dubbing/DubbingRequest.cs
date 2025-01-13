@@ -36,7 +36,7 @@ namespace ElevenLabs.Dubbing
             bool? dropBackgroundAudio = null,
             bool? useProfanityFilter = null,
             string projectName = null)
-            : this(targetLanguage, null, filePaths, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
+            : this(targetLanguage, null, null, filePaths, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
         {
         }
 
@@ -52,13 +52,30 @@ namespace ElevenLabs.Dubbing
             bool? dropBackgroundAudio = null,
             bool? useProfanityFilter = null,
             string projectName = null)
-            : this(targetLanguage, sourceUrl, null, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
+            : this(targetLanguage, sourceUrl, null, null, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
+        {
+        }
+
+        public DubbingRequest(
+            List<DubbingStream> files,
+            string targetLanguage,
+            string sourceLanguage = null,
+            int? numberOfSpeakers = null,
+            bool? watermark = null,
+            int? startTime = null,
+            int? endTime = null,
+            bool? highestResolution = null,
+            bool? dropBackgroundAudio = null,
+            bool? useProfanityFilter = null,
+            string projectName = null)
+            : this(targetLanguage, null, files, null, sourceLanguage, numberOfSpeakers, watermark, startTime, endTime, highestResolution, dropBackgroundAudio, useProfanityFilter, projectName)
         {
         }
 
         private DubbingRequest(
             string targetLanguage,
             Uri sourceUrl = null,
+            List<DubbingStream> files = null,
             IEnumerable<string> filePaths = null,
             string sourceLanguage = null,
             int? numberOfSpeakers = null,
@@ -78,7 +95,7 @@ namespace ElevenLabs.Dubbing
                 throw new ArgumentException("Either sourceUrl or filePaths must be provided.");
             }
 
-            var files = new List<(string, string, Stream)>();
+            files ??= [];
 
             if (filePaths != null)
             {
@@ -113,7 +130,7 @@ namespace ElevenLabs.Dubbing
                         ".webm" => "video/webm",
                         _ => "application/octet-stream"
                     };
-                    files.Add((fileInfo.Name, mediaType, stream));
+                    files.Add(new(stream, fileInfo.Name, mediaType));
                 }
             }
 
@@ -135,7 +152,7 @@ namespace ElevenLabs.Dubbing
         /// <summary>
         /// Files to dub.
         /// </summary>
-        public IReadOnlyList<(string, string, Stream)> Files { get; }
+        public IReadOnlyList<DubbingStream> Files { get; }
 
         /// <summary>
         /// URL of the source video/audio file.
@@ -204,12 +221,12 @@ namespace ElevenLabs.Dubbing
             if (disposing)
             {
                 if (Files == null) { return; }
-                foreach (var (_, _, stream) in Files)
+
+                foreach (var dub in Files)
                 {
                     try
                     {
-                        stream?.Close();
-                        stream?.Dispose();
+                        dub.Dispose();
                     }
                     catch (Exception e)
                     {
