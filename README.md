@@ -38,7 +38,11 @@ dotnet add package ElevenLabs-DotNet
 
 ---
 
-## Documentation
+## [Documentation](https://rageagainstthepixel.github.io/ElevenLabs-DotNet)
+
+> Check out our new api docs!
+
+<https://rageagainstthepixel.github.io/ElevenLabs-DotNet>
 
 ### Table of Contents
 
@@ -239,7 +243,7 @@ Gets a list of shared voices in the public voice library.
 
 ```csharp
 var api = new ElevenLabsClient();
-var results = await ElevenLabsClient.SharedVoicesEndpoint.GetSharedVoicesAsync();
+var results = await api.SharedVoicesEndpoint.GetSharedVoicesAsync();
 foreach (var voice in results.Voices)
 {
     Console.WriteLine($"{voice.OwnerId} | {voice.VoiceId} | {voice.Date} | {voice.Name}");
@@ -391,7 +395,7 @@ var assetsDir = Path.GetFullPath("../../../Assets");
 var dubbedPath = new FileInfo(Path.Combine(assetsDir, $"online.dubbed.{request.TargetLanguage}.mp4"));
 {
     await using var fs = File.Open(dubbedPath.FullName, FileMode.Create);
-    await foreach (var chunk in ElevenLabsClient.DubbingEndpoint.GetDubbedFileAsync(metadata.DubbingId, request.TargetLanguage))
+    await foreach (var chunk in api.DubbingEndpoint.GetDubbedFileAsync(metadata.DubbingId, request.TargetLanguage))
     {
         await fs.WriteAsync(chunk);
     }
