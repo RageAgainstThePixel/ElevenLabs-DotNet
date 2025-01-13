@@ -1,0 +1,65 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../ElevenLabs-DotNet/",
+          "files": [
+            "**.csproj"
+          ],
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**"
+          ]
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ]
+      },
+      {
+        "src": "../ElevenLabs-DotNet-Proxy/",
+        "files": [
+          "/*.{md,yml}"
+        ],
+        "dest": "ElevenLabs-DotNet-Proxy"
+      },
+      {
+        "src": "../",
+        "files": [
+          "/*.{md,yml}"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "src": "../ElevenLabs-DotNet/Assets",
+        "files": [
+          "*.png",
+          "*.svg",
+          "*.ico"
+        ],
+        "dest": "assets"
+      }
+    ],
+    "output": "../_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "ElevenLabs-DotNet",
+      "_appTitle": "ElevenLabs-DotNet",
+      "_appLogoPath": "assets/ElevenLabsIcon@x1.png",
+      "_appFaviconPath": "assets/ElevenLabsIcon@x1.png",
+      "_enableSearch": true,
+      "pdf": false
+    }
+  }
+}

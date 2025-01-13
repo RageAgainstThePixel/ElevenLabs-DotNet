@@ -5,12 +5,14 @@ on:
     branches:
       - main
     paths:
+      - .docs/**
       - ElevenLabs-DotNet/**
       - ElevenLabs-DotNet-Proxy/**
   pull_request:
     branches:
       - '*'
     paths:
+      - .docs/**
       - ElevenLabs-DotNet/**
       - ElevenLabs-DotNet-Proxy/**
     types:
