@@ -32,6 +32,8 @@ Version 3.5.0
   - Added seed property
   - Added applyTextNormalization property
   - Removed deprecated optimizeStreamingLatency property
+- Added VoiceSettings.ctr overload
+  - Added speed property
 Version 3.4.2
 - Added flash models
 - Added stream input support to dubbing endpoint
