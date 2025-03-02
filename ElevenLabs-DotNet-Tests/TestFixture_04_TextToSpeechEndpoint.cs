@@ -64,7 +64,38 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_05_LanguageEnforced_TextToSpeech()
+        public async Task Test_04_StreamTextToSpeech_Transcription()
+        {
+            Assert.NotNull(ElevenLabsClient.TextToSpeechEndpoint);
+            var voice = Voices.Voice.Adam;
+            Assert.NotNull(voice);
+            voice.Settings ??= await ElevenLabsClient.VoicesEndpoint.GetDefaultVoiceSettingsAsync();
+            var partialClips = new Queue<VoiceClip>();
+            var characters = new Queue<TimestampedTranscriptCharacter>();
+            Console.WriteLine("| Character | Start Time | End Time |");
+            Console.WriteLine("| --------- | ---------- | -------- |");
+            var request = new TextToSpeechRequest(voice, "The quick brown fox jumps over the lazy dog.", outputFormat: OutputFormat.PCM_24000, withTimestamps: true);
+            var voiceClip = await ElevenLabsClient.TextToSpeechEndpoint.TextToSpeechAsync(request, async partialClip =>
+            {
+                Assert.IsNotNull(partialClip);
+                partialClips.Enqueue(partialClip);
+                await Task.CompletedTask;
+                foreach (var character in partialClip.TimestampedTranscriptCharacters)
+                {
+                    characters.Enqueue(character);
+                    Console.WriteLine($"| {character.Character} | {character.StartTime} | {character.EndTime} |");
+                }
+            });
+            Assert.NotNull(partialClips);
+            Assert.NotNull(partialClips);
+            Assert.IsNotEmpty(partialClips);
+            Assert.NotNull(voiceClip);
+            Console.WriteLine(voiceClip.Id);
+            Assert.AreEqual(characters.ToArray(), voiceClip.TimestampedTranscriptCharacters);
+        }
+
+        [Test]
+        public async Task Test_05_01_LanguageEnforced_TextToSpeech()
         {
             Assert.NotNull(ElevenLabsClient.TextToSpeechEndpoint);
             var voice = Voices.Voice.Adam;
@@ -93,7 +124,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_TurboV2_5_LanguageEnforced_TextToSpeech()
+        public async Task Test_05_02_TurboV2_5_LanguageEnforced_TextToSpeech()
         {
             Assert.NotNull(ElevenLabsClient.TextToSpeechEndpoint);
             var voice = Voices.Voice.Adam;
