@@ -54,10 +54,12 @@ namespace ElevenLabs.TextToSpeech
                 { OutputFormatParameter, request.OutputFormat.ToString().ToLower() }
             };
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if (request.OptimizeStreamingLatency.HasValue)
             {
                 parameters.Add(OptimizeStreamingLatencyParameter, request.OptimizeStreamingLatency.Value.ToString());
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var endpoint = $"/{request.Voice.Id}";
 
