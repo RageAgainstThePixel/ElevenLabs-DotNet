@@ -9,10 +9,10 @@ namespace ElevenLabs.Voices
     {
         [Obsolete("use new .ctr overload")]
         public VoiceSettings(
-            float stability = .75f,
-            float similarityBoost = .75f,
-            bool speakerBoost = true,
-            float style = 0.45f)
+            float stability,
+            float similarityBoost,
+            bool speakerBoost,
+            float style)
             : this(stability, similarityBoost, style, speakerBoost)
         {
         }
