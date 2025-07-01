@@ -26,7 +26,7 @@ namespace ElevenLabs
         /// potentially loading from environment vars or from a config file.
         /// </param>
         /// <param name="settings">
-        /// Optional, <see cref="Settings"/> for specifying a proxy domain.
+        /// Optional, <see cref="ElevenLabsClientSettings"/> for specifying a proxy domain.
         /// </param>
         /// <param name="httpClient">Optional, <see cref="HttpClient"/>.</param>
         /// <exception cref="AuthenticationException">Raised when authentication details are missing or invalid.</exception>
