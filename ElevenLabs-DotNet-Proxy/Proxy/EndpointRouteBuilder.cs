@@ -108,6 +108,8 @@ namespace ElevenLabs.Proxy
                     }
                     else
                     {
+                        httpContext.Response.ContentType = proxyResponse.Content.Headers.ContentType?.ToString() ?? "application/json";
+                        httpContext.Response.ContentLength = proxyResponse.Content.Headers.ContentLength;
                         await proxyResponse.Content.CopyToAsync(httpContext.Response.Body, httpContext.RequestAborted).ConfigureAwait(false);
                     }
                 }

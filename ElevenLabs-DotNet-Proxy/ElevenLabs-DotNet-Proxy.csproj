@@ -20,8 +20,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <SignAssembly>false</SignAssembly>
-    <Version>3.5.1</Version>
+    <Version>3.5.2</Version>
     <PackageReleaseNotes>
+Version 3.5.2
+- Forward the content and headers from the backend service to the client, preserving the original response details.
 Version 3.5.1
 - Bug fixes and better logging support.
 Version 3.0.0
