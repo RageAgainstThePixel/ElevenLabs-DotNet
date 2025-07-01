@@ -24,7 +24,7 @@ namespace ElevenLabs
         /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
         protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
         {
-            var result = string.Format(client.ElevenLabsClientSettings.BaseRequestUrlFormat, $"{Root}{endpoint}");
+            var result = string.Format(client.Settings.BaseRequestUrlFormat, $"{Root}{endpoint}");
 
             if (queryParameters is { Count: not 0 })
             {

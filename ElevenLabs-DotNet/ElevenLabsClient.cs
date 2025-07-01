@@ -26,7 +26,7 @@ namespace ElevenLabs
         /// potentially loading from environment vars or from a config file.
         /// </param>
         /// <param name="settings">
-        /// Optional, <see cref="ElevenLabsClientSettings"/> for specifying a proxy domain.
+        /// Optional, <see cref="Settings"/> for specifying a proxy domain.
         /// </param>
         /// <param name="httpClient">Optional, <see cref="HttpClient"/>.</param>
         /// <exception cref="AuthenticationException">Raised when authentication details are missing or invalid.</exception>
@@ -39,7 +39,7 @@ namespace ElevenLabs
         public ElevenLabsClient(ElevenLabsAuthentication authentication = null, ElevenLabsClientSettings settings = null, HttpClient httpClient = null)
         {
             ElevenLabsAuthentication = authentication ?? ElevenLabsAuthentication.Default;
-            ElevenLabsClientSettings = settings ?? ElevenLabsClientSettings.Default;
+            Settings = settings ?? ElevenLabsClientSettings.Default;
 
             if (string.IsNullOrWhiteSpace(ElevenLabsAuthentication?.ApiKey))
             {
@@ -128,7 +128,7 @@ namespace ElevenLabs
         /// </summary>
         public ElevenLabsAuthentication ElevenLabsAuthentication { get; }
 
-        internal ElevenLabsClientSettings ElevenLabsClientSettings { get; }
+        internal ElevenLabsClientSettings Settings { get; }
 
         public UserEndpoint UserEndpoint { get; }
 
