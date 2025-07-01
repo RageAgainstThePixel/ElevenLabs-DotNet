@@ -39,7 +39,7 @@ namespace ElevenLabs
         public ElevenLabsClient(ElevenLabsAuthentication authentication = null, ElevenLabsClientSettings settings = null, HttpClient httpClient = null)
         {
             ElevenLabsAuthentication = authentication ?? ElevenLabsAuthentication.Default;
-            ElevenLabsClientSettings = settings ?? ElevenLabsClientSettings.Default;
+            Settings = settings ?? ElevenLabsClientSettings.Default;
 
             if (string.IsNullOrWhiteSpace(ElevenLabsAuthentication?.ApiKey))
             {
@@ -128,7 +128,7 @@ namespace ElevenLabs
         /// </summary>
         public ElevenLabsAuthentication ElevenLabsAuthentication { get; }
 
-        internal ElevenLabsClientSettings ElevenLabsClientSettings { get; }
+        internal ElevenLabsClientSettings Settings { get; }
 
         public UserEndpoint UserEndpoint { get; }
 

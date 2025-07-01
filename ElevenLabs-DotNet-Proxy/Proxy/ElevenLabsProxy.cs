@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -62,6 +63,12 @@ namespace ElevenLabs.Proxy
                     webBuilder.UseStartup<ElevenLabsProxy>();
                     webBuilder.ConfigureKestrel(ConfigureKestrel);
                 })
+                .ConfigureLogging(logger =>
+                {
+                    logger.ClearProviders();
+                    logger.AddConsole();
+                    logger.SetMinimumLevel(LogLevel.Debug);
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(elevenLabsClient);
@@ -77,6 +84,9 @@ namespace ElevenLabs.Proxy
         public static WebApplication CreateWebApplication<T>(string[] args, ElevenLabsClient elevenLabsClient) where T : class, IAuthenticationFilter
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+            builder.Logging.SetMinimumLevel(LogLevel.Debug);
             builder.WebHost.ConfigureKestrel(ConfigureKestrel);
             builder.Services.AddSingleton(elevenLabsClient);
             builder.Services.AddSingleton<IAuthenticationFilter, T>();
