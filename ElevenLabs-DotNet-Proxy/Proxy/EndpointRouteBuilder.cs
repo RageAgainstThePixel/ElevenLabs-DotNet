@@ -86,7 +86,7 @@ namespace ElevenLabs.Proxy
                     var proxyResponse = await client.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, httpContext.RequestAborted).ConfigureAwait(false);
                     httpContext.Response.StatusCode = (int)proxyResponse.StatusCode;
                     httpContext.Response.ContentLength = proxyResponse.Content.Headers.ContentLength;
-                    httpContext.Response.ContentType = proxyResponse.Content.Headers.ContentType?.ToString() ?? string.Empty;
+                    httpContext.Response.ContentType = proxyResponse.Content.Headers.ContentType?.ToString();
 
                     foreach (var (key, value) in proxyResponse.Headers)
                     {
@@ -102,7 +102,8 @@ namespace ElevenLabs.Proxy
 
                     const string streamingContent = "text/event-stream";
 
-                    if (httpContext.Response.ContentType.Equals(streamingContent))
+                    if (httpContext.Response.ContentType != null &&
+                        httpContext.Response.ContentType.Equals(streamingContent, StringComparison.OrdinalIgnoreCase))
                     {
                         var stream = await proxyResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
                         await WriteServerStreamEventsAsync(httpContext, stream).ConfigureAwait(false);
