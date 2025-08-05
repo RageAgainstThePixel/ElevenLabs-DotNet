@@ -112,8 +112,10 @@ namespace ElevenLabs.Tests
             var auth = new ElevenLabsAuthentication("customIssuedToken");
             var settings = new ElevenLabsClientSettings(domain: "api.your-custom-domain.com");
             var api = new ElevenLabsClient(auth, settings);
-            Console.WriteLine(api.Settings.BaseRequest);
-            Console.WriteLine(api.Settings.BaseRequestUrlFormat);
+            var url = api.Settings.BuildUrl("test-endpoint");
+            Assert.IsNotNull(url);
+            Assert.IsTrue(url.StartsWith("https://api.your-custom-domain.com/"));
+            Assert.IsTrue(url.EndsWith("/v1/test-endpoint"));
         }
 
         [TearDown]

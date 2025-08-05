@@ -18,8 +18,6 @@ namespace ElevenLabs
         {
             Domain = ElevenLabsDomain;
             ApiVersion = "v1";
-            BaseRequest = $"/{ApiVersion}/";
-            BaseRequestUrlFormat = $"{Https}{Domain}{BaseRequest}{{0}}";
             BaseVersionedRequestUrlFormat = $"{Https}{Domain}/{{1}}/{{0}}";
         }
 
@@ -61,8 +59,6 @@ namespace ElevenLabs
 
             Domain = $"{protocol}{domain}";
             ApiVersion = apiVersion;
-            BaseRequest = $"/{ApiVersion}/";
-            BaseRequestUrlFormat = $"{Domain}{BaseRequest}{{0}}";
             BaseVersionedRequestUrlFormat = $"{Domain}/{{1}}/{{0}}";
         }
 
@@ -70,17 +66,32 @@ namespace ElevenLabs
 
         public string ApiVersion { get; }
 
-        public string BaseRequest { get; }
-
-        /// <summary>
-        /// String with interpolation for the endpoint name.
-        /// </summary>
-        public string BaseRequestUrlFormat { get; }
         /// <summary>
         /// String with interpolation for the endpoint name (0) and api version (1).
         /// </summary>
-        public string BaseVersionedRequestUrlFormat { get; }
+        private string BaseVersionedRequestUrlFormat { get; }
 
         public static ElevenLabsClientSettings Default { get; } = new();
+
+        /// <summary>
+        /// Build a according to this settings with the given endpoint and api version.
+        /// </summary>
+        /// <param name="endpoint">The endpoint to build the url for (required).</param>
+        /// <param name="apiVersion">The version of the ElevenLabs api you want to use (optional).</param>
+        /// <returns>A string representing the built URL.</returns>
+        /// <exception cref="ArgumentException">Thrown when the endpoint is null or empty.</exception>
+        public string BuildUrl(string endpoint, string apiVersion = null)
+        {
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
+            }
+            if (string.IsNullOrWhiteSpace(apiVersion))
+            {
+                apiVersion = ApiVersion;
+            }
+
+            return string.Format(BaseVersionedRequestUrlFormat, endpoint, apiVersion);
+        }
     }
 }

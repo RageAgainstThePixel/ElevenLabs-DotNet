@@ -53,10 +53,10 @@ namespace ElevenLabs.Proxy
         /// <param name="routePrefix">Optional, custom route prefix. i.e. '/elevenlabs'.</param>
         public static void MapElevenLabsEndpoints(this IEndpointRouteBuilder endpoints, ElevenLabsClient client, IAuthenticationFilter authenticationFilter, string routePrefix = "")
         {
-            endpoints.Map($"{routePrefix}{client.Settings.BaseRequest}{{**endpoint}}", HandleRequest);
+            endpoints.Map($"{routePrefix}/{{version}}/{{**endpoint}}", HandleRequest);
             return;
 
-            async Task HandleRequest(HttpContext httpContext, string endpoint)
+            async Task HandleRequest(HttpContext httpContext, string version, string endpoint)
             {
                 try
                 {
@@ -70,10 +70,8 @@ namespace ElevenLabs.Proxy
                         modifiedQuery[pair.Key] = pair.Value.FirstOrDefault();
                     }
 
-                    var uri = new Uri(string.Format(
-                        client.Settings.BaseRequestUrlFormat,
-                        QueryHelpers.AddQueryString(endpoint, modifiedQuery)
-                    ));
+                    var baseUri = client.Settings.BuildUrl(endpoint, apiVersion: version);
+                    var uri = new Uri(QueryHelpers.AddQueryString(baseUri, modifiedQuery));
 
                     using var request = new HttpRequestMessage(method, uri);
                     request.Content = new StreamContent(httpContext.Request.Body);

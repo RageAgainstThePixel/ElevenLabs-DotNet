@@ -18,9 +18,9 @@ namespace ElevenLabs
         protected abstract string Root { get; }
 
         /// <summary>
-        /// The api version of the services, will override the client settings if overridden.
+        /// The api version of the services, defaults to <see cref="ElevenLabsClientSettings.DefaultApiVersion"/>.
         /// </summary>
-        protected virtual string ApiVersion { get => null; }
+        protected virtual string ApiVersion => ElevenLabsClientSettings.DefaultApiVersion;
 
         /// <summary>
         /// Gets the full formatted url for the API endpoint.
@@ -29,9 +29,7 @@ namespace ElevenLabs
         /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
         protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
         {
-            var result = string.IsNullOrEmpty(ApiVersion)
-                ? string.Format(client.Settings.BaseRequestUrlFormat, $"{Root}{endpoint}")
-                : string.Format(client.Settings.BaseVersionedRequestUrlFormat, $"{Root}{endpoint}", ApiVersion);
+            var result = client.Settings.BuildUrl($"{Root}{endpoint}", ApiVersion);
 
             if (queryParameters is { Count: not 0 })
             {
