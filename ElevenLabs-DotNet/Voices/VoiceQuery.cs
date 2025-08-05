@@ -4,108 +4,90 @@ using System.Collections.Generic;
 namespace ElevenLabs.Voices
 {
     /// <summary>
-    /// Type of the voice to filter by.
+    /// Represents a container for query parameters used by the VoicesV2Endpoint.
     /// </summary>
-    public enum VoiceTypes
+    public sealed record VoiceQuery
     {
         /// <summary>
-        /// Personal voice.
+        /// Initializes a new instance of the <see cref="VoiceQuery"/> class with optional parameters.
         /// </summary>
-        Personal,
-        /// <summary>
-        /// Community voice.
-        /// </summary>
-        Community,
-        /// <summary>
-        /// Default voice.
-        /// </summary>
-        Default,
-        /// <summary>
-        /// Workspace voice.
-        /// </summary>
-        Workspace,
-        /// <summary>
-        /// Non-default voice (all but 'default').
-        /// </summary>
-        NonDefault
-    }
+        public VoiceQuery(
+            string nextPageToken = null,
+            int? pageSize = null,
+            string search = null,
+            string sort = null,
+            SortDirections? sortDirection = null,
+            VoiceTypes? voiceType = null,
+            CategoryTypes? category = null,
+            FineTuningStateTypes? fineTuningState = null,
+            string collectionId = null,
+            bool? includeTotalCount = null,
+            List<string> voiceIds = null
+        )
+        {
+            NextPageToken = nextPageToken;
+            PageSize = pageSize;
+            Search = search;
+            Sort = sort;
+            SortDirection = sortDirection;
+            VoiceType = voiceType;
+            Category = category;
+            FineTuningState = fineTuningState;
+            CollectionId = collectionId;
+            IncludeTotalCount = includeTotalCount;
+            VoiceIds = voiceIds;
+        }
 
-    /// <summary>
-    /// Category of the voice to filter by.
-    /// </summary>
-    public enum CategoryTypes
-    {
         /// <summary>
-        /// Premade voice.
+        /// Optional. The next page token to use for pagination. Returned from the previous request.
         /// </summary>
-        Premade,
+        public string NextPageToken { get; private set; } = null;
         /// <summary>
-        /// Cloned voice.
+        /// Optional. How many voices to return at maximum. Can not exceed 100, defaults to 10. Page 0 may include more voices due to default voices being included.
         /// </summary>
-        Cloned,
+        public int? PageSize { get; private set; } = null;
         /// <summary>
-        /// Generated voice.
+        /// Optional. Search term to filter voices by. Searches in name, description, labels, category.
         /// </summary>
-        Generated,
+        public string Search { get; private set; } = null;
         /// <summary>
-        /// Professional voice.
+        /// Optional. Which field to sort by, one of ‘created_at_unix’ or ‘name’. ‘created_at_unix’ may not be available for older voices.
         /// </summary>
-        Professional
-    }
+        public string Sort { get; private set; } = null;
+        /// <summary>
+        /// Optional. Which direction to sort the voices in. 'asc' or 'desc'.
+        /// </summary>
+        public SortDirections? SortDirection { get; private set; } = null;
+        /// <summary>
+        /// Optional. Type of the voice to filter by. One of ‘personal’, ‘community’, ‘default’, ‘workspace’, ‘non-default’. ‘non-default’ is equal to all but ‘default’.
+        /// </summary>
+        public VoiceTypes? VoiceType { get; private set; } = null;
+        /// <summary>
+        /// Optional. Category of the voice to filter by. One of 'premade', 'cloned', 'generated', 'professional'.
+        /// </summary>
+        public CategoryTypes? Category { get; private set; } = null;
+        /// <summary>
+        /// Optional. State of the voice’s fine tuning to filter by. Applicable only to professional voices clones. One of ‘draft’, ‘not_verified’, ‘not_started’, ‘queued’, ‘fine_tuning’, ‘fine_tuned’, ‘failed’, ‘delayed’.
+        /// </summary>
+        public FineTuningStateTypes? FineTuningState { get; private set; } = null;
+        /// <summary>
+        /// Optional. Collection ID to filter voices by.
+        /// </summary>
+        public string CollectionId { get; private set; } = null;
+        /// <summary>
+        /// Optional. Whether to include the total count of voices found in the response. Incurs a performance cost. Defaults to true.
+        /// </summary>
+        public bool? IncludeTotalCount { get; private set; } = null;
+        /// <summary>
+        /// Optional. Voice IDs to lookup by. Maximum 100 voice IDs.
+        /// </summary>
+        public List<string> VoiceIds { get; private set; } = null;
 
-    /// <summary>
-    /// State of the voice’s fine tuning to filter by. Applicable only to professional voices clones.
-    /// </summary>
-    public enum FineTuningStateTypes
-    {
-        /// <summary>
-        /// Draft state.
-        /// </summary>
-        Draft,
-        /// <summary>
-        /// Not verified state.
-        /// </summary>
-        NotVerified,
-        /// <summary>
-        /// Not started state.
-        /// </summary>
-        NotStarted,
-        /// <summary>
-        /// Queued state.
-        /// </summary>
-        Queued,
-        /// <summary>
-        /// Fine tuning in progress.
-        /// </summary>
-        FineTuning,
-        /// <summary>
-        /// Fine tuned state.
-        /// </summary>
-        FineTuned,
-        /// <summary>
-        /// Failed state.
-        /// </summary>
-        Failed,
-        /// <summary>
-        /// Delayed state.
-        /// </summary>
-        Delayed
-    }
+        public VoiceQuery WithNextPageToken(string nextPageToken) => this with { NextPageToken = nextPageToken };
 
-    public sealed class VoiceQuery
-    {
-        public string NextPageToken { get; set; } = null;
-        public int? PageSize { get; set; } = null;
-        public string Search { get; set; } = null;
-        public string Sort { get; set; } = null;
-        public string SortDirection { get; set; } = null;
-        public VoiceTypes? VoiceType { get; set; } = null;
-        public CategoryTypes? Category { get; set; } = null;
-        public FineTuningStateTypes? FineTuningState { get; set; } = null;
-        public string CollectionId { get; set; } = null;
-        public bool? IncludeTotalCount { get; set; } = null;
-        public List<string> VoiceIds { get; set; } = null;
-
+        /// <summary>
+        /// Converts the current query object to a dictionary of HTTP query parameters.
+        /// </summary>
         public Dictionary<string, string> ToQueryParams()
         {
             var parameters = new Dictionary<string, string>();
@@ -130,62 +112,24 @@ namespace ElevenLabs.Voices
                 parameters.Add("sort", Sort);
             }
 
-            if (!string.IsNullOrWhiteSpace(SortDirection))
+            if (SortDirection.HasValue)
             {
-                parameters.Add("sort_direction", SortDirection);
+                parameters.Add("sort_direction", SortDirection.Value.ToString());
             }
 
             if (VoiceType.HasValue)
             {
-                string voiceTypeString = VoiceType.Value switch
-                {
-                    VoiceTypes.Personal => "personal",
-                    VoiceTypes.Community => "community",
-                    VoiceTypes.Default => "default",
-                    VoiceTypes.Workspace => "workspace",
-                    VoiceTypes.NonDefault => "non-default",
-                    _ => null
-                };
-                if (!string.IsNullOrWhiteSpace(voiceTypeString))
-                {
-                    parameters.Add("voice_type", voiceTypeString);
-                }
+                parameters.Add("voice_type", VoiceType.Value.ToString());
             }
 
             if (Category.HasValue)
             {
-                string categoryString = Category.Value switch
-                {
-                    CategoryTypes.Premade => "premade",
-                    CategoryTypes.Cloned => "cloned",
-                    CategoryTypes.Generated => "generated",
-                    CategoryTypes.Professional => "professional",
-                    _ => null
-                };
-                if (!string.IsNullOrWhiteSpace(categoryString))
-                {
-                    parameters.Add("category", categoryString);
-                }
+                parameters.Add("category", Category.Value.ToString());
             }
 
             if (FineTuningState.HasValue)
             {
-                string fineTuningStateString = FineTuningState.Value switch
-                {
-                    FineTuningStateTypes.Draft => "draft",
-                    FineTuningStateTypes.NotVerified => "not_verified",
-                    FineTuningStateTypes.NotStarted => "not_started",
-                    FineTuningStateTypes.Queued => "queued",
-                    FineTuningStateTypes.FineTuning => "fine_tuning",
-                    FineTuningStateTypes.FineTuned => "fine_tuned",
-                    FineTuningStateTypes.Failed => "failed",
-                    FineTuningStateTypes.Delayed => "delayed",
-                    _ => null
-                };
-                if (!string.IsNullOrWhiteSpace(fineTuningStateString))
-                {
-                    parameters.Add("fine_tuning_state", fineTuningStateString);
-                }
+                parameters.Add("fine_tuning_state", FineTuningState.Value.ToString());
             }
 
             if (!string.IsNullOrWhiteSpace(CollectionId))

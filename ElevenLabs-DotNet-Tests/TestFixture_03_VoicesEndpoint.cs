@@ -212,14 +212,12 @@ namespace ElevenLabs.Tests
             }
         }
 
-
-
         [Test]
         public async Task Test_12_01_IterateDefaultVoices()
         {
             Assert.NotNull(ElevenLabsClient.VoicesV2Endpoint);
             List<Voice> voices = [];
-            var query = new VoiceQuery() { VoiceType = VoiceTypes.Default, PageSize = 10 };
+            var query = new VoiceQuery(voiceType: VoiceTypes.Default, pageSize: 10);
             int? previousTotalCount = null;
 
             do
@@ -235,7 +233,7 @@ namespace ElevenLabs.Tests
                 }
                 previousTotalCount = page.TotalCount;
                 voices.AddRange(page.Voices);
-                query.NextPageToken = page.NextPageToken;
+                query = query.WithNextPageToken(page.NextPageToken);
             } while (!string.IsNullOrWhiteSpace(query.NextPageToken));
 
             Assert.NotNull(voices);
