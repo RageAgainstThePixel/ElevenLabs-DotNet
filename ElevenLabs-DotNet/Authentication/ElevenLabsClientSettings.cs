@@ -20,6 +20,7 @@ namespace ElevenLabs
             ApiVersion = "v1";
             BaseRequest = $"/{ApiVersion}/";
             BaseRequestUrlFormat = $"{Https}{Domain}{BaseRequest}{{0}}";
+            BaseVersionedRequestUrlFormat = $"{Https}{Domain}/{{1}}/{{0}}";
         }
 
         /// <summary>
@@ -62,6 +63,7 @@ namespace ElevenLabs
             ApiVersion = apiVersion;
             BaseRequest = $"/{ApiVersion}/";
             BaseRequestUrlFormat = $"{Domain}{BaseRequest}{{0}}";
+            BaseVersionedRequestUrlFormat = $"{Domain}/{{1}}/{{0}}";
         }
 
         public string Domain { get; }
@@ -70,7 +72,14 @@ namespace ElevenLabs
 
         public string BaseRequest { get; }
 
+        /// <summary>
+        /// String with interpolation for the endpoint name.
+        /// </summary>
         public string BaseRequestUrlFormat { get; }
+        /// <summary>
+        /// String with interpolation for the endpoint name (0) and api version (1).
+        /// </summary>
+        public string BaseVersionedRequestUrlFormat { get; }
 
         public static ElevenLabsClientSettings Default { get; } = new();
     }

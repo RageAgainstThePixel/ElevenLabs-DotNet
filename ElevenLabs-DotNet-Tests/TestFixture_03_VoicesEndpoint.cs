@@ -211,5 +211,41 @@ namespace ElevenLabs.Tests
                 Assert.IsTrue(result);
             }
         }
+
+
+
+        [Test]
+        public async Task Test_12_01_IterateDefaultVoices()
+        {
+            Assert.NotNull(ElevenLabsClient.VoicesV2Endpoint);
+            List<Voice> voices = [];
+            var query = new VoiceQuery() { VoiceType = VoiceTypes.Default, PageSize = 10 };
+            int? previousTotalCount = null;
+
+            do
+            {
+                var page = await ElevenLabsClient.VoicesV2Endpoint.GetVoicesAsync(query);
+                if (page.HasMore)
+                {
+                    Assert.AreEqual(query.PageSize, page.Voices.Count);
+                }
+                if (previousTotalCount != null)
+                {
+                    Assert.AreEqual(previousTotalCount, page.TotalCount);
+                }
+                previousTotalCount = page.TotalCount;
+                voices.AddRange(page.Voices);
+                query.NextPageToken = page.NextPageToken;
+            } while (!string.IsNullOrWhiteSpace(query.NextPageToken));
+
+            Assert.NotNull(voices);
+            Assert.IsNotEmpty(voices);
+            Assert.AreEqual(previousTotalCount, voices.Count);
+
+            foreach (var voice in voices)
+            {
+                Console.WriteLine($"{voice.Id} | {voice.Name} | similarity boost: {voice.Settings?.SimilarityBoost} | stability: {voice.Settings?.Stability}");
+            }
+        }
     }
 }
