@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ElevenLabs.Utils
+namespace ElevenLabs.Extensions
 {
     public static class EnumExtensions
     {
