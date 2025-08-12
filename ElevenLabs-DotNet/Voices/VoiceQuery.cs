@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using ElevenLabs.Utils;
+using ElevenLabs.Extensions;
 
 namespace ElevenLabs.Voices
 {
