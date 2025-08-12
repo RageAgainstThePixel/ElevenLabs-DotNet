@@ -216,21 +216,24 @@ namespace ElevenLabs.Tests
         public async Task Test_12_01_IterateDefaultVoices()
         {
             Assert.NotNull(ElevenLabsClient.VoicesV2Endpoint);
-            List<Voice> voices = [];
+            var voices = new List<Voice>();
             var query = new VoiceQuery(voiceType: VoiceTypes.Default, pageSize: 10);
             int? previousTotalCount = null;
 
             do
             {
                 var page = await ElevenLabsClient.VoicesV2Endpoint.GetVoicesAsync(query);
+
                 if (page.HasMore)
                 {
                     Assert.AreEqual(query.PageSize, page.Voices.Count);
                 }
+
                 if (previousTotalCount != null)
                 {
                     Assert.AreEqual(previousTotalCount, page.TotalCount);
                 }
+
                 previousTotalCount = page.TotalCount;
                 voices.AddRange(page.Voices);
                 query = query.WithNextPageToken(page.NextPageToken);
@@ -242,7 +245,7 @@ namespace ElevenLabs.Tests
 
             foreach (var voice in voices)
             {
-                Console.WriteLine($"{voice.Id} | {voice.Name} | similarity boost: {voice.Settings?.SimilarityBoost} | stability: {voice.Settings?.Stability}");
+                Console.WriteLine($"{voice.Id} | {voice.Name}");
             }
         }
     }

@@ -70,8 +70,11 @@ namespace ElevenLabs.Proxy
                         modifiedQuery[pair.Key] = pair.Value.FirstOrDefault();
                     }
 
-                    var baseUri = client.Settings.BuildUrl(endpoint, apiVersion: version);
-                    var uri = new Uri(QueryHelpers.AddQueryString(baseUri, modifiedQuery));
+                    var uri = new Uri(string.Format(
+                        client.Settings.BaseRequestUrlFormat,
+                        version,
+                        QueryHelpers.AddQueryString(endpoint, modifiedQuery)
+                    ));
 
                     using var request = new HttpRequestMessage(method, uri);
                     request.Content = new StreamContent(httpContext.Request.Body);

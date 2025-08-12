@@ -1,14 +1,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using ElevenLabs.Extensions;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,14 +21,14 @@ namespace ElevenLabs.Voices
         /// <summary>
         /// Gets a list of all available voices for a user, and downloads all their settings.
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="query">Optional, voice query.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
         public async Task<VoiceList> GetVoicesAsync(VoiceQuery query = null, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl(queryParameters: query?.ToQueryParams()), cancellationToken).ConfigureAwait(false);
+            using var response = await client.Client.GetAsync(GetUrl(queryParameters: query), cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             var voiceList = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
-
             return voiceList;
         }
     }
