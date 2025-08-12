@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using ElevenLabs.Utils;
 
 namespace ElevenLabs.Voices
 {
@@ -127,22 +128,22 @@ namespace ElevenLabs.Voices
 
             if (SortDirection.HasValue)
             {
-                parameters.Add("sort_direction", SortDirection.Value.ToString());
+                parameters.Add("sort_direction", SortDirection.Value.ToEnumString());
             }
 
             if (VoiceType.HasValue)
             {
-                parameters.Add("voice_type", VoiceType.Value.ToString());
+                parameters.Add("voice_type", VoiceType.Value.ToEnumString());
             }
 
             if (Category.HasValue)
             {
-                parameters.Add("category", Category.Value.ToString());
+                parameters.Add("category", Category.Value.ToEnumString());
             }
 
             if (FineTuningState.HasValue)
             {
-                parameters.Add("fine_tuning_state", FineTuningState.Value.ToString());
+                parameters.Add("fine_tuning_state", FineTuningState.Value.ToEnumString());
             }
 
             if (!string.IsNullOrWhiteSpace(CollectionId))

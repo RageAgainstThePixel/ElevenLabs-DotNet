@@ -1,6 +1,7 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using ElevenLabs.Extensions;
+using ElevenLabs.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -177,7 +178,7 @@ namespace ElevenLabs.Dubbing
         /// </returns>
         public async Task<string> GetTranscriptForDubAsync(string dubbingId, string languageCode, DubbingFormat formatType = DubbingFormat.Srt, CancellationToken cancellationToken = default)
         {
-            var @params = new Dictionary<string, string> { { "format_type", formatType.ToString().ToLower() } };
+            var @params = new Dictionary<string, string> { { "format_type", formatType.ToEnumString() } };
             using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/transcript/{languageCode}", @params), cancellationToken).ConfigureAwait(false);
             return await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
