@@ -19,13 +19,6 @@ namespace ElevenLabs.Voices
     /// </summary>
     public sealed class VoicesEndpoint : ElevenLabsBaseEndPoint
     {
-        private class VoiceList
-        {
-            [JsonInclude]
-            [JsonPropertyName("voices")]
-            public IReadOnlyList<Voice> Voices { get; private set; }
-        }
-
         private class VoiceResponse
         {
             [JsonInclude]

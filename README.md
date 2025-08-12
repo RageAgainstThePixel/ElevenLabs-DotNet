@@ -380,7 +380,7 @@ Returns metadata about a dubbing project, including whether it’s still in prog
 
 ```csharp
 var api = new ElevenLabsClient();
-var metadata = api.await GetDubbingProjectMetadataAsync("dubbing-id");
+var metadata = await api.DubbingEndpoint.GetDubbingProjectMetadataAsync("dubbing-id");
 ```
 
 #### Get Dubbed File

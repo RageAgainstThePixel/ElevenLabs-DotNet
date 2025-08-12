@@ -17,6 +17,8 @@ namespace ElevenLabs
         /// </summary>
         protected abstract string Root { get; }
 
+        protected virtual string ApiVersion => "v1";
+
         /// <summary>
         /// Gets the full formatted url for the API endpoint.
         /// </summary>
@@ -24,7 +26,7 @@ namespace ElevenLabs
         /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
         protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
         {
-            var result = string.Format(client.Settings.BaseRequestUrlFormat, $"{Root}{endpoint}");
+            var result = string.Format(client.Settings.BaseRequestUrlFormat, ApiVersion, $"{Root}{endpoint}");
 
             if (queryParameters is { Count: not 0 })
             {
