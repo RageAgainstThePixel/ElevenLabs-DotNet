@@ -1,11 +1,13 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using ElevenLabs.Extensions;
 using ElevenLabs.Voices;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
@@ -213,7 +215,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_12_01_IterateDefaultVoices()
+        public async Task Test_12_V2_IterateDefaultVoices()
         {
             Assert.NotNull(ElevenLabsClient.VoicesV2Endpoint);
             var voices = new List<Voice>();
@@ -246,6 +248,61 @@ namespace ElevenLabs.Tests
             foreach (var voice in voices)
             {
                 Console.WriteLine($"{voice.Id} | {voice.Name}");
+            }
+        }
+
+        [Test]
+        public void Test_13_V2_TestEnumSerializtion()
+        {
+            static string GetEnumValueFromAttribute<T>(T enumValue) where T : Enum
+            {
+                var enumType = typeof(T);
+                var memberInfo = enumType.GetMember(enumValue.ToString()).FirstOrDefault();
+                if (memberInfo != null)
+                {
+                    var attribute = memberInfo.GetCustomAttributes(typeof(JsonStringEnumMemberNameAttribute), false).FirstOrDefault();
+                    if (attribute != null)
+                    {
+                        return ((JsonStringEnumMemberNameAttribute)attribute).Name;
+                    }
+                }
+                return null;
+            }
+
+            static void TestEnumSerialization<T>(T enumValue) where T : Enum
+            {
+                var valueFromAttribute = GetEnumValueFromAttribute(enumValue);
+                Assert.NotNull(valueFromAttribute, $"Enum value {enumValue} does not have JsonStringEnumMemberName attribute.");
+
+                var serialized = enumValue.ToEnumString();
+                Console.WriteLine($"Serialized: {serialized}");
+                Assert.IsNotEmpty(serialized);
+                Assert.AreEqual(valueFromAttribute, serialized);
+            }
+
+
+            SortDirections[] sortDirections = Enum.GetValues<SortDirections>();
+            foreach (var sortDirection in sortDirections)
+            {
+                TestEnumSerialization(sortDirection);
+            }
+
+            VoiceTypes[] voiceTypes = Enum.GetValues<VoiceTypes>();
+            foreach (var voiceType in voiceTypes)
+            {
+                TestEnumSerialization(voiceType);
+            }
+
+            CategoryTypes[] categoryTypes = Enum.GetValues<CategoryTypes>();
+            foreach (var categoryType in categoryTypes)
+            {
+                TestEnumSerialization(categoryType);
+            }
+
+            FineTuningStateTypes[] fineTuningStateTypes = Enum.GetValues<FineTuningStateTypes>();
+            foreach (var fineTuningStateType in fineTuningStateTypes)
+            {
+                TestEnumSerialization(fineTuningStateType);
             }
         }
     }
