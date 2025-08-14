@@ -116,7 +116,8 @@ namespace ElevenLabs
         /// </summary>
         internal static JsonSerializerOptions JsonSerializationOptions { get; } = new()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() },
         };
 
         /// <summary>

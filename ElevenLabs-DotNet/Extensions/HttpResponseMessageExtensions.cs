@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +22,8 @@ namespace ElevenLabs.Extensions
         private static readonly JsonSerializerOptions debugJsonOptions = new()
         {
             WriteIndented = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Converters = { new JsonStringEnumConverter() }
         };
 
         internal static async Task CheckResponseAsync(this HttpResponseMessage response, bool debug, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)

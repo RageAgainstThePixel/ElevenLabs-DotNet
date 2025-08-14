@@ -1,6 +1,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace ElevenLabs.Voices
 {
@@ -12,22 +12,22 @@ namespace ElevenLabs.Voices
         /// <summary>
         /// Premade voice.
         /// </summary>
-        [EnumMember(Value = "premade")]
+        [JsonStringEnumMemberName("premade")]
         Premade,
         /// <summary>
         /// Cloned voice.
         /// </summary>
-        [EnumMember(Value = "cloned")]
+        [JsonStringEnumMemberName("cloned")]
         Cloned,
         /// <summary>
         /// Generated voice.
         /// </summary>
-        [EnumMember(Value = "generated")]
+        [JsonStringEnumMemberName("generated")]
         Generated,
         /// <summary>
         /// Professional voice.
         /// </summary>
-        [EnumMember(Value = "professional")]
+        [JsonStringEnumMemberName("professional")]
         Professional
     }
 }
