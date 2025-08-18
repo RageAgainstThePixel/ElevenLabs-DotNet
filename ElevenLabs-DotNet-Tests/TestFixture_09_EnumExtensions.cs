@@ -1,7 +1,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using ElevenLabs.Extensions;
+using ElevenLabs.Voices;
 using NUnit.Framework;
 using System;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace ElevenLabs.Tests
 {
@@ -61,6 +65,5 @@ namespace ElevenLabs.Tests
                 TestEnumSerialization(fineTuningStateType);
             }
         }
-    }
     }
 }

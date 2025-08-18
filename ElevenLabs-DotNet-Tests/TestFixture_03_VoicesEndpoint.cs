@@ -1,13 +1,11 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using ElevenLabs.Extensions;
 using ElevenLabs.Voices;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ElevenLabs.Tests
@@ -250,4 +248,5 @@ namespace ElevenLabs.Tests
                 Console.WriteLine($"{voice.Id} | {voice.Name}");
             }
         }
+    }
 }
