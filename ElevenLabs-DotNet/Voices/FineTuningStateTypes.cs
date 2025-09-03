@@ -1,6 +1,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace ElevenLabs.Voices
 {
@@ -12,42 +12,42 @@ namespace ElevenLabs.Voices
         /// <summary>
         /// Draft state.
         /// </summary>
-        [EnumMember(Value = "draft")]
+        [JsonStringEnumMemberName("draft")]
         Draft,
         /// <summary>
         /// Not verified state.
         /// </summary>
-        [EnumMember(Value = "not_verified")]
+        [JsonStringEnumMemberName("not_verified")]
         NotVerified,
         /// <summary>
         /// Not started state.
         /// </summary>
-        [EnumMember(Value = "not_started")]
+        [JsonStringEnumMemberName("not_started")]
         NotStarted,
         /// <summary>
         /// Queued state.
         /// </summary>
-        [EnumMember(Value = "queued")]
+        [JsonStringEnumMemberName("queued")]
         Queued,
         /// <summary>
         /// Fine-tuning in progress.
         /// </summary>
-        [EnumMember(Value = "fine_tuning")]
+        [JsonStringEnumMemberName("fine_tuning")]
         FineTuning,
         /// <summary>
         /// Fine-tuned state.
         /// </summary>
-        [EnumMember(Value = "fine_tuned")]
+        [JsonStringEnumMemberName("fine_tuned")]
         FineTuned,
         /// <summary>
         /// Failed state.
         /// </summary>
-        [EnumMember(Value = "failed")]
+        [JsonStringEnumMemberName("failed")]
         Failed,
         /// <summary>
         /// Delayed state.
         /// </summary>
-        [EnumMember(Value = "delayed")]
+        [JsonStringEnumMemberName("delayed")]
         Delayed
     }
 }

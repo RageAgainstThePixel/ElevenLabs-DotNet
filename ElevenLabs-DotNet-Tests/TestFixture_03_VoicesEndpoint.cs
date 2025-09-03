@@ -213,7 +213,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
-        public async Task Test_12_01_IterateDefaultVoices()
+        public async Task Test_12_V2_IterateDefaultVoices()
         {
             Assert.NotNull(ElevenLabsClient.VoicesV2Endpoint);
             var voices = new List<Voice>();
