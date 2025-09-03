@@ -6,7 +6,7 @@
 [![NuGet version (ElevenLabs-DotNet-Proxy)](https://img.shields.io/nuget/v/ElevenLabs-DotNet-Proxy.svg?label=ElevenLabs-DotNet-Proxy&logo=nuget)](https://www.nuget.org/packages/ElevenLabs-DotNet-Proxy/)
 [![Nuget Publish](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml/badge.svg)](https://github.com/RageAgainstThePixel/ElevenLabs-DotNet/actions/workflows/Publish-Nuget.yml)
 
-A non-official [Eleven Labs](https://elevenlabs.io/?from=partnerbrown9849) voice synthesis RESTful client.
+A non-official [Eleven Labs](https://try.elevenlabs.io/rage-against-the-pixel) voice synthesis RESTful client.
 
 I am not affiliated with ElevenLabs and an account with api access is required.
 
