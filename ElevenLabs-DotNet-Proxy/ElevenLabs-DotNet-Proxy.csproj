@@ -20,8 +20,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <SignAssembly>false</SignAssembly>
-    <Version>3.6.0</Version>
+    <Version>3.7.0</Version>
     <PackageReleaseNotes>
+Version 3.7.0
+- Updated forwarded request headers
 Version 3.6.0
 - Added support for versioned endpoints
 Version 3.5.2
