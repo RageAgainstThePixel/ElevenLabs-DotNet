@@ -15,6 +15,7 @@ namespace ElevenLabs.Voices
         public VoicesV2Endpoint(ElevenLabsClient client) : base(client) { }
 
         protected override string Root => "voices";
+
         protected override string ApiVersion => "v2";
 
         /// <summary>

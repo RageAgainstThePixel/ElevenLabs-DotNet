@@ -34,8 +34,9 @@ namespace ElevenLabs.Tests.Proxy
         public static void Main(string[] args)
         {
             var auth = ElevenLabsAuthentication.LoadFromEnvironment();
-            var client = new ElevenLabsClient(auth);
-            ElevenLabsProxy.CreateWebApplication<AuthenticationFilter>(args, client).Run();
+            using var client = new ElevenLabsClient(auth);
+            using var app = ElevenLabsProxy.CreateWebApplication<AuthenticationFilter>(args, client);
+            app.Run();
         }
     }
 }

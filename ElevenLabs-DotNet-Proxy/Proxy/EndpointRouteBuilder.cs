@@ -23,10 +23,14 @@ namespace ElevenLabs.Proxy
         private static readonly HashSet<string> excludedHeaders = new()
         {
             HeaderNames.Authorization,
+            "xi-api-key",
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
             HeaderNames.KeepAlive,
             HeaderNames.Upgrade,
+            HeaderNames.Host,
+            HeaderNames.SecWebSocketKey,
+            HeaderNames.SecWebSocketVersion,
             "Proxy-Connection",
             "Proxy-Authenticate",
             "Proxy-Authentication-Info",
@@ -129,16 +133,18 @@ namespace ElevenLabs.Proxy
                 }
                 catch (AuthenticationException authenticationException)
                 {
+                    Console.WriteLine($"{nameof(AuthenticationException)}: {authenticationException.Message}");
                     httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await httpContext.Response.WriteAsync(authenticationException.Message).ConfigureAwait(false);
                 }
-                catch (WebSocketException)
+                catch (WebSocketException webEx)
                 {
-                    // ignore
+                    Console.WriteLine($"{nameof(WebSocketException)} [{webEx.WebSocketErrorCode}] {webEx.Message}");
                     throw;
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine($"{nameof(Exception)}: {e.Message}");
                     if (httpContext.Response.HasStarted) { throw; }
                     httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                     var response = JsonSerializer.Serialize(new { error = new { e.Message, e.StackTrace } });
