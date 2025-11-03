@@ -28,7 +28,8 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <Version>3.7.0</Version>
     <PackageReleaseNotes>
 Version 3.7.0
-- Fix EnumMember json serialization
+- Fix v2 Voice Query Serialization
+- Added EnumMember json serialization
 - Refactored Endpoints and cleaned up implementation to better align with other SDKs and improve maintainability
 Version 3.6.0
 - Added support for versioned endpoints
