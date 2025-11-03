@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace ElevenLabs.Voices
 {
@@ -103,64 +104,35 @@ namespace ElevenLabs.Voices
         /// </summary>
         public Dictionary<string, string> ToQueryParams()
         {
-            var parameters = new Dictionary<string, string>();
+            var json = JsonSerializer.Serialize(this, ElevenLabsClient.JsonSerializationOptions);
+            var dict = new Dictionary<string, string>();
+            using var doc = JsonDocument.Parse(json);
 
-            if (!string.IsNullOrWhiteSpace(NextPageToken))
+            foreach (var prop in doc.RootElement.EnumerateObject())
             {
-                parameters.Add("next_page_token", NextPageToken);
+                if (prop.Value.ValueKind == JsonValueKind.Array)
+                {
+                    // Flatten arrays as comma-separated values
+                    var arr = string.Join(",", prop.Value.EnumerateArray().Select(e => e.GetString()));
+
+                    if (!string.IsNullOrWhiteSpace(arr))
+                    {
+                        dict.Add(prop.Name, arr);
+                    }
+                }
+                else if (prop.Value.ValueKind != JsonValueKind.Null &&
+                         prop.Value.ValueKind != JsonValueKind.Undefined)
+                {
+                    var val = prop.Value.ToString();
+
+                    if (!string.IsNullOrWhiteSpace(val))
+                    {
+                        dict.Add(prop.Name, val);
+                    }
+                }
             }
 
-            if (PageSize.HasValue)
-            {
-                parameters.Add("page_size", PageSize.Value.ToString());
-            }
-
-            if (!string.IsNullOrWhiteSpace(Search))
-            {
-                parameters.Add("search", Search);
-            }
-
-            if (!string.IsNullOrWhiteSpace(Sort))
-            {
-                parameters.Add("sort", Sort);
-            }
-
-            if (SortDirection.HasValue)
-            {
-                parameters.Add("sort_direction", SortDirection.Value.ToString());
-            }
-
-            if (VoiceType.HasValue)
-            {
-                parameters.Add("voice_type", VoiceType.Value.ToString());
-            }
-
-            if (Category.HasValue)
-            {
-                parameters.Add("category", Category.Value.ToString());
-            }
-
-            if (FineTuningState.HasValue)
-            {
-                parameters.Add("fine_tuning_state", FineTuningState.Value.ToString());
-            }
-
-            if (!string.IsNullOrWhiteSpace(CollectionId))
-            {
-                parameters.Add("collection_id", CollectionId);
-            }
-
-            if (IncludeTotalCount.HasValue)
-            {
-                parameters.Add("include_total_count", IncludeTotalCount.Value.ToString().ToLower());
-            }
-
-            if (VoiceIds is { Count: > 0 })
-            {
-                parameters.Add("voice_ids", string.Join(",", VoiceIds));
-            }
-
-            return parameters;
+            return dict;
         }
     }
 }

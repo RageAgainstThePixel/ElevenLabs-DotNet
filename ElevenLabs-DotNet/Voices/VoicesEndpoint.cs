@@ -46,15 +46,15 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
         public async Task<IReadOnlyList<Voice>> GetAllVoicesAsync(bool downloadSettings, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            var voices = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions).Voices;
+            using var response = await GetAsync(GetUrl(), cancellationToken).ConfigureAwait(false);
+            var voiceList = await response.DeserializeAsync<VoiceList>(EnableDebug, cancellationToken).ConfigureAwait(false);
 
-            if (downloadSettings)
+            if (downloadSettings &&
+                voiceList?.Voices is { Count: > 0 })
             {
                 var voiceSettingsTasks = new List<Task>();
 
-                foreach (var voice in voices)
+                foreach (var voice in voiceList.Voices)
                 {
                     voiceSettingsTasks.Add(LocalGetVoiceSettingsAsync());
 
@@ -67,7 +67,7 @@ namespace ElevenLabs.Voices
                 await Task.WhenAll(voiceSettingsTasks).ConfigureAwait(false);
             }
 
-            return voices.ToList();
+            return voiceList?.Voices;
         }
 
         /// <summary>
@@ -77,9 +77,8 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="VoiceSettings"/>.</returns>
         public async Task<VoiceSettings> GetDefaultVoiceSettingsAsync(CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl("/settings/default"), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            using var response = await GetAsync(GetUrl("/settings/default"), cancellationToken).ConfigureAwait(false);
+            return await response.DeserializeAsync<VoiceSettings>(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -95,9 +94,8 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(voiceId));
             }
 
-            using var response = await client.Client.GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<VoiceSettings>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            using var response = await GetAsync(GetUrl($"/{voiceId}/settings"), cancellationToken).ConfigureAwait(false);
+            return await response.DeserializeAsync<VoiceSettings>(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -114,9 +112,8 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(voiceId));
             }
 
-            using var response = await client.Client.GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings.ToString().ToLower()}"), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<Voice>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            using var response = await GetAsync(GetUrl($"/{voiceId}?with_settings={withSettings.ToString().ToLower()}"), cancellationToken).ConfigureAwait(false);
+            return await response.DeserializeAsync<Voice>(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -134,8 +131,8 @@ namespace ElevenLabs.Voices
             }
 
             using var payload = JsonSerializer.Serialize(voiceSettings).ToJsonStringContent();
-            using var response = await client.Client.PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken).ConfigureAwait(false);
-            await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
+            using var response = await PostAsync(GetUrl($"/{voiceId}/settings/edit"), payload, cancellationToken).ConfigureAwait(false);
+            await response.ReadAsStringAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
 
@@ -201,7 +198,7 @@ namespace ElevenLabs.Voices
                 request.Dispose();
             }
 
-            using var response = await client.Client.PostAsync(GetUrl("/add"), payload, cancellationToken).ConfigureAwait(false);
+            using var response = await PostAsync(GetUrl("/add"), payload, cancellationToken).ConfigureAwait(false);
             var responseAsString = await response.ReadAsStringAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             var voiceResponse = JsonSerializer.Deserialize<VoiceResponse>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
             return await GetVoiceAsync(voiceResponse.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -260,7 +257,7 @@ namespace ElevenLabs.Voices
                 payload.Add(new StringContent(JsonSerializer.Serialize(labels)), "labels");
             }
 
-            using var response = await client.Client.PostAsync(GetUrl($"/{voice.Id}/edit"), payload, cancellationToken).ConfigureAwait(false);
+            using var response = await PostAsync(GetUrl($"/{voice.Id}/edit"), payload, cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
@@ -278,7 +275,7 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(voiceId));
             }
 
-            using var response = await client.Client.DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken).ConfigureAwait(false);
+            using var response = await DeleteAsync(GetUrl($"/{voiceId}"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
@@ -306,7 +303,7 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(sample));
             }
 
-            using var response = await client.Client.GetAsync(GetUrl($"/{voice.Id}/samples/{sample.Id}/audio"), cancellationToken).ConfigureAwait(false);
+            using var response = await GetAsync(GetUrl($"/{voice.Id}/samples/{sample.Id}/audio"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using var memoryStream = new MemoryStream();
@@ -333,7 +330,7 @@ namespace ElevenLabs.Voices
                 throw new ArgumentNullException(nameof(sampleId));
             }
 
-            using var response = await client.Client.DeleteAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken).ConfigureAwait(false);
+            using var response = await DeleteAsync(GetUrl($"/{voiceId}/samples/{sampleId}"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
