@@ -31,13 +31,15 @@ namespace ElevenLabs.Tests
         public async Task Test_01_02_GetSharedVoices()
         {
             Assert.NotNull(ElevenLabsClient.SharedVoicesEndpoint);
+            var query = new SharedVoiceQuery { Accent = "american" };
             var results = await ElevenLabsClient.SharedVoicesEndpoint.GetSharedVoicesAsync();
             Assert.NotNull(results);
             Assert.IsNotEmpty(results.Voices);
 
             foreach (var voice in results.Voices)
             {
-                Console.WriteLine($"{voice.OwnerId} | {voice.VoiceId} | {voice.Date} | {voice.Name}");
+                Console.WriteLine($"{voice.VoiceId} | {voice.Date} | {voice.Name} | {voice.Accent}");
+                Assert.AreEqual("american", voice.Accent);
             }
         }
 
