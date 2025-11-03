@@ -32,7 +32,7 @@ namespace ElevenLabs.Tests
         {
             Assert.NotNull(ElevenLabsClient.SharedVoicesEndpoint);
             var query = new SharedVoiceQuery { Accent = "american" };
-            var results = await ElevenLabsClient.SharedVoicesEndpoint.GetSharedVoicesAsync();
+            var results = await ElevenLabsClient.SharedVoicesEndpoint.GetSharedVoicesAsync(query);
             Assert.NotNull(results);
             Assert.IsNotEmpty(results.Voices);
 
