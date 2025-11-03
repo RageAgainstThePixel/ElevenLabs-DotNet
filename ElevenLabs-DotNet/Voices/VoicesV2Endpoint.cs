@@ -2,7 +2,6 @@
 
 using ElevenLabs.Extensions;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +15,7 @@ namespace ElevenLabs.Voices
         public VoicesV2Endpoint(ElevenLabsClient client) : base(client) { }
 
         protected override string Root => "voices";
+
         protected override string ApiVersion => "v2";
 
         /// <summary>
@@ -26,10 +26,8 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="IReadOnlyList{T}"/> of <see cref="Voice"/>s.</returns>
         public async Task<VoiceList> GetVoicesAsync(VoiceQuery query = null, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl(queryParameters: query), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            var voiceList = JsonSerializer.Deserialize<VoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
-            return voiceList;
+            using var response = await GetAsync(GetUrl(queryParameters: query), cancellationToken).ConfigureAwait(false);
+            return await response.DeserializeAsync<VoiceList>(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
     }
 }

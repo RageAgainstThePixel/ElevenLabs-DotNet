@@ -18,7 +18,7 @@ namespace ElevenLabs.Extensions
 {
     internal static class HttpResponseMessageExtensions
     {
-        private static readonly JsonSerializerOptions debugJsonOptions = new()
+        public static readonly JsonSerializerOptions DebugJsonOptions = new()
         {
             WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -28,7 +28,15 @@ namespace ElevenLabs.Extensions
         {
             if (!response.IsSuccessStatusCode || debug)
             {
-                await response.ReadAsStringAsync(debug, null, null, cancellationToken, methodName).ConfigureAwait(false);
+                await response.ReadAsStringAsync(debug, null, null, null, cancellationToken, methodName).ConfigureAwait(false);
+            }
+        }
+
+        internal static async Task CheckResponseAsync(this HttpResponseMessage response, bool debug, StringContent requestContent, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)
+        {
+            if (!response.IsSuccessStatusCode || debug)
+            {
+                await response.ReadAsStringAsync(debug, requestContent, null, null, cancellationToken, methodName).ConfigureAwait(false);
             }
         }
 
@@ -36,25 +44,17 @@ namespace ElevenLabs.Extensions
         {
             if (!response.IsSuccessStatusCode || debug)
             {
-                await response.ReadAsStringAsync(debug, requestContent, null, cancellationToken, methodName).ConfigureAwait(false);
-            }
-        }
-
-        internal static async Task CheckResponseAsync(this HttpResponseMessage response, bool debug, HttpContent requestContent, MemoryStream responseStream, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)
-        {
-            if (!response.IsSuccessStatusCode || debug)
-            {
-                await response.ReadAsStringAsync(debug, requestContent, responseStream, cancellationToken, methodName).ConfigureAwait(false);
+                await response.ReadAsStringAsync(debug, requestContent, null, null, cancellationToken, methodName).ConfigureAwait(false);
             }
         }
 
         internal static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse, HttpContent requestContent, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)
-            => await response.ReadAsStringAsync(debugResponse, requestContent, null, cancellationToken, methodName).ConfigureAwait(false);
+            => await response.ReadAsStringAsync(debugResponse, requestContent, null, null, cancellationToken, methodName).ConfigureAwait(false);
 
         internal static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)
-            => await response.ReadAsStringAsync(debugResponse, null, null, cancellationToken, methodName).ConfigureAwait(false);
+            => await response.ReadAsStringAsync(debugResponse, null, null, null, cancellationToken, methodName).ConfigureAwait(false);
 
-        internal static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse, HttpContent requestContent, MemoryStream responseStream, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)
+        private static async Task<string> ReadAsStringAsync(this HttpResponseMessage response, bool debugResponse, HttpContent requestContent, MemoryStream responseStream, List<object> events, CancellationToken cancellationToken, [CallerMemberName] string methodName = null)
         {
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var debugMessage = new StringBuilder();
@@ -133,7 +133,7 @@ namespace ElevenLabs.Extensions
                     ["Headers"] = response.Headers.ToDictionary(pair => pair.Key, pair => pair.Value),
                 };
 
-                if (responseStream != null || !string.IsNullOrWhiteSpace(responseAsString))
+                if (events != null || responseStream != null || !string.IsNullOrWhiteSpace(responseAsString))
                 {
                     debugMessageObject["Response"]["Body"] = new Dictionary<string, object>();
                 }
@@ -164,7 +164,7 @@ namespace ElevenLabs.Extensions
                     }
                 }
 
-                debugMessage.Append(JsonSerializer.Serialize(debugMessageObject, debugJsonOptions));
+                debugMessage.Append(JsonSerializer.Serialize(debugMessageObject, DebugJsonOptions));
                 Console.WriteLine(debugMessage.ToString());
             }
 
@@ -174,6 +174,37 @@ namespace ElevenLabs.Extensions
             }
 
             return responseAsString;
+        }
+
+        internal static async Task<T> DeserializeAsync<T>(this HttpResponseMessage response, bool debug, CancellationToken cancellationToken)
+        {
+            var responseAsString = await response.ReadAsStringAsync(debug, cancellationToken);
+            return JsonSerializer.Deserialize<T>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+        }
+
+        internal static async Task<T> DeserializeAsync<T>(this HttpResponseMessage response, bool debug, HttpContent payload, CancellationToken cancellationToken)
+        {
+            var responseAsString = await response.ReadAsStringAsync(debug, payload, cancellationToken);
+            return JsonSerializer.Deserialize<T>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+        }
+
+        internal static T Deserialize<T>(this HttpResponseMessage response, string json, ElevenLabsClient client)
+            => JsonSerializer.Deserialize<T>(json, ElevenLabsClient.JsonSerializationOptions);
+
+        internal static T Deserialize<T>(this HttpResponseMessage response, JsonNode jNode, ElevenLabsClient client)
+        {
+            T result;
+            try
+            {
+                result = jNode.Deserialize<T>(ElevenLabsClient.JsonSerializationOptions);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to parse {typeof(T).Name} -> {jNode.ToJsonString(DebugJsonOptions)}\n{e}");
+                throw;
+            }
+
+            return result;
         }
 
         internal static async Task AppendFileToFormAsync(this MultipartFormDataContent content, string name, Stream stream, string fileName, MediaTypeHeaderValue mediaType = null, CancellationToken cancellationToken = default)

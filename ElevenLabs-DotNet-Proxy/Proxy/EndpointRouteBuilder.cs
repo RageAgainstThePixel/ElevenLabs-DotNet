@@ -22,10 +22,15 @@ namespace ElevenLabs.Proxy
         // Copied from https://github.com/microsoft/reverse-proxy/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/RequestUtilities.cs#L61-L83
         private static readonly HashSet<string> excludedHeaders = new()
         {
+            HeaderNames.Authorization,
+            "xi-api-key",
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
             HeaderNames.KeepAlive,
             HeaderNames.Upgrade,
+            HeaderNames.Host,
+            HeaderNames.SecWebSocketKey,
+            HeaderNames.SecWebSocketVersion,
             "Proxy-Connection",
             "Proxy-Authenticate",
             "Proxy-Authentication-Info",
@@ -79,6 +84,18 @@ namespace ElevenLabs.Proxy
                     using var request = new HttpRequestMessage(method, uri);
                     request.Content = new StreamContent(httpContext.Request.Body);
 
+                    foreach (var (key, value) in httpContext.Request.Headers)
+                    {
+                        if (excludedHeaders.Contains(key) ||
+                            string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        request.Headers.TryAddWithoutValidation(key, value.ToArray());
+                    }
+
                     if (httpContext.Request.ContentType != null)
                     {
                         request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(httpContext.Request.ContentType);
@@ -116,16 +133,18 @@ namespace ElevenLabs.Proxy
                 }
                 catch (AuthenticationException authenticationException)
                 {
+                    Console.WriteLine($"{nameof(AuthenticationException)}: {authenticationException.Message}");
                     httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await httpContext.Response.WriteAsync(authenticationException.Message).ConfigureAwait(false);
                 }
-                catch (WebSocketException)
+                catch (WebSocketException webEx)
                 {
-                    // ignore
+                    Console.WriteLine($"{nameof(WebSocketException)} [{webEx.WebSocketErrorCode}] {webEx.Message}");
                     throw;
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine($"{nameof(Exception)}: {e.Message}");
                     if (httpContext.Response.HasStarted) { throw; }
                     httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                     var response = JsonSerializer.Serialize(new { error = new { e.Message, e.StackTrace } });

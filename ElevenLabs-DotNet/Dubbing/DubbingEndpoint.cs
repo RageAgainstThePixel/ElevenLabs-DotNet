@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,9 +103,8 @@ namespace ElevenLabs.Dubbing
                 request.Dispose();
             }
 
-            using var response = await client.Client.PostAsync(GetUrl(), payload, cancellationToken).ConfigureAwait(false);
-            var responseBody = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            var dubResponse = JsonSerializer.Deserialize<DubbingResponse>(responseBody);
+            using var response = await PostAsync(GetUrl(), payload, cancellationToken).ConfigureAwait(false);
+            var dubResponse = await response.DeserializeAsync<DubbingResponse>(EnableDebug, cancellationToken).ConfigureAwait(false);
             return await WaitForDubbingCompletionAsync(dubResponse, maxRetries ?? 60, pollingInterval ?? TimeSpan.FromSeconds(dubResponse.ExpectedDurationSeconds), pollingInterval == null, progress, cancellationToken);
         }
 
@@ -160,9 +158,8 @@ namespace ElevenLabs.Dubbing
         /// <returns><see cref="DubbingProjectMetadata"/>.</returns>
         public async Task<DubbingProjectMetadata> GetDubbingProjectMetadataAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
-            var responseBody = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<DubbingProjectMetadata>(responseBody);
+            using var response = await GetAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
+            return await response.DeserializeAsync<DubbingProjectMetadata>(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -178,7 +175,7 @@ namespace ElevenLabs.Dubbing
         public async Task<string> GetTranscriptForDubAsync(string dubbingId, string languageCode, DubbingFormat formatType = DubbingFormat.Srt, CancellationToken cancellationToken = default)
         {
             var @params = new Dictionary<string, string> { { "format_type", formatType.ToString().ToLower() } };
-            using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/transcript/{languageCode}", @params), cancellationToken).ConfigureAwait(false);
+            using var response = await GetAsync(GetUrl($"/{dubbingId}/transcript/{languageCode}", @params), cancellationToken).ConfigureAwait(false);
             return await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
 
@@ -199,7 +196,7 @@ namespace ElevenLabs.Dubbing
         /// </remarks>
         public async IAsyncEnumerable<byte[]> GetDubbedFileAsync(string dubbingId, string languageCode, int bufferSize = 8192, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl($"/{dubbingId}/audio/{languageCode}"), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var response = await GetServerSentEventStreamAsync(GetUrl($"/{dubbingId}/audio/{languageCode}"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var buffer = new byte[bufferSize];
@@ -218,10 +215,12 @@ namespace ElevenLabs.Dubbing
         /// </summary>
         /// <param name="dubbingId">Dubbing project id.</param>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        public async Task DeleteDubbingProjectAsync(string dubbingId, CancellationToken cancellationToken = default)
+        /// <returns>True, if the project was deleted.</returns>
+        public async Task<bool> DeleteDubbingProjectAsync(string dubbingId, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.DeleteAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
+            using var response = await DeleteAsync(GetUrl($"/{dubbingId}"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
         }
     }
 }

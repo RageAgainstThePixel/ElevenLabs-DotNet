@@ -1,6 +1,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace ElevenLabs
 {
@@ -56,6 +57,11 @@ namespace ElevenLabs
         public string Domain { get; }
 
         internal string BaseRequestUrlFormat { get; }
+
+        // ReSharper disable once CollectionNeverUpdated.Local reserved for future use.
+        private readonly Dictionary<string, string> defaultQueryParameters = new();
+
+        internal IReadOnlyDictionary<string, string> DefaultQueryParameters => defaultQueryParameters;
 
         public static ElevenLabsClientSettings Default { get; } = new();
     }
