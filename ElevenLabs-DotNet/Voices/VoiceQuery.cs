@@ -127,35 +127,45 @@ namespace ElevenLabs.Voices
         /// </summary>
         public Dictionary<string, string> ToQueryParams()
         {
+            var parameters = new Dictionary<string, string>();
             var json = JsonSerializer.Serialize(this, ElevenLabsClient.JsonSerializationOptions);
-            var dict = new Dictionary<string, string>();
             using var doc = JsonDocument.Parse(json);
 
-            foreach (var prop in doc.RootElement.EnumerateObject())
+            foreach (var property in doc.RootElement.EnumerateObject())
             {
-                if (prop.Value.ValueKind == JsonValueKind.Array)
+                switch (property.Value.ValueKind)
                 {
-                    // Flatten arrays as comma-separated values
-                    var arr = string.Join(",", prop.Value.EnumerateArray().Select(e => e.GetString()));
-
-                    if (!string.IsNullOrWhiteSpace(arr))
+                    case JsonValueKind.Array:
                     {
-                        dict.Add(prop.Name, arr);
+                        // Flatten arrays as comma-separated values
+                        var array = string.Join(",", property.Value.EnumerateArray().Select(e => e.GetString()));
+
+                        if (!string.IsNullOrWhiteSpace(array))
+                        {
+                            parameters.Add(property.Name, array);
+                        }
+
+                        break;
                     }
-                }
-                else if (prop.Value.ValueKind != JsonValueKind.Null &&
-                         prop.Value.ValueKind != JsonValueKind.Undefined)
-                {
-                    var val = prop.Value.ToString();
-
-                    if (!string.IsNullOrWhiteSpace(val))
+                    default:
                     {
-                        dict.Add(prop.Name, val);
+                        if (property.Value.ValueKind != JsonValueKind.Null &&
+                            property.Value.ValueKind != JsonValueKind.Undefined)
+                        {
+                            var value = property.Value.ToString();
+
+                            if (!string.IsNullOrWhiteSpace(value))
+                            {
+                                parameters.Add(property.Name, value);
+                            }
+                        }
+
+                        break;
                     }
                 }
             }
 
-            return dict;
+            return parameters;
         }
     }
 }
