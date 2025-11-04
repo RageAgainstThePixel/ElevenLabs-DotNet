@@ -1,7 +1,6 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using ElevenLabs.Extensions;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,9 +20,8 @@ namespace ElevenLabs.Voices
         /// <returns><see cref="SharedVoiceList"/>.</returns>
         public async Task<SharedVoiceList> GetSharedVoicesAsync(SharedVoiceQuery query = null, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl(queryParameters: query?.ToQueryParams()), cancellationToken).ConfigureAwait(false);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<SharedVoiceList>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            using var response = await GetAsync(GetUrl(queryParameters: query?.ToQueryParams()), cancellationToken).ConfigureAwait(false);
+            return await response.DeserializeAsync<SharedVoiceList>(EnableDebug, cancellationToken).ConfigureAwait(false);
         }
     }
 }

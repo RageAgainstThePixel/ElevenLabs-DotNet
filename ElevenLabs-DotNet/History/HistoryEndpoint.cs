@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,9 +44,8 @@ namespace ElevenLabs.History
                 parameters.Add("start_after_history_item_id", startAfterId);
             }
 
-            using var response = await client.Client.GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
-            return JsonSerializer.Deserialize<HistoryInfo<HistoryItem>>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            using var response = await GetAsync(GetUrl(queryParameters: parameters), cancellationToken);
+            return await response.DeserializeAsync<HistoryInfo<HistoryItem>>(EnableDebug, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -58,9 +56,8 @@ namespace ElevenLabs.History
         /// <returns><see cref="HistoryItem"/></returns>
         public async Task<HistoryItem> GetHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.GetAsync(GetUrl($"/{id}"), cancellationToken);
-            var responseAsString = await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
-            return JsonSerializer.Deserialize<HistoryItem>(responseAsString, ElevenLabsClient.JsonSerializationOptions);
+            using var response = await GetAsync(GetUrl($"/{id}"), cancellationToken);
+            return await response.DeserializeAsync<HistoryItem>(EnableDebug, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -84,7 +81,7 @@ namespace ElevenLabs.History
         public async Task<VoiceClip> DownloadHistoryAudioAsync(HistoryItem historyItem, CancellationToken cancellationToken = default)
         {
             var voice = await client.VoicesEndpoint.GetVoiceAsync(historyItem.VoiceId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            using var response = await client.Client.GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken).ConfigureAwait(false);
+            using var response = await GetAsync(GetUrl($"/{historyItem.Id}/audio"), cancellationToken).ConfigureAwait(false);
             await response.CheckResponseAsync(EnableDebug, cancellationToken);
             var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var memoryStream = new MemoryStream();
@@ -112,7 +109,7 @@ namespace ElevenLabs.History
         /// <returns>True, if history item was successfully deleted.</returns>
         public async Task<bool> DeleteHistoryItemAsync(string id, CancellationToken cancellationToken = default)
         {
-            using var response = await client.Client.DeleteAsync(GetUrl($"/{id}"), cancellationToken);
+            using var response = await DeleteAsync(GetUrl($"/{id}"), cancellationToken);
             await response.ReadAsStringAsync(EnableDebug, cancellationToken: cancellationToken);
             return response.IsSuccessStatusCode;
         }

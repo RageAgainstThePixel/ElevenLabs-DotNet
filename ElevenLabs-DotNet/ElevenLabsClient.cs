@@ -1,6 +1,7 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using ElevenLabs.Dubbing;
+using ElevenLabs.Extensions;
 using ElevenLabs.History;
 using ElevenLabs.Models;
 using ElevenLabs.SoundGeneration;
@@ -39,31 +40,17 @@ namespace ElevenLabs
         public ElevenLabsClient(ElevenLabsAuthentication authentication = null, ElevenLabsClientSettings settings = null, HttpClient httpClient = null)
         {
             ElevenLabsAuthentication = authentication ?? ElevenLabsAuthentication.Default;
-            ElevenLabsClientSettings = settings ?? ElevenLabsClientSettings.Default;
+            Settings = settings ?? ElevenLabsClientSettings.Default;
 
             if (string.IsNullOrWhiteSpace(ElevenLabsAuthentication?.ApiKey))
             {
                 throw new AuthenticationException("You must provide API authentication.  Please refer to https://github.com/RageAgainstThePixel/ElevenLabs-DotNet#authentication for details.");
             }
 
-            if (httpClient == null)
-            {
-                httpClient = new HttpClient(new SocketsHttpHandler
-                {
-                    PooledConnectionLifetime = TimeSpan.FromMinutes(15)
-                });
-            }
-            else
-            {
-                isCustomClient = true;
-            }
-
-            Client = httpClient;
-            Client.DefaultRequestHeaders.Add("User-Agent", "ElevenLabs-DotNet");
-            Client.DefaultRequestHeaders.Add("xi-api-key", ElevenLabsAuthentication.ApiKey);
-
+            Client = SetupHttpClient(httpClient);
             UserEndpoint = new UserEndpoint(this);
             VoicesEndpoint = new VoicesEndpoint(this);
+            VoicesV2Endpoint = new VoicesV2Endpoint(this);
             SharedVoicesEndpoint = new SharedVoicesEndpoint(this);
             ModelsEndpoint = new ModelsEndpoint(this);
             HistoryEndpoint = new HistoryEndpoint(this);
@@ -73,10 +60,7 @@ namespace ElevenLabs
             DubbingEndpoint = new DubbingEndpoint(this);
         }
 
-        ~ElevenLabsClient()
-        {
-            Dispose(false);
-        }
+        ~ElevenLabsClient() => Dispose(false);
 
         #region IDisposable
 
@@ -115,24 +99,33 @@ namespace ElevenLabs
         /// </summary>
         internal static JsonSerializerOptions JsonSerializationOptions { get; } = new()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters =
+            {
+                new JsonStringEnumConverterFactory(),
+            },
+            ReferenceHandler = ReferenceHandler.IgnoreCycles
         };
-
-        /// <summary>
-        /// Enables or disables debugging for all endpoints.
-        /// </summary>
-        public bool EnableDebug { get; set; }
 
         /// <summary>
         /// The API authentication information to use for API calls
         /// </summary>
         public ElevenLabsAuthentication ElevenLabsAuthentication { get; }
 
-        internal ElevenLabsClientSettings ElevenLabsClientSettings { get; }
+        internal ElevenLabsClientSettings Settings { get; }
+
+        /// <summary>
+        /// Enables or disables debugging for all endpoints.
+        /// </summary>
+        public bool EnableDebug { get; set; }
+
+        #region Endpoints
 
         public UserEndpoint UserEndpoint { get; }
 
         public VoicesEndpoint VoicesEndpoint { get; }
+
+        public VoicesV2Endpoint VoicesV2Endpoint { get; }
 
         public SharedVoicesEndpoint SharedVoicesEndpoint { get; }
 
@@ -147,5 +140,26 @@ namespace ElevenLabs
         public SoundGenerationEndpoint SoundGenerationEndpoint { get; }
 
         public DubbingEndpoint DubbingEndpoint { get; }
+
+        #endregion Endpoints
+
+        private HttpClient SetupHttpClient(HttpClient client = null)
+        {
+            if (client == null)
+            {
+                client = new HttpClient(new SocketsHttpHandler
+                {
+                    PooledConnectionLifetime = TimeSpan.FromMinutes(15)
+                });
+            }
+            else
+            {
+                isCustomClient = true;
+            }
+
+            client.DefaultRequestHeaders.Add("User-Agent", "ElevenLabs-DotNet");
+            client.DefaultRequestHeaders.Add("xi-api-key", ElevenLabsAuthentication.ApiKey);
+            return client;
+        }
     }
 }

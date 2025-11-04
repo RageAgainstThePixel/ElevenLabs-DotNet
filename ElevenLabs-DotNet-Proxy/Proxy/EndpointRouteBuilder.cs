@@ -3,12 +3,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -20,10 +22,15 @@ namespace ElevenLabs.Proxy
         // Copied from https://github.com/microsoft/reverse-proxy/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/RequestUtilities.cs#L61-L83
         private static readonly HashSet<string> excludedHeaders = new()
         {
+            HeaderNames.Authorization,
+            "xi-api-key",
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
             HeaderNames.KeepAlive,
             HeaderNames.Upgrade,
+            HeaderNames.Host,
+            HeaderNames.SecWebSocketKey,
+            HeaderNames.SecWebSocketVersion,
             "Proxy-Connection",
             "Proxy-Authenticate",
             "Proxy-Authentication-Info",
@@ -46,34 +53,47 @@ namespace ElevenLabs.Proxy
         /// Maps the <see cref="ElevenLabsClient"/> endpoints.
         /// </summary>
         /// <param name="endpoints"><see cref="IEndpointRouteBuilder"/>.</param>
-        /// <param name="elevenLabsClient"><see cref="ElevenLabsClient"/>.</param>
+        /// <param name="client"><see cref="ElevenLabsClient"/>.</param>
         /// <param name="authenticationFilter"><see cref="IAuthenticationFilter"/>.</param>
         /// <param name="routePrefix">Optional, custom route prefix. i.e. '/elevenlabs'.</param>
-        public static void MapElevenLabsEndpoints(this IEndpointRouteBuilder endpoints, ElevenLabsClient elevenLabsClient, IAuthenticationFilter authenticationFilter, string routePrefix = "")
+        public static void MapElevenLabsEndpoints(this IEndpointRouteBuilder endpoints, ElevenLabsClient client, IAuthenticationFilter authenticationFilter, string routePrefix = "")
         {
-            endpoints.Map($"{routePrefix}{elevenLabsClient.ElevenLabsClientSettings.BaseRequest}{{**endpoint}}", HandleRequest);
+            endpoints.Map($"{routePrefix}/{{version}}/{{**endpoint}}", HandleRequest);
+            return;
 
-            async Task HandleRequest(HttpContext httpContext, string endpoint)
+            async Task HandleRequest(HttpContext httpContext, string version, string endpoint)
             {
                 try
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    // ReSharper disable once MethodHasAsyncOverload
-                    authenticationFilter.ValidateAuthentication(httpContext.Request.Headers);
-#pragma warning restore CS0618 // Type or member is obsolete
-                    await authenticationFilter.ValidateAuthenticationAsync(httpContext.Request.Headers);
-
+                    await authenticationFilter.ValidateAuthenticationAsync(httpContext.Request.Headers).ConfigureAwait(false);
                     var method = new HttpMethod(httpContext.Request.Method);
+                    var originalQuery = QueryHelpers.ParseQuery(httpContext.Request.QueryString.Value ?? "");
+                    var modifiedQuery = new Dictionary<string, string>(originalQuery.Count);
+
+                    foreach (var pair in originalQuery)
+                    {
+                        modifiedQuery[pair.Key] = pair.Value.FirstOrDefault();
+                    }
+
                     var uri = new Uri(string.Format(
-                            elevenLabsClient.ElevenLabsClientSettings.BaseRequestUrlFormat,
-                            $"{endpoint}{httpContext.Request.QueryString}"
-                        ));
+                        client.Settings.BaseRequestUrlFormat,
+                        version,
+                        QueryHelpers.AddQueryString(endpoint, modifiedQuery)
+                    ));
+
                     using var request = new HttpRequestMessage(method, uri);
                     request.Content = new StreamContent(httpContext.Request.Body);
 
-                    if (httpContext.Request.Body.CanSeek)
+                    foreach (var (key, value) in httpContext.Request.Headers)
                     {
-                        httpContext.Request.Body.Position = 0;
+                        if (excludedHeaders.Contains(key) ||
+                            string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        request.Headers.TryAddWithoutValidation(key, value.ToArray());
                     }
 
                     if (httpContext.Request.ContentType != null)
@@ -81,8 +101,10 @@ namespace ElevenLabs.Proxy
                         request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(httpContext.Request.ContentType);
                     }
 
-                    var proxyResponse = await elevenLabsClient.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                    var proxyResponse = await client.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, httpContext.RequestAborted).ConfigureAwait(false);
                     httpContext.Response.StatusCode = (int)proxyResponse.StatusCode;
+                    httpContext.Response.ContentLength = proxyResponse.Content.Headers.ContentLength;
+                    httpContext.Response.ContentType = proxyResponse.Content.Headers.ContentType?.ToString();
 
                     foreach (var (key, value) in proxyResponse.Headers)
                     {
@@ -96,37 +118,44 @@ namespace ElevenLabs.Proxy
                         httpContext.Response.Headers[key] = value.ToArray();
                     }
 
-                    httpContext.Response.ContentType = proxyResponse.Content.Headers.ContentType?.ToString() ?? string.Empty;
                     const string streamingContent = "text/event-stream";
 
-                    if (httpContext.Response.ContentType.Equals(streamingContent))
+                    if (httpContext.Response.ContentType != null &&
+                        httpContext.Response.ContentType.Equals(streamingContent, StringComparison.OrdinalIgnoreCase))
                     {
-                        using var reader = new StreamReader(await request.Content.ReadAsStreamAsync());
-                        var stream = await proxyResponse.Content.ReadAsStreamAsync();
-                        await WriteServerStreamEventsAsync(httpContext, stream);
+                        var stream = await proxyResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                        await WriteServerStreamEventsAsync(httpContext, stream).ConfigureAwait(false);
                     }
                     else
                     {
-                        await proxyResponse.Content.CopyToAsync(httpContext.Response.Body);
+                        await proxyResponse.Content.CopyToAsync(httpContext.Response.Body, httpContext.RequestAborted).ConfigureAwait(false);
                     }
                 }
                 catch (AuthenticationException authenticationException)
                 {
+                    Console.WriteLine($"{nameof(AuthenticationException)}: {authenticationException.Message}");
                     httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await httpContext.Response.WriteAsync(authenticationException.Message);
+                    await httpContext.Response.WriteAsync(authenticationException.Message).ConfigureAwait(false);
+                }
+                catch (WebSocketException webEx)
+                {
+                    Console.WriteLine($"{nameof(WebSocketException)} [{webEx.WebSocketErrorCode}] {webEx.Message}");
+                    throw;
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine($"{nameof(Exception)}: {e.Message}");
+                    if (httpContext.Response.HasStarted) { throw; }
                     httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    var response = JsonSerializer.Serialize(new { error = new { message = e.Message, stackTrace = e.StackTrace } });
-                    await httpContext.Response.WriteAsync(response);
+                    var response = JsonSerializer.Serialize(new { error = new { e.Message, e.StackTrace } });
+                    await httpContext.Response.WriteAsync(response).ConfigureAwait(false);
                 }
 
                 static async Task WriteServerStreamEventsAsync(HttpContext httpContext, Stream contentStream)
                 {
                     var responseStream = httpContext.Response.Body;
-                    await contentStream.CopyToAsync(responseStream, httpContext.RequestAborted);
-                    await responseStream.FlushAsync(httpContext.RequestAborted);
+                    await contentStream.CopyToAsync(responseStream, httpContext.RequestAborted).ConfigureAwait(false);
+                    await responseStream.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);
                 }
             }
         }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -16,13 +17,14 @@ namespace ElevenLabs.Proxy
     /// </summary>
     public class ElevenLabsProxy
     {
+        private string routePrefix = "";
         private ElevenLabsClient elevenLabsClient;
         private IAuthenticationFilter authenticationFilter;
 
         /// <summary>
         /// Configures the <see cref="ElevenLabsClient"/> and <see cref="IAuthenticationFilter"/> services.
         /// </summary>
-        /// <param name="services"></param>
+        /// <param name="services">Services collection.</param>
         public void ConfigureServices(IServiceCollection services)
             => SetupServices(services.BuildServiceProvider());
 
@@ -45,7 +47,7 @@ namespace ElevenLabs.Proxy
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/health", HealthEndpoint);
-                endpoints.MapElevenLabsEndpoints(elevenLabsClient, authenticationFilter);
+                endpoints.MapElevenLabsEndpoints(elevenLabsClient, authenticationFilter, routePrefix);
             });
         }
 
@@ -62,6 +64,12 @@ namespace ElevenLabs.Proxy
                     webBuilder.UseStartup<ElevenLabsProxy>();
                     webBuilder.ConfigureKestrel(ConfigureKestrel);
                 })
+                .ConfigureLogging(logger =>
+                {
+                    logger.ClearProviders();
+                    logger.AddConsole();
+                    logger.SetMinimumLevel(LogLevel.Debug);
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(elevenLabsClient);
@@ -74,14 +82,21 @@ namespace ElevenLabs.Proxy
         /// <typeparam name="T"><see cref="IAuthenticationFilter"/> type to use to validate your custom issued tokens.</typeparam>
         /// <param name="args">Startup args.</param>
         /// <param name="elevenLabsClient"><see cref="ElevenLabsClient"/> with configured <see cref="ElevenLabsAuthentication"/> and <see cref="ElevenLabsClientSettings"/>.</param>
-        public static WebApplication CreateWebApplication<T>(string[] args, ElevenLabsClient elevenLabsClient) where T : class, IAuthenticationFilter
+        /// <param name="routePrefix"></param>
+        public static WebApplication CreateWebApplication<T>(string[] args, ElevenLabsClient elevenLabsClient, string routePrefix = "") where T : class, IAuthenticationFilter
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+            builder.Logging.SetMinimumLevel(LogLevel.Debug);
             builder.WebHost.ConfigureKestrel(ConfigureKestrel);
             builder.Services.AddSingleton(elevenLabsClient);
             builder.Services.AddSingleton<IAuthenticationFilter, T>();
             var app = builder.Build();
-            var startup = new ElevenLabsProxy();
+            var startup = new ElevenLabsProxy
+            {
+                routePrefix = routePrefix
+            };
             startup.Configure(app, app.Environment);
             return app;
         }
@@ -97,8 +112,8 @@ namespace ElevenLabs.Proxy
 
         private void SetupServices(IServiceProvider serviceProvider)
         {
-            elevenLabsClient = serviceProvider.GetRequiredService<ElevenLabsClient>();
-            authenticationFilter = serviceProvider.GetRequiredService<IAuthenticationFilter>();
+            elevenLabsClient ??= serviceProvider.GetRequiredService<ElevenLabsClient>();
+            authenticationFilter ??= serviceProvider.GetRequiredService<IAuthenticationFilter>();
         }
 
         private static async Task HealthEndpoint(HttpContext context)

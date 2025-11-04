@@ -11,6 +11,7 @@ namespace ElevenLabs.Tests
     internal class TestFixture_08_DubbingEndpoint : AbstractTestFixture
     {
         [Test]
+        [Timeout(90000)]
         public async Task Test_01_Dubbing_File()
         {
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);
@@ -58,6 +59,7 @@ namespace ElevenLabs.Tests
         }
 
         [Test]
+        [Timeout(90000)]
         public async Task Test_02_Dubbing_Url()
         {
             Assert.NotNull(ElevenLabsClient.DubbingEndpoint);

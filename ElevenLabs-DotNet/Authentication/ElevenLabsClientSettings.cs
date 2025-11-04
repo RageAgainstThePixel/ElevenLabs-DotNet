@@ -1,6 +1,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace ElevenLabs
 {
@@ -8,7 +9,6 @@ namespace ElevenLabs
     {
         internal const string Http = "http://";
         internal const string Https = "https://";
-        internal const string DefaultApiVersion = "v1";
         internal const string ElevenLabsDomain = "api.elevenlabs.io";
 
         /// <summary>
@@ -17,17 +17,14 @@ namespace ElevenLabs
         public ElevenLabsClientSettings()
         {
             Domain = ElevenLabsDomain;
-            ApiVersion = "v1";
-            BaseRequest = $"/{ApiVersion}/";
-            BaseRequestUrlFormat = $"{Https}{Domain}{BaseRequest}{{0}}";
+            BaseRequestUrlFormat = $"{Https}{Domain}/{{0}}/{{1}}";
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="ElevenLabsClientSettings"/> for use with ElevenLabs API.
         /// </summary>
         /// <param name="domain">Base api domain.</param>
-        /// <param name="apiVersion">The version of the ElevenLabs api you want to use.</param>
-        public ElevenLabsClientSettings(string domain, string apiVersion = DefaultApiVersion)
+        public ElevenLabsClientSettings(string domain)
         {
             if (string.IsNullOrWhiteSpace(domain))
             {
@@ -38,11 +35,6 @@ namespace ElevenLabs
                 !domain.Contains(':'))
             {
                 throw new ArgumentException($"You're attempting to pass a \"resourceName\" parameter to \"{nameof(domain)}\". Please specify \"resourceName:\" for this parameter in constructor.");
-            }
-
-            if (string.IsNullOrWhiteSpace(apiVersion))
-            {
-                apiVersion = DefaultApiVersion;
             }
 
             var protocol = Https;
@@ -59,18 +51,17 @@ namespace ElevenLabs
             }
 
             Domain = $"{protocol}{domain}";
-            ApiVersion = apiVersion;
-            BaseRequest = $"/{ApiVersion}/";
-            BaseRequestUrlFormat = $"{Domain}{BaseRequest}{{0}}";
+            BaseRequestUrlFormat = $"{Domain}/{{0}}/{{1}}";
         }
 
         public string Domain { get; }
 
-        public string ApiVersion { get; }
+        internal string BaseRequestUrlFormat { get; }
 
-        public string BaseRequest { get; }
+        // ReSharper disable once CollectionNeverUpdated.Local reserved for future use.
+        private readonly Dictionary<string, string> defaultQueryParameters = new();
 
-        public string BaseRequestUrlFormat { get; }
+        internal IReadOnlyDictionary<string, string> DefaultQueryParameters => defaultQueryParameters;
 
         public static ElevenLabsClientSettings Default { get; } = new();
     }
