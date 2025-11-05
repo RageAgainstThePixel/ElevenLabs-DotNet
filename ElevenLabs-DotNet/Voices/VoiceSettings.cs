@@ -1,21 +1,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace ElevenLabs.Voices
 {
     public sealed class VoiceSettings
     {
-        [Obsolete("use new .ctr overload")]
-        public VoiceSettings(
-            float stability,
-            float similarityBoost,
-            bool speakerBoost,
-            float style)
-            : this(stability, similarityBoost, style, speakerBoost)
-        {
-        }
+        public VoiceSettings() { }
 
         [JsonConstructor]
         public VoiceSettings(
@@ -33,18 +24,18 @@ namespace ElevenLabs.Voices
         }
 
         [JsonPropertyName("stability")]
-        public float Stability { get; set; }
+        public float Stability { get; set; } = .75f;
 
         [JsonPropertyName("similarity_boost")]
-        public float SimilarityBoost { get; set; }
+        public float SimilarityBoost { get; set; } = .75f;
 
         [JsonPropertyName("style")]
-        public float Style { get; set; }
+        public float Style { get; set; } = 0.45f;
 
         [JsonPropertyName("use_speaker_boost")]
-        public bool SpeakerBoost { get; set; }
+        public bool SpeakerBoost { get; set; } = true;
 
         [JsonPropertyName("speed")]
-        public float Speed { get; set; }
+        public float Speed { get; set; } = 1f;
     }
 }

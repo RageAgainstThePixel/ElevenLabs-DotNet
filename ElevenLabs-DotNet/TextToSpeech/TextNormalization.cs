@@ -2,7 +2,7 @@
 
 using System.Runtime.Serialization;
 
-namespace ElevenLabs.TextToSpeech
+namespace ElevenLabs
 {
     public enum TextNormalization
     {
