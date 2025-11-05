@@ -1,8 +1,8 @@
 ﻿// Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using ElevenLabs.Extensions;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ElevenLabs.Voices
@@ -121,51 +121,5 @@ namespace ElevenLabs.Voices
         public VoiceQuery WithNextPageToken(string nextPageToken) => this with { NextPageToken = nextPageToken };
 
         public static implicit operator Dictionary<string, string>(VoiceQuery query) => query?.ToQueryParams();
-
-        /// <summary>
-        /// Converts the current query object to a dictionary of HTTP query parameters.
-        /// </summary>
-        public Dictionary<string, string> ToQueryParams()
-        {
-            var parameters = new Dictionary<string, string>();
-            var json = JsonSerializer.Serialize(this, ElevenLabsClient.JsonSerializationOptions);
-            using var doc = JsonDocument.Parse(json);
-
-            foreach (var property in doc.RootElement.EnumerateObject())
-            {
-                switch (property.Value.ValueKind)
-                {
-                    case JsonValueKind.Array:
-                    {
-                        // Flatten arrays as comma-separated values
-                        var array = string.Join(",", property.Value.EnumerateArray().Select(e => e.GetString()));
-
-                        if (!string.IsNullOrWhiteSpace(array))
-                        {
-                            parameters.Add(property.Name, array);
-                        }
-
-                        break;
-                    }
-                    default:
-                    {
-                        if (property.Value.ValueKind != JsonValueKind.Null &&
-                            property.Value.ValueKind != JsonValueKind.Undefined)
-                        {
-                            var value = property.Value.ToString();
-
-                            if (!string.IsNullOrWhiteSpace(value))
-                            {
-                                parameters.Add(property.Name, value);
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            }
-
-            return parameters;
-        }
     }
 }
