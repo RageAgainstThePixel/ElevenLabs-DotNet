@@ -23,6 +23,7 @@ namespace ElevenLabs.TextToSpeech
         private const string HistoryItemId = "history-item-id";
         private const string OutputFormatParameter = "output_format";
         private const string OptimizeStreamingLatencyParameter = "optimize_streaming_latency";
+        private const string EnableLoggingParameter = "enable_logging";
 
         public TextToSpeechEndpoint(ElevenLabsClient client) : base(client) { }
 
@@ -60,6 +61,11 @@ namespace ElevenLabs.TextToSpeech
                 parameters.Add(OptimizeStreamingLatencyParameter, request.OptimizeStreamingLatency.Value.ToString());
             }
 #pragma warning restore CS0618 // Type or member is obsolete
+            
+            if (request.EnableLogging.HasValue)
+            {
+                parameters.Add(EnableLoggingParameter, request.EnableLogging.GetValueOrDefault() ? "true" : "false");
+            }
 
             var endpoint = $"/{request.Voice.Id}";
 
