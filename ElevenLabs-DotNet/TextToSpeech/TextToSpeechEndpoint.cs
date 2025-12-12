@@ -80,12 +80,14 @@ namespace ElevenLabs.TextToSpeech
                 : HttpCompletionOption.ResponseHeadersRead;
             using var response = await client.Client.SendAsync(postRequest, requestOption, cancellationToken);
             await response.CheckResponseAsync(EnableDebug, payload, cancellationToken).ConfigureAwait(false);
-            var clipId = response.Headers.GetValues(HistoryItemId).FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(clipId))
+            if (!response.Headers.TryGetValues(HistoryItemId, out var historyItems) ||
+                string.IsNullOrWhiteSpace(historyItems.FirstOrDefault()))
             {
                 throw new ArgumentException("Failed to parse clip id!");
             }
+            
+            var clipId = historyItems.First();
 
             return request.WithTimestamps
                 ? await StreamWithTimeStampsAsync(response).ConfigureAwait(false)
