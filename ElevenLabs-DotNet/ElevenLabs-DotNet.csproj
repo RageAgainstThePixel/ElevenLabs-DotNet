@@ -29,6 +29,8 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <PackageReleaseNotes>
 Version 4.0.0
 - Added support for Websocket streaming for Text to Speech
+Version 3.7.1
+- Added DisableRetention property
 Version 3.7.0
 - Fix v2 Voice Query Serialization
 - Added EnumMember json serialization
