@@ -25,8 +25,10 @@ All copyrights, trademarks, logos, and assets are the property of their respecti
     <SignAssembly>false</SignAssembly>
     <IncludeSymbols>true</IncludeSymbols>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Version>3.7.0</Version>
+    <Version>3.7.1</Version>
     <PackageReleaseNotes>
+Version 3.7.1
+- Added DisableRetention property
 Version 3.7.0
 - Fix v2 Voice Query Serialization
 - Added EnumMember json serialization
