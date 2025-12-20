@@ -7,6 +7,7 @@ namespace ElevenLabs
 {
     public sealed class ElevenLabsClientSettings
     {
+        internal const string WSS = "wss://";
         internal const string Http = "http://";
         internal const string Https = "https://";
         internal const string ElevenLabsDomain = "api.elevenlabs.io";
@@ -16,8 +17,8 @@ namespace ElevenLabs
         /// </summary>
         public ElevenLabsClientSettings()
         {
-            Domain = ElevenLabsDomain;
-            BaseRequestUrlFormat = $"{Https}{Domain}/{{0}}/{{1}}";
+            BaseRequestUrlFormat = $"{Https}{ElevenLabsDomain}/{{0}}/{{1}}";
+            BaseWebSocketUrlFormat = $"{WSS}{ElevenLabsDomain}/{{0}}/{{1}}";
         }
 
         /// <summary>
@@ -52,11 +53,14 @@ namespace ElevenLabs
 
             Domain = $"{protocol}{domain}";
             BaseRequestUrlFormat = $"{Domain}/{{0}}/{{1}}";
+            BaseWebSocketUrlFormat = $"{WSS}{ElevenLabsDomain}/{{0}}/{{1}}";
         }
 
         public string Domain { get; }
 
         internal string BaseRequestUrlFormat { get; }
+
+        internal string BaseWebSocketUrlFormat { get; }
 
         // ReSharper disable once CollectionNeverUpdated.Local reserved for future use.
         private readonly Dictionary<string, string> defaultQueryParameters = new();

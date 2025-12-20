@@ -22,8 +22,8 @@ namespace ElevenLabs.Proxy
         // Copied from https://github.com/microsoft/reverse-proxy/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/RequestUtilities.cs#L61-L83
         private static readonly HashSet<string> excludedHeaders = new()
         {
-            HeaderNames.Authorization,
             "xi-api-key",
+            HeaderNames.Authorization,
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
             HeaderNames.KeepAlive,
@@ -65,6 +65,11 @@ namespace ElevenLabs.Proxy
             {
                 try
                 {
+                    if (httpContext.WebSockets.IsWebSocketRequest)
+                    {
+                        throw new InvalidOperationException("Websockets not supported");
+                    }
+
                     await authenticationFilter.ValidateAuthenticationAsync(httpContext.Request.Headers).ConfigureAwait(false);
                     var method = new HttpMethod(httpContext.Request.Method);
                     var originalQuery = QueryHelpers.ParseQuery(httpContext.Request.QueryString.Value ?? "");
@@ -93,7 +98,7 @@ namespace ElevenLabs.Proxy
                             continue;
                         }
 
-                        request.Headers.TryAddWithoutValidation(key, value.ToArray());
+                        request.Headers.TryAddWithoutValidation(key, [.. value]);
                     }
 
                     if (httpContext.Request.ContentType != null)

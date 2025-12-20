@@ -100,8 +100,14 @@ namespace ElevenLabs
         /// <param name="endpoint">The endpoint url.</param>
         /// <param name="queryParameters">Optional, parameters to add to the endpoint.</param>
         protected string GetUrl(string endpoint = "", Dictionary<string, string> queryParameters = null)
+            => GetEndpoint(client.Settings.BaseRequestUrlFormat, endpoint, queryParameters);
+
+        protected string GetWebsocketUri(string endpoint = "", Dictionary<string, string> queryParameters = null)
+            => GetEndpoint(client.Settings.BaseWebSocketUrlFormat, endpoint, queryParameters);
+
+        private string GetEndpoint(string baseUrlFormat, string endpoint = "", Dictionary<string, string> queryParameters = null)
         {
-            var result = string.Format(client.Settings.BaseRequestUrlFormat, ApiVersion, $"{Root}{endpoint}");
+            var result = string.Format(baseUrlFormat, ApiVersion, $"{Root}{endpoint}");
 
             foreach (var defaultQueryParameter in client.Settings.DefaultQueryParameters)
             {
