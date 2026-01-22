@@ -5,6 +5,7 @@ using ElevenLabs.Extensions;
 using ElevenLabs.History;
 using ElevenLabs.Models;
 using ElevenLabs.SoundGeneration;
+using ElevenLabs.SpeechToText;
 using ElevenLabs.TextToSpeech;
 using ElevenLabs.User;
 using ElevenLabs.VoiceGeneration;
@@ -55,6 +56,7 @@ namespace ElevenLabs
             ModelsEndpoint = new ModelsEndpoint(this);
             HistoryEndpoint = new HistoryEndpoint(this);
             TextToSpeechEndpoint = new TextToSpeechEndpoint(this);
+            SpeechToTextEndpoint = new SpeechToTextEndpoint(this);
             VoiceGenerationEndpoint = new VoiceGenerationEndpoint(this);
             SoundGenerationEndpoint = new SoundGenerationEndpoint(this);
             DubbingEndpoint = new DubbingEndpoint(this);
@@ -134,6 +136,8 @@ namespace ElevenLabs
         public HistoryEndpoint HistoryEndpoint { get; }
 
         public TextToSpeechEndpoint TextToSpeechEndpoint { get; }
+
+        public SpeechToTextEndpoint SpeechToTextEndpoint { get; }
 
         public VoiceGenerationEndpoint VoiceGenerationEndpoint { get; }
 
