@@ -71,7 +71,8 @@ namespace ElevenLabs.TextToSpeech
             
             if (DisableRetention.HasValue)
             {
-                parameters.Add(EnableLoggingParameter, DisableRetention.GetValueOrDefault().ToString().ToLower());
+                // ElevenLabs uses enable_logging=false to activate zero retention mode.
+                parameters.Add(EnableLoggingParameter, (!DisableRetention.GetValueOrDefault()).ToString().ToLower());
             }
 
             var endpoint = $"/{request.Voice.Id}";
