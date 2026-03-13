@@ -7,19 +7,19 @@ namespace ElevenLabs.SpeechToText
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AudioFormat
     {
-        [JsonPropertyName("pcm_8000")]
+        [JsonStringEnumMemberName("pcm_8000")]
         Pcm8000,
-        [JsonPropertyName("pcm_16000")]
+        [JsonStringEnumMemberName("pcm_16000")]
         Pcm16000,
-        [JsonPropertyName("pcm_22050")]
+        [JsonStringEnumMemberName("pcm_22050")]
         Pcm22050,
-        [JsonPropertyName("pcm_24000")]
+        [JsonStringEnumMemberName("pcm_24000")]
         Pcm24000,
-        [JsonPropertyName("pcm_44100")]
+        [JsonStringEnumMemberName("pcm_44100")]
         Pcm44100,
-        [JsonPropertyName("pcm_48000")]
+        [JsonStringEnumMemberName("pcm_48000")]
         Pcm48000,
-        [JsonPropertyName("ulaw_8000")]
+        [JsonStringEnumMemberName("ulaw_8000")]
         Ulaw8000
     }
 

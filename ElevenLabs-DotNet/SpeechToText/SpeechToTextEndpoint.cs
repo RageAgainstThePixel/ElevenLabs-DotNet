@@ -78,7 +78,7 @@ namespace ElevenLabs.SpeechToText
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            var endpoint = GetWebsocketUri("speech-to-text/realtime", configuration.ToQueryParams());
+            var endpoint = GetWebsocketUri("/realtime", configuration.ToQueryParams());
             var websocket = new WebSocket(endpoint, new Dictionary<string, string>
             {
                 { "User-Agent", "ElevenLabs-DotNet" },
