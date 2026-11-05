@@ -27,6 +27,10 @@ namespace ElevenLabs
         /// </remarks>
         MP3_44100_192,
         /// <summary>
+        /// PCM format (S16LE) with 8khz sample rate.
+        /// </summary>
+        PCM_8000,
+        /// <summary>
         /// PCM format (S16LE) with 16kHz sample rate.
         /// </summary>
         PCM_16000,
@@ -45,6 +49,13 @@ namespace ElevenLabs
         /// Requires you to be subscribed to Independent Publisher tier or above.
         /// </remarks>
         PCM_44100,
+        /// <summary>
+        /// PCM format (S16LE) with 48kHz sample rate.
+        /// </summary>
+        /// <remarks>
+        /// Requires you to be subscribed to Independent Publisher tier or above.
+        /// </remarks>
+        PCM_48000,
         /// <summary>
         /// μ-law format (sometimes written mu-law, often approximated as u-law) with 8kHz sample rate.
         /// </summary>

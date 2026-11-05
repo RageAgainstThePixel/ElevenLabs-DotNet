@@ -160,13 +160,15 @@ namespace ElevenLabs.TextToSpeech
                         var readBuffer = ArrayPool<byte>.Shared.Rent(bytesRead);
                         try
                         {
-                            await audioDataStream.WriteAsync(readBuffer, cancellationToken).ConfigureAwait(false);
+                            Array.Copy(buffer, readBuffer, bytesRead);
+                            var readMemory = new ReadOnlyMemory<byte>(readBuffer, 0, bytesRead);
+                            await audioDataStream.WriteAsync(readMemory, cancellationToken).ConfigureAwait(false);
 
                             if (partialClipCallback != null)
                             {
                                 try
                                 {
-                                    var partialClip = new VoiceClip(clipId, request.Text, request.Voice, readBuffer, request.OutputFormat.GetSampleRate());
+                                    var partialClip = new VoiceClip(clipId, request.Text, request.Voice, readMemory, request.OutputFormat.GetSampleRate());
                                     await partialClipCallback(partialClip).ConfigureAwait(false);
                                 }
                                 catch (Exception e)
